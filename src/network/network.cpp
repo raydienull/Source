@@ -1033,12 +1033,13 @@ void NetworkIn::tick(void)
 
 		// receive data
 		EXC_SET("messages - receive");
-		size_t received = client->m_socket.Receive(buffer, NETWORK_BUFFERSIZE, 0);
-		if (received <= 0 || received > NETWORK_BUFFERSIZE)
+		int iReceived = client->m_socket.Receive(buffer, NETWORK_BUFFERSIZE, 0);
+		if (iReceived <= 0 || iReceived > static_cast<int>(NETWORK_BUFFERSIZE))
 		{
 			client->markReadClosed();
 			continue;
 		}
+		size_t received = static_cast<size_t>(iReceived);
 
 		EXC_SET("start client profile");
 		CurrentProfileData.Count(PROFILE_DATA_RX, received);
@@ -3062,13 +3063,14 @@ void NetworkInput::receiveData()
 			
 		// receive data
 		EXC_SET("messages - receive");
-		size_t received = state->m_socket.Receive(m_receiveBuffer, NETWORK_BUFFERSIZE, 0);
-		if (received <= 0 || received > NETWORK_BUFFERSIZE)
+		int iReceived = state->m_socket.Receive(m_receiveBuffer, NETWORK_BUFFERSIZE, 0);
+		if (iReceived <= 0 || iReceived > static_cast<int>(NETWORK_BUFFERSIZE))
 		{
 			state->markReadClosed();
 			EXC_SET("next state");
 			continue;
 		}
+		size_t received = static_cast<size_t>(iReceived);
 
 		EXC_SET("start client profile");
 		CurrentProfileData.Count(PROFILE_DATA_RX, received);
