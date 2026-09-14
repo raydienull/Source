@@ -2317,17 +2317,18 @@ void CWorld::OnTick()
 		{
 			EXC_TRYSUB("Tick");
 
-			// loop backwards to avoid possible infinite loop if a status update is triggered
-			// as part of the status update (e.g. property changed under tooltip trigger)
-			size_t i = m_ObjStatusUpdates.GetCount();
-			while ( i > 0 )
+			// Take each object off the list before ticking it, and stop after as many
+			// as were queued when the pass started. An update can queue more (a property
+			// changed under a tooltip trigger), and those wait for the next pass instead
+			// of looping here - the previous code dropped them with RemoveAll().
+			size_t iCount = m_ObjStatusUpdates.GetCount();
+			while ( iCount-- > 0 && m_ObjStatusUpdates.GetCount() > 0 )
 			{
-				CObjBase * pObj = m_ObjStatusUpdates.GetAt(--i);
+				CObjBase * pObj = m_ObjStatusUpdates.GetAt(0);
+				m_ObjStatusUpdates.RemoveAt(0);
 				if (pObj != NULL)
 					pObj->OnTickStatusUpdate();
 			}
-
-			m_ObjStatusUpdates.RemoveAll();
 
 			EXC_CATCHSUB("StatusUpdates");
 		}
