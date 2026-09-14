@@ -149,6 +149,14 @@ void UnixTerminal::prepare()
 	refresh();		// draw screen
 
 #else
+	// input is not a terminal (e.g. running as a service or in a container), keep default settings
+	if (isatty(STDIN_FILENO) == 0)
+	{
+		m_nextChar = '\0';
+		m_prepared = true;
+		return;
+	}
+
 	// save existing attributes
 	if (tcgetattr(STDIN_FILENO, &m_original) < 0)
 		throw CGrayError(LOGL_WARN, 0, "failed to get terminal attributes");
@@ -228,8 +236,8 @@ void UnixTerminal::restore()
 	m_window = NULL;
 	m_nextChar = '\0';
 #else
-	// restore original terminal state
-	if (tcsetattr(STDIN_FILENO, TCSANOW, &m_original) < 0)
+	// restore original terminal state (nothing was changed if input is not a terminal)
+	if (isatty(STDIN_FILENO) != 0 && tcsetattr(STDIN_FILENO, TCSANOW, &m_original) < 0)
 		throw CGrayError(LOGL_WARN, 0, "failed to restore terminal attributes");
 #endif
 
