@@ -223,6 +223,11 @@ struct HistoryIP
 	CServTime m_blockExpire;
 	long m_pingDecay;
 
+	HistoryIP() : m_pings(0), m_connecting(0), m_connected(0), m_blocked(false), m_ttl(0), m_pingDecay(0)
+	{
+		m_blockExpire.Init();
+	}
+
 	void update(void);
 	bool checkPing(void); // IP is blocked -or- too many pings to it?
 	void setBlocked(bool isBlocked, int timeout = -1);

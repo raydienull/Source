@@ -20,6 +20,9 @@ public:
 	unsigned long dwFirstBlock;
 	unsigned long dwLastBlock;
 	INT64 qwAdress;
+
+	// an empty range, so a slot that no uop entry filled never matches a lookup
+	MapAddress() : dwFirstBlock(1), dwLastBlock(0), qwAdress(0) { }
 };
 
 unsigned long long HashFileName(CGString csFile);

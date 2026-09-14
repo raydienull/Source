@@ -776,6 +776,7 @@ void defragSphere(char *path)
 		"After finished, you will have your '" GRAY_FILE "*.scp' files converted and saved as '" GRAY_FILE "*.scp.new'.\n");
 
 	uids = (DWORD*)calloc(MAX_UID, sizeof(DWORD));
+	ASSERT(uids != NULL);
 	for ( i = 0; i < 3; i++ )
 	{
 		strcpy(z, path);

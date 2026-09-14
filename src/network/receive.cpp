@@ -752,7 +752,6 @@ bool PacketVendorBuyReq::onReceive(NetState* net)
 	int iConvertFactor = vendor->NPC_GetVendorMarkup(buyer);
 
 	VendorItem items[MAX_ITEMS_CONT];
-	memset(items, 0, sizeof(items));
 	size_t itemCount = minimum((packetLength - 8) / 7, MAX_ITEMS_CONT);
 
 	// check buying speed
@@ -1865,7 +1864,6 @@ bool PacketVendorSellReq::onReceive(NetState* net)
 	}
 
 	VendorItem items[MAX_ITEMS_CONT];
-	memset(items, 0, sizeof(items));
 
 	for (size_t i = 0; i < itemCount; i++)
 	{

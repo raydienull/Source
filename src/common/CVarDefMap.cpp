@@ -315,24 +315,8 @@ void CVarDefMap::DeleteAtIterator( DefSet::iterator it )
 	if ( it != m_Container.end() )
 	{
 		CVarDefCont * pVarBase = (*it);
-		CVarDefContNum * pVarNum = NULL;
-		CVarDefContStr * pVarStr = NULL;
 		m_Container.erase(it);
-
-		if ( pVarBase )
-		{
-			pVarNum = dynamic_cast<CVarDefContNum *>(pVarBase);
-			if (pVarNum)
-			{
-				delete pVarNum;
-			}
-			else
-			{
-				pVarStr = dynamic_cast<CVarDefContStr *>(pVarBase);
-				if ( pVarStr )
-					delete pVarStr;
-			}
-		}
+		delete pVarBase;	// CVarDefCont has a virtual destructor
 	}
 }
 
@@ -348,32 +332,10 @@ void CVarDefMap::DeleteKey( LPCTSTR key )
 void CVarDefMap::Empty()
 {
 	ADDTOCALLSTACK("CVarDefMap::Empty");
-	DefSet::iterator i = m_Container.begin();
-	CVarDefCont * pVarBase = NULL;
-	CVarDefContNum * pVarNum = NULL;
-	CVarDefContStr * pVarStr = NULL;
-
-	while ( i != m_Container.end() )
-	{
-		pVarBase = (*i);
-		m_Container.erase(i); // This don't free all the resource
-		i = m_Container.begin();
-
-		if ( pVarBase )
-		{
-			pVarNum = dynamic_cast<CVarDefContNum *>(pVarBase);
-			if (pVarNum)
-			{
-				delete pVarNum;
-			}
-			else
-			{
-				pVarStr = dynamic_cast<CVarDefContStr *>(pVarBase);
-				if ( pVarStr )
-					delete pVarStr;
-			}
-		}
-	}
+	// CVarDefCont has a virtual destructor, so the concrete type does not matter.
+	// Casting to the two known subclasses silently leaked any other one.
+	for ( DefSet::iterator i = m_Container.begin(); i != m_Container.end(); ++i )
+		delete (*i);
 
 	m_Container.clear();
 }

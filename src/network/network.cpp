@@ -117,6 +117,42 @@ NetState::NetState(long id)
 
 NetState::~NetState(void)
 {
+	// clear() is the full teardown, but it touches g_Serv / g_World / g_Log and
+	// states are destroyed during static destruction. Release only our memory.
+	clearQueues();
+
+	for (size_t i = 0; i < PacketSend::PRI_QTY; i++)
+		m_outgoing.queue[i].clean();
+	m_outgoing.asyncQueue.clean();
+#ifdef _MTNETWORK
+	m_incoming.rawPackets.clean();
+#endif
+
+	if (m_outgoing.currentTransaction != NULL)
+	{
+		delete m_outgoing.currentTransaction;
+		m_outgoing.currentTransaction = NULL;
+	}
+
+	if (m_outgoing.pendingTransaction != NULL)
+	{
+		delete m_outgoing.pendingTransaction;
+		m_outgoing.pendingTransaction = NULL;
+	}
+
+	if (m_incoming.buffer != NULL)
+	{
+		delete m_incoming.buffer;
+		m_incoming.buffer = NULL;
+	}
+
+#ifdef _MTNETWORK
+	if (m_incoming.rawBuffer != NULL)
+	{
+		delete m_incoming.rawBuffer;
+		m_incoming.rawBuffer = NULL;
+	}
+#endif
 }
 
 void NetState::clear(void)
@@ -538,7 +574,6 @@ HistoryIP& IPHistoryManager::getHistoryForIP(const CSocketAddressIP& ip)
 
 	// create a new entry
 	HistoryIP hist;
-	memset(&hist, 0, sizeof(hist));
 	hist.m_ip = ip;
 	hist.m_pingDecay = NETHISTORY_PINGDECAY;
 	hist.update();
@@ -2462,6 +2497,19 @@ NetworkManager::~NetworkManager(void)
 		delete *it;
 		it = m_threads.erase(it);
 	}
+
+	if (m_states != NULL)
+	{
+		for (size_t l = 0; l < m_stateCount; l++)
+		{
+			delete m_states[l];
+			m_states[l] = NULL;
+		}
+
+		delete[] m_states;
+		m_states = NULL;
+	}
+	m_stateCount = 0;
 }
 
 void NetworkManager::createNetworkThreads(size_t count)

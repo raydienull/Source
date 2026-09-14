@@ -627,6 +627,7 @@ CWorldThread::CWorldThread()
 	m_iUIDIndexLast = 1;
 
 	m_FreeUIDs = (DWORD*)calloc(FREE_UIDS_SIZE, sizeof(DWORD));
+	ASSERT(m_FreeUIDs != NULL);
 	m_FreeOffset = FREE_UIDS_SIZE;
 }
 
