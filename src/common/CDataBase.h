@@ -16,11 +16,7 @@
 #include "../sphere/mutex.h"
 
 #ifndef _DBPLUGIN
-	#ifdef _WIN32
-		#pragma comment(lib, "libmySQL")
-	#else
-		#pragma comment(lib, "libmysqlclient")
-	#endif
+	// The client library (MariaDB Connector/C) is linked by the build system
 
 	#define	MIN_MYSQL_VERSION_ALLOW	40115
 #else

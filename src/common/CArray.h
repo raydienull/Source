@@ -510,7 +510,7 @@ void CGObArray<TYPE>::Clean(bool bElements)
 template<class TYPE>
 bool CGObArray<TYPE>::DeleteOb( TYPE pData )
 {
-	return RemovePtr(pData);
+	return this->RemovePtr(pData);
 }
 
 template<class TYPE>
@@ -612,7 +612,7 @@ size_t CGObSortArray<TYPE, KEY_TYPE>::AddSortKey( TYPE pNew, KEY_TYPE key )
 	if ( iCompareRes == 0 )
 	{
 		// duplicate should not happen ?!? DestructElements is called automatically for previous.
-		SetAt(index, pNew);
+		this->SetAt(index, pNew);
 		return index;
 	}
 	return AddPresorted(index, iCompareRes, pNew);

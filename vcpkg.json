@@ -1,0 +1,8 @@
+{
+  "name": "spheresvr",
+  "version-string": "0.56b",
+  "description": "SphereServer, Ultima Online game server",
+  "dependencies": [
+    "libmariadb"
+  ]
+}
