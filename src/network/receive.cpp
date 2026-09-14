@@ -1006,8 +1006,10 @@ bool PacketBookPageEdit::onReceive(NetState* net)
 		while (lineCount > 0)
 		{
 			len += readStringNullASCII(content + len, SCRIPT_MAX_LINE_LEN-1 - len);
-			if (len >= SCRIPT_MAX_LINE_LEN)
+			if (len >= SCRIPT_MAX_LINE_LEN - 1)
 			{
+				// no room left for the separator, and 'SCRIPT_MAX_LINE_LEN-1 - len'
+				// would underflow on the next read
 				len = SCRIPT_MAX_LINE_LEN - 1;
 				break;
 			}
