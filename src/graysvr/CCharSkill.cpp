@@ -331,7 +331,7 @@ SKILL_TYPE CChar::Skill_GetBest( int iRank ) const // Which skill is the highest
 	ADDTOCALLSTACK("CChar::Skill_GetBest");
 	// Get the top n best skills.
 
-	if ( iRank < 0 || iRank >= g_Cfg.m_iMaxSkill )
+	if ( iRank < 0 || iRank >= static_cast<int>(g_Cfg.m_iMaxSkill) )
 		iRank = 0;
 
 	DWORD * pdwSkills = new DWORD [iRank + 1];
@@ -345,7 +345,7 @@ SKILL_TYPE CChar::Skill_GetBest( int iRank ) const // Which skill is the highest
 			continue;
 
 		dwSkillTmp = MAKEDWORD(i, Skill_GetBase(static_cast<SKILL_TYPE>(i)));
-		for ( size_t j = 0; j <= iRank; j++ )
+		for ( int j = 0; j <= iRank; j++ )
 		{
 			if ( HIWORD(dwSkillTmp) >= HIWORD(pdwSkills[j]) )
 			{
@@ -1529,7 +1529,7 @@ bool CChar::Skill_Tracking( CGrayUID uidTarg, DIR_TYPE & dirPrv, int iDistMax )
 		else
 			pszDef = g_Cfg.GetDefaultMsg( DEFMSG_TRACKING_RESULT_4 );
 
-		ASSERT(dir >= 0 && dir < COUNTOF(CPointBase::sm_szDirs));
+		ASSERT(dir >= 0 && dir < static_cast<int>(COUNTOF(CPointBase::sm_szDirs)));
 		sprintf(pszMsg, pszDef, pObj->GetName(), pObjTop->IsDisconnected()? g_Cfg.GetDefaultMsg(DEFMSG_TRACKING_RESULT_DISC) : "", static_cast<LPCTSTR>(CPointBase::sm_szDirs[dir]));
 		ObjMessage(pszMsg, this);
 	}

@@ -60,6 +60,10 @@ public:
 		m_Point = &Pt;
 	}
 
+	CPathFinderPointRef(const CPathFinderPointRef& Pt) : m_Point(Pt.m_Point)
+	{
+	}
+
 public:
 	CPathFinderPointRef& operator = ( const CPathFinderPointRef& Pt )
 	{

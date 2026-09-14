@@ -518,6 +518,7 @@ CVarDefCont * CVarDefMap::GetKey( LPCTSTR pszKey ) const
 int CVarDefMap::GetKeyNum( LPCTSTR pszKey, bool fZero  ) const
 {
 	ADDTOCALLSTACK("CVarDefMap::GetKeyNum");
+	UNREFERENCED_PARAMETER(fZero);
 	CVarDefCont * pVar = GetKey(pszKey);
 	if ( pVar == NULL )
 		return 0;	// both branches of the string version's (fZero ? "0" : "") are zero here

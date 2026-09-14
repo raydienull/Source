@@ -1330,7 +1330,7 @@ void CClient::Event_VendorSell(CChar* pVendor, const VendorItem* items, size_t i
 		INT64 iPrice = (INT64)pItemSell->GetVendorPrice(iConvertFactor) * amount;
 
 		// Can vendor afford this ?
-		if ( iPrice > pBank->m_itEqBankBox.m_Check_Amount )
+		if ( iPrice > static_cast<INT64>(pBank->m_itEqBankBox.m_Check_Amount) )
 		{
 			fShortfall = true;
 			break;
@@ -1914,7 +1914,7 @@ void CClient::Event_TalkUNICODE( NWORD* wszText, int iTextLen, HUE_TYPE wHue, TA
 	if ( mMode == 1 || mMode == 3 || mMode == 4 || mMode == 5 || mMode == 6 || mMode == 7 || mMode == 10 || mMode == 11 || mMode == 12 )
 		return;
 
-	if (( wHue < 0 ) || ( wHue > 0x03e9 ))
+	if ( wHue > 0x03e9 )	// HUE_TYPE is unsigned, so there is no negative case
 		wHue = HUE_TEXT_DEF;
 
 	// store the default language of choice. CLanguageID

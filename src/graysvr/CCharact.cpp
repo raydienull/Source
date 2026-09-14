@@ -2608,7 +2608,6 @@ bool CChar::Death()
 		{
 			CWorldSearch AreaChars(GetTopPoint(), UO_MAP_VIEW_SIZE);
 			AreaChars.SetSearchSquare(true);
-			DWORD	dSeeChars(0);
 			for (;;)
 			{
 				CChar	*pChar = AreaChars.GetChar();
