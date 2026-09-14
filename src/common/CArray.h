@@ -550,7 +550,7 @@ size_t CGObSortArray<TYPE,KEY_TYPE>::AddPresorted( size_t index, int iCompareRes
 	if ( iCompareRes > 0 )
 		index++;
 
-	InsertAt(index, pNew);
+	this->InsertAt(index, pNew);
 	return index;
 }
 
