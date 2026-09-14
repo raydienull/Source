@@ -647,7 +647,7 @@ bool CServer::OnConsoleCmd( CGString & sText, CTextConsole * pSrc )
 			} break;
 		case 't':
 			{
-				pSrc->SysMessagef("Current active threads: %d.\n", ThreadHolder::getActiveThreads());
+				pSrc->SysMessagef("Current active threads: %" FMTSIZE_T ".\n", ThreadHolder::getActiveThreads());
 				size_t iThreadCount = ThreadHolder::getActiveThreads();
 				for ( size_t iThreads = 0; iThreads < iThreadCount; ++iThreads )
 				{
@@ -1897,7 +1897,7 @@ void CServer::OnTick()
 		LONGLONG	hi = TIME_PROFILE_GET_HI;
 		if ( hi > 5L )
 		{
-			DEBUG_ERR(("CServer::OnTick() [socket operations] took %lld.%lld to run\n", static_cast<INT64>(hi), static_cast<INT64>(TIME_PROFILE_GET_LO)));
+			DEBUG_ERR(("CServer::OnTick() [socket operations] took %" FMTINT64 ".%" FMTINT64 " to run\n", static_cast<INT64>(hi), static_cast<INT64>(TIME_PROFILE_GET_LO)));
 		}
 	}
 	EXC_CATCH;

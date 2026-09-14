@@ -564,7 +564,7 @@ void AbstractSphereThread::printStackTrace()
 			break;
 
 		timedelta = static_cast<long>(m_stackInfo[i].startTime - startTime);
-		g_Log.EventDebug(">>         %u     | %2d | %28s | +%ld %s\n",
+		g_Log.EventDebug(">>         %u     | %2" FMTSIZE_T " | %28s | +%ld %s\n",
 			threadId, i, m_stackInfo[i].functionName, timedelta,
 				( i == (m_stackPos - 1) ) ?
 				"<-- exception catch point (below is guessed and could be incorrect!)" :

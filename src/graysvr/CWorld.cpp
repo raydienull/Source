@@ -1236,7 +1236,7 @@ bool CWorld::SaveStage() // Save world state in stages.
 		TIME_PROFILE_END;
 
 		TCHAR * time = Str_GetTemp();
-		sprintf(time, "%lld.%04lld", static_cast<INT64>(TIME_PROFILE_GET_HI/1000), static_cast<INT64>(TIME_PROFILE_GET_LO));
+		sprintf(time, "%" FMTINT64 ".%04" FMTINT64, static_cast<INT64>(TIME_PROFILE_GET_HI/1000), static_cast<INT64>(TIME_PROFILE_GET_LO));
 
 		g_Log.Event(LOGM_SAVE, "World save completed, took %s seconds\n", time);
 
@@ -1730,11 +1730,11 @@ bool CWorld::LoadAll() // Load world from script
 			// Is this area too complex ?
 			iCount = pSector->GetItemComplexity();
 			if ( iCount > g_Cfg.m_iMaxSectorComplexity )
-				g_Log.Event(LOGL_WARN, "%d items at %s. Sector too complex!\n", iCount, pSector->GetBasePoint().WriteUsed());
+				g_Log.Event(LOGL_WARN, "%" FMTSIZE_T " items at %s. Sector too complex!\n", iCount, pSector->GetBasePoint().WriteUsed());
 
 			iCount = pSector->GetCharComplexity();
 			if ( iCount > g_Cfg.m_iMaxCharComplexity )
-				g_Log.Event(LOGL_WARN, "%d chars at %s. Sector too complex!\n", iCount, pSector->GetBasePoint().WriteUsed());
+				g_Log.Event(LOGL_WARN, "%" FMTSIZE_T " chars at %s. Sector too complex!\n", iCount, pSector->GetBasePoint().WriteUsed());
 		}
 		EXC_CATCHSUB("Sector light levels");
 	}
@@ -2410,7 +2410,7 @@ void CWorld::OnTick()
 		LONGLONG hi = TIME_PROFILE_GET_HI;
 		if ( hi > 50L )
 		{
-			DEBUG_ERR(("CWorld::OnTick() [ticking sectors] took %lld.%lld to run\n", static_cast<INT64>(hi), static_cast<INT64>(TIME_PROFILE_GET_LO)));
+			DEBUG_ERR(("CWorld::OnTick() [ticking sectors] took %" FMTINT64 ".%" FMTINT64 " to run\n", static_cast<INT64>(hi), static_cast<INT64>(TIME_PROFILE_GET_LO)));
 		}
 	}
 }

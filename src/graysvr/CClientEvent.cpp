@@ -2758,7 +2758,7 @@ bool CClient::xPacketFilter( const BYTE * pData, size_t iLen )
 	{
 		CScriptTriggerArgs Args(pData[0]);
 		enum TRIGRET_TYPE trigReturn;
-		TCHAR idx[5];
+		TCHAR idx[24];	// the index can reach the packet length, not just 4 digits
 
 		Args.m_s1 = GetPeerStr();
 		Args.m_pO1 = this; // Yay for ARGO.SENDPACKET
@@ -2784,7 +2784,7 @@ bool CClient::xPacketFilter( const BYTE * pData, size_t iLen )
 		//	Fill locals [0..X] to the first X bytes of the packet
 		for ( size_t i = 0; i < bytes; ++i )
 		{
-			sprintf(idx, "%" FMTSIZE_T, i);
+			snprintf(idx, sizeof(idx), "%" FMTSIZE_T, i);
 			Args.m_VarsLocal.SetNum(idx, static_cast<int>(pData[i]));
 		}
 
