@@ -103,13 +103,10 @@ IThread * ThreadHolder::getThreadAt(size_t at)
 
 void ThreadHolder::init()
 {
-	if( !m_inited )
-	{
-		memset(g_tmpStrings, 0, sizeof(g_tmpStrings));
-		memset(g_tmpTemporaryStringStorage, 0, sizeof(g_tmpTemporaryStringStorage));
-
-		m_inited = true;
-	}
+	// g_tmpStrings and g_tmpTemporaryStringStorage are ~25 MB of globals, so they
+	// are already zero initialised. Memsetting them here only forced every page
+	// resident before the server had read a single script.
+	m_inited = true;
 }
 
 /*
