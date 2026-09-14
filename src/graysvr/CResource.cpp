@@ -904,25 +904,25 @@ bool CResource::r_LoadVal( CScript &s )
 			}
 			break;
 		case RC_CORPSENPCDECAY:
-			m_iDecay_CorpseNPC = s.GetArgVal()*60*TICK_PER_SEC;
+			m_iDecay_CorpseNPC = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_CORPSEPLAYERDECAY:
-			m_iDecay_CorpsePlayer = s.GetArgVal()*60*TICK_PER_SEC ;
+			m_iDecay_CorpsePlayer = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_CRIMINALTIMER:
-			m_iCriminalTimer = s.GetArgVal() * 60 * TICK_PER_SEC;
+			m_iCriminalTimer = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_STRIPPATH:	// Put TNG stripped files here.
 			m_sStripPath = CGFile::GetMergedFileName( s.GetArgStr(), "" );
 			break;
 		case RC_DEADSOCKETTIME:
-			m_iDeadSocketTime = s.GetArgVal()*60*TICK_PER_SEC;
+			m_iDeadSocketTime = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_DECAYTIMER:
-			m_iDecay_Item = s.GetArgVal() *60*TICK_PER_SEC;
+			m_iDecay_Item = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_GUARDLINGER:
-			m_iGuardLingerTime = s.GetArgVal() * 60 * TICK_PER_SEC;
+			m_iGuardLingerTime = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_HEARALL:
 			g_Log.SetLogMask( s.GetArgFlag( g_Log.GetLogMask(), LOGM_PLAYER_SPEAK ));
@@ -964,7 +964,7 @@ bool CResource::r_LoadVal( CScript &s )
 				m_iMinKarma = m_iMaxKarma - 1;
 			break;
 		case RC_MINCHARDELETETIME:
-			m_iMinCharDeleteTime = s.GetArgVal()*60*TICK_PER_SEC;
+			m_iMinCharDeleteTime = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_MINKARMA:
 			m_iMinKarma = s.GetArgVal();
@@ -975,7 +975,7 @@ bool CResource::r_LoadVal( CScript &s )
 			m_iMurderDecayTime = Calc_TicksFromSeconds(s.GetArgVal());
 			break;
 		case RC_WOOLGROWTHTIME:
-			m_iWoolGrowthTime = s.GetArgVal() * 60 * TICK_PER_SEC;
+			m_iWoolGrowthTime = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_PROFILE:
 			{
@@ -1011,7 +1011,7 @@ bool CResource::r_LoadVal( CScript &s )
 			m_iSkillPracticeMax = s.GetArgVal();
 			break;
 		case RC_SAVEPERIOD:
-			m_iSavePeriod = s.GetArgVal()*60*TICK_PER_SEC;
+			m_iSavePeriod = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_SECTORSLEEP:
 			{
@@ -1020,7 +1020,7 @@ bool CResource::r_LoadVal( CScript &s )
 			}
 			break;
 		case RC_SAVEBACKGROUND:
-			m_iSaveBackgroundTime = s.GetArgVal() * 60 * TICK_PER_SEC;
+			m_iSaveBackgroundTime = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 
 		case RC_WORLDSAVE: // Put save files here.

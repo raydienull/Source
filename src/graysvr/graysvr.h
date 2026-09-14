@@ -139,14 +139,19 @@ public:
 // Seconds to ticks, saturating instead of wrapping.
 // A plain "iSeconds * TICK_PER_SEC" turns a delay above INT_MAX/TICK_PER_SEC
 // into a small or negative one, so a timer meant to be years away fires at once.
-inline int Calc_TicksFromSeconds( long lSeconds )
+inline int Calc_TicksFromSeconds( long long iSeconds )
 {
-	if ( lSeconds > (INT_MAX / TICK_PER_SEC) )
+	if ( iSeconds > (INT_MAX / TICK_PER_SEC) )
 		return INT_MAX;
-	if ( lSeconds < (INT_MIN / TICK_PER_SEC) )
+	if ( iSeconds < (INT_MIN / TICK_PER_SEC) )
 		return INT_MIN;
 
-	return static_cast<int>(lSeconds) * TICK_PER_SEC;
+	return static_cast<int>(iSeconds) * TICK_PER_SEC;
+}
+
+inline int Calc_TicksFromMinutes( long long iMinutes )
+{
+	return Calc_TicksFromSeconds( iMinutes * 60 );
 }
 
 enum RESDISPLAY_VERSION
