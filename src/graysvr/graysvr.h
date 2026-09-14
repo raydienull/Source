@@ -136,22 +136,27 @@ public:
 	static CServTime GetCurrentTime();
 };
 
-// Seconds to ticks, saturating instead of wrapping.
-// A plain "iSeconds * TICK_PER_SEC" turns a delay above INT_MAX/TICK_PER_SEC
-// into a small or negative one, so a timer meant to be years away fires at once.
-inline int Calc_TicksFromSeconds( long long iSeconds )
+// Saturating conversions to a tick count. A plain "value * TICK_PER_SEC" turns
+// a delay above INT_MAX/TICK_PER_SEC into a small or negative one, so a timer
+// meant to be years away fires at once.
+inline int Calc_TicksClamp( long long iTicks )
 {
-	if ( iSeconds > (INT_MAX / TICK_PER_SEC) )
+	if ( iTicks > INT_MAX )
 		return INT_MAX;
-	if ( iSeconds < (INT_MIN / TICK_PER_SEC) )
+	if ( iTicks < INT_MIN )
 		return INT_MIN;
 
-	return static_cast<int>(iSeconds) * TICK_PER_SEC;
+	return static_cast<int>(iTicks);
 }
 
-inline int Calc_TicksFromMinutes( long long iMinutes )
+inline int Calc_TicksFromSeconds( long lSeconds )
 {
-	return Calc_TicksFromSeconds( iMinutes * 60 );
+	return Calc_TicksClamp( static_cast<long long>(lSeconds) * TICK_PER_SEC );
+}
+
+inline int Calc_TicksFromMinutes( long lMinutes )
+{
+	return Calc_TicksClamp( static_cast<long long>(lMinutes) * 60 * TICK_PER_SEC );
 }
 
 enum RESDISPLAY_VERSION

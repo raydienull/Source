@@ -2926,9 +2926,14 @@ void CChar::Fight_ClearAll()
 {
 	ADDTOCALLSTACK("CChar::Fight_ClearAll");
 	// clear all my active targets. Toggle out of war mode.
+	// Read the next memory before clearing this one: clearing it deletes it,
+	// which unlinks it, so asking the cleared memory for its successor used to
+	// end the loop at the first war target and leave the rest in place.
+	CItem * pItemNext = NULL;
 	CItem * pItem = GetContentHead();
-	for ( ; pItem != NULL; pItem = pItem->GetNext())
+	for ( ; pItem != NULL; pItem = pItemNext )
 	{
+		pItemNext = pItem->GetNext();
 		if ( ! pItem->IsMemoryTypes(MEMORY_WAR_TARG))
 			continue;
 		Memory_ClearTypes( STATIC_CAST <CItemMemory *>(pItem), MEMORY_WAR_TARG );

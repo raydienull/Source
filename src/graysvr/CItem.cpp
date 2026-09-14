@@ -1148,7 +1148,7 @@ int CItem::GetDecayTime() const
 		return -1;
 
 	if ( IsAttr(ATTR_MAGIC) )			//	magics destroyed later
-		return ( 4*g_Cfg.m_iDecay_Item );
+		return Calc_TicksClamp( static_cast<long long>(g_Cfg.m_iDecay_Item) * 4 );
 	if ( IsAttr(ATTR_NEWBIE) )			//	but newbie faster
 		return ( g_Cfg.m_iDecay_Item / 2 );
 
