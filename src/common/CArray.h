@@ -381,21 +381,33 @@ void CGTypedArray<TYPE, ARG_TYPE>::SetCount( size_t nNewCount )
 		return;
 	}
 
-	if ( nNewCount > m_nCount )
+	if ( nNewCount > m_nRealCount )
 	{
-		TYPE * pNewData = reinterpret_cast<TYPE *>(new BYTE[ nNewCount * sizeof( TYPE ) ]);
+		// Grow with slack, otherwise adding one element at a time reallocates
+		// and copies the whole array every time.
+		size_t nNewRealCount = m_nRealCount + (m_nRealCount / 2) + 4;
+		if ( nNewRealCount < nNewCount )
+			nNewRealCount = nNewCount;
+
+		TYPE * pNewData = reinterpret_cast<TYPE *>(new BYTE[ nNewRealCount * sizeof( TYPE ) ]);
 		if ( m_nCount )
 		{
 			// copy the old stuff to the new array.
 			memcpy( pNewData, m_pData, sizeof(TYPE)*m_nCount );
-			delete[] reinterpret_cast<BYTE *>(m_pData);	// don't call any destructors.
 		}
+		delete[] reinterpret_cast<BYTE *>(m_pData);	// don't call any destructors.
 
-		// Just construct or init the new stuff.
-		ConstructElements( pNewData + m_nCount, nNewCount - m_nCount );
+		// Just construct or init the new stuff. The slack is initialised as well,
+		// since Clean() walks the whole allocation.
+		ConstructElements( pNewData + m_nCount, nNewRealCount - m_nCount );
 		m_pData = pNewData;
 
-		m_nRealCount = nNewCount;
+		m_nRealCount = nNewRealCount;
+	}
+	else if ( nNewCount > m_nCount )
+	{
+		// the allocation is big enough, just init the slots coming back into use
+		ConstructElements( m_pData + m_nCount, nNewCount - m_nCount );
 	}
 
 	m_nCount = nNewCount;
