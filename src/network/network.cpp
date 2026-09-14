@@ -121,13 +121,6 @@ NetState::~NetState(void)
 	// states are destroyed during static destruction. Release only our memory.
 	clearQueues();
 
-	for (size_t i = 0; i < PacketSend::PRI_QTY; i++)
-		m_outgoing.queue[i].clean();
-	m_outgoing.asyncQueue.clean();
-#ifdef _MTNETWORK
-	m_incoming.rawPackets.clean();
-#endif
-
 	if (m_outgoing.currentTransaction != NULL)
 	{
 		delete m_outgoing.currentTransaction;
@@ -193,14 +186,6 @@ void NetState::clear(void)
 
 	// empty queues
 	clearQueues();
-
-	// clean junk queue entries
-	for (size_t i = 0; i < PacketSend::PRI_QTY; i++)
-		m_outgoing.queue[i].clean();
-	m_outgoing.asyncQueue.clean();
-#ifdef _MTNETWORK
-	m_incoming.rawPackets.clean();
-#endif
 
 	if (m_outgoing.currentTransaction != NULL)
 	{
@@ -1427,10 +1412,6 @@ int NetworkIn::checkForData(fd_set* storage)
 		if ( state->isInUse() == false )
 			continue;
 
-		EXC_SET("cleaning queues");
-		for (int i = 0; i < PacketSend::PRI_QTY; i++)
-			state->m_outgoing.queue[i].clean();
-
 		EXC_SET("check closing");
 		if (state->isClosing())
 		{
@@ -2056,7 +2037,6 @@ int NetworkOut::proceedQueueAsync(CClient* client)
 	if (state->isWriteClosed() || state->isAsyncMode() == false)
 		return 0;
 
-	state->m_outgoing.asyncQueue.clean();
 	if (state->m_outgoing.asyncQueue.empty() || state->isSendingAsync())
 		return 0;
 
@@ -2770,12 +2750,6 @@ void NetworkManager::tick(void)
 		if (state->isInUse() == false)
 			continue;
 
-		// clean packet queue entries
-		EXC_SET("cleaning queues");
-		for (int priority = 0; priority < PacketSend::PRI_QTY; ++priority)
-			state->m_outgoing.queue[priority].clean();
-		state->m_outgoing.asyncQueue.clean();
-
 		EXC_SET("check closing");
 		if (state->isClosing() == false)
 		{
@@ -3084,10 +3058,7 @@ void NetworkInput::receiveData()
 		EXC_SET("start network profile");
 		ProfileTask networkTask(PROFILE_NETWORK_RX);
 		if ( ! FD_ISSET(state->m_socket.GetSocket(), &fds))
-		{
-			state->m_incoming.rawPackets.clean();
 			continue;
-		}
 			
 		// receive data
 		EXC_SET("messages - receive");
