@@ -520,7 +520,7 @@ int CVarDefMap::GetKeyNum( LPCTSTR pszKey, bool fZero  ) const
 	ADDTOCALLSTACK("CVarDefMap::GetKeyNum");
 	CVarDefCont * pVar = GetKey(pszKey);
 	if ( pVar == NULL )
-		return (fZero ? 0 : NULL);
+		return 0;	// both branches of the string version's (fZero ? "0" : "") are zero here
 	return pVar->GetValNum();
 }
 

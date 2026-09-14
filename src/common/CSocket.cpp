@@ -193,7 +193,7 @@ bool CSocketAddress::SetHostPortStr( LPCTSTR pszIP )
 {
 	// NOTE: This is a blocking call !!!!
 	TCHAR szIP[256];
-	strncpy( szIP, pszIP, sizeof(szIP));
+	strcpylen( szIP, pszIP, sizeof(szIP));	// strncpy would not terminate a 256 char address
 	SetPortExtStr( szIP );
 	return SetHostStr( szIP );
 }

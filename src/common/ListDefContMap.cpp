@@ -889,10 +889,14 @@ bool CListDefMap::r_LoadVal( LPCTSTR pszKey, CScript & s )
 		}
 		else
 		{
+			// reached only when the list does not exist yet
 			if ( ppCmds[2] && *(ppCmds[2]) )
 			{
 				if ( strcmpi(ppCmds[2], "insert") == 0 && pszArg && *pszArg )
 				{
+					pListBase = new CListDefCont(ppCmds[0]);
+					m_Container.insert(pListBase);
+
 					if ( IsSimpleNumberString(pszArg) )
 						return pListBase->AddElementNum(Exp_GetVal(pszArg));
 					else

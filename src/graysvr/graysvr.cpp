@@ -793,7 +793,8 @@ void defragSphere(char *path)
 		dBytesRead = dTotalMb = 0;
 		while ( !feof(inf.m_pStream) )
 		{
-			fgets(buf, sizeof(buf), inf.m_pStream);
+			if ( fgets(buf, sizeof(buf), inf.m_pStream) == NULL )
+				break;	// eof or a read error; buf is not cleared, so strlen would reread the last line
 			dBytesRead += strlen(buf);
 			if ( dBytesRead > mb10 )
 			{

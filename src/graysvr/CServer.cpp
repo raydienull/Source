@@ -793,7 +793,8 @@ longcommand:
 					{
 						z[0] = 0;
 						y[0] = 0;
-						fgets(y, SCRIPT_MAX_LINE_LEN, f);
+						if ( fgets(y, SCRIPT_MAX_LINE_LEN, f) == NULL )
+							break;	// eof or a read error
 
 						x = y;
 						GETNONWHITESPACE(x);
@@ -847,7 +848,8 @@ longcommand:
 					{
 						z[0] = 0;
 						y[0] = 0;
-						fgets(y, SCRIPT_MAX_LINE_LEN, f);
+						if ( fgets(y, SCRIPT_MAX_LINE_LEN, f) == NULL )
+							break;	// eof or a read error
 
 						x = y;
 						GETNONWHITESPACE(x);
