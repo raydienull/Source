@@ -244,6 +244,8 @@ void CTimedFunctionHandler::OnTick()
 	for ( size_t i = 0; i < expired.size(); ++i )
 	{
 		TimedFunction * tf = expired[i];
+
+		EXC_TRYSUB("TimedFunction");
 		CObjBase * obj = tf->uid.ObjFind();
 		if ( obj != NULL )	// it may have been deleted in the meantime
 		{
@@ -253,6 +255,7 @@ void CTimedFunctionHandler::OnTick()
 
 			obj->r_Verb( s, src );
 		}
+		EXC_CATCHSUB("TimedFunctions");
 
 		// recycled only once the call is done, so that a TIMERF started from
 		// inside it cannot be handed this same entry

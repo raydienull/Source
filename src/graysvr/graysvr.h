@@ -32,10 +32,34 @@
 	#define WARNWALK(_x_)		if ( g_Cfg.m_wDebugFlags & DEBUGF_WALK ) { g_pLog->EventWarn _x_; }
 #endif
 
-class CServTime
-{
 #undef GetCurrentTime
 #define TICK_PER_SEC 10
+
+// Saturating conversions to a tick count. A plain "value * TICK_PER_SEC" turns
+// a delay above INT_MAX/TICK_PER_SEC into a small or negative one, so a timer
+// meant to be years away fires at once.
+inline int Calc_TicksClamp( long long iTicks )
+{
+	if ( iTicks > INT_MAX )
+		return INT_MAX;
+	if ( iTicks < INT_MIN )
+		return INT_MIN;
+
+	return static_cast<int>(iTicks);
+}
+
+inline int Calc_TicksFromSeconds( long lSeconds )
+{
+	return Calc_TicksClamp( static_cast<long long>(lSeconds) * TICK_PER_SEC );
+}
+
+inline int Calc_TicksFromMinutes( long lMinutes )
+{
+	return Calc_TicksClamp( static_cast<long long>(lMinutes) * 60 * TICK_PER_SEC );
+}
+
+class CServTime
+{
 	// A time stamp in the server/game world.
 public:
 	static const char *m_sClassName;
@@ -48,18 +72,12 @@ public:
 
 		return m_lPrivateTime;
 	}
+	// Clamped: the result is an int, so on a build where long is wider a
+	// far-future stamp would truncate and could come back negative, which
+	// every caller reads as "already expired".
 	int GetTimeDiff( const CServTime & time ) const
 	{
-		// Clamped: the result is an int, so on a build where long is wider a
-		// far-future stamp would truncate and could come back negative, which
-		// every caller reads as "already expired".
-		long long iDiff = static_cast<long long>(m_lPrivateTime) - time.m_lPrivateTime;
-		if ( iDiff > INT_MAX )
-			return INT_MAX;
-		if ( iDiff < INT_MIN )
-			return INT_MIN;
-
-		return static_cast<int>(iDiff);
+		return Calc_TicksClamp( static_cast<long long>(m_lPrivateTime) - time.m_lPrivateTime );
 	}
 	void Init()
 	{
@@ -76,6 +94,7 @@ public:
 	{
 		return( m_lPrivateTime > 0 ? true : false );
 	}
+private:
 	// Clamp a stamp into range. A stamp is never negative, and it saturates
 	// instead of wrapping: on a build where long is 32 bits, a far-future stamp
 	// used to wrap to a negative value and get clamped to 0, which reads as
@@ -89,6 +108,7 @@ public:
 
 		return static_cast<long>(iTime);
 	}
+public:
 	CServTime operator+( int iTimeDiff ) const
 	{
 		CServTime time;
@@ -103,7 +123,7 @@ public:
 	}
 	int operator-( CServTime time ) const
 	{
-		return(m_lPrivateTime-time.m_lPrivateTime);
+		return GetTimeDiff( time );
 	}
 	bool operator==(CServTime time) const
 	{
@@ -135,29 +155,6 @@ public:
 	}
 	static CServTime GetCurrentTime();
 };
-
-// Saturating conversions to a tick count. A plain "value * TICK_PER_SEC" turns
-// a delay above INT_MAX/TICK_PER_SEC into a small or negative one, so a timer
-// meant to be years away fires at once.
-inline int Calc_TicksClamp( long long iTicks )
-{
-	if ( iTicks > INT_MAX )
-		return INT_MAX;
-	if ( iTicks < INT_MIN )
-		return INT_MIN;
-
-	return static_cast<int>(iTicks);
-}
-
-inline int Calc_TicksFromSeconds( long lSeconds )
-{
-	return Calc_TicksClamp( static_cast<long long>(lSeconds) * TICK_PER_SEC );
-}
-
-inline int Calc_TicksFromMinutes( long lMinutes )
-{
-	return Calc_TicksClamp( static_cast<long long>(lMinutes) * 60 * TICK_PER_SEC );
-}
 
 enum RESDISPLAY_VERSION
 {

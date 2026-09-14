@@ -252,7 +252,7 @@ void CServer::Shutdown( int iMinutes ) // If shutdown is initialized
 	}
 	else
 	{
-		m_timeShutdown = CServTime::GetCurrentTime() + ( iMinutes * 60 * TICK_PER_SEC );
+		m_timeShutdown = CServTime::GetCurrentTime() + Calc_TicksFromMinutes(iMinutes);
 	}
 
 	g_World.Broadcastf(g_Cfg.GetDefaultMsg( DEFMSG_SERV_SHUTDOWN ), iMinutes);

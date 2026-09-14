@@ -28,6 +28,7 @@ ADD(CResourceRefArray, "CResourceRefArray");
 ADD(CRegionWorld, "CRegionWorld");
 ADD(CRegionBase, "CRegionBase");
 ADD(CWorld, "CWorld");
+ADD(CTimedFunctionHandler, "CTimedFunctionHandler");
 ADD(CWorldThread, "CWorldThread");
 ADD(CWebPageDef, "CWebPageDef");
 ADD(CServerDef, "CServerDef");
