@@ -982,13 +982,12 @@ bool CWorldClock::Advance()
 
 	CServTime Clock_New = m_timeClock + iTimeSysDiff;
 
-	// CServTime is signed !
-	// NOTE: This will overflow after 7 or so years of run time !
-	if ( Clock_New < m_timeClock )	// should not happen! (overflow)
+	// CServTime is signed, and saturates rather than wrapping.
+	// NOTE: it runs out after 7 or so years of run time on a 32 bit build.
+	// iTimeSysDiff is positive here, so the clock standing still means we hit the ceiling.
+	if ( Clock_New <= m_timeClock )
 	{
-		//	Either TIME changed, or system lost hour as a daylight save. Not harmless
-		g_Log.Event(LOGL_WARN, "Clock overflow (daylight change in effect?), reset from 0%lx to 0%lx\n", m_timeClock.GetTimeRaw(), Clock_New.GetTimeRaw());
-		m_timeClock = Clock_New;	// this may cause may strange things.
+		g_Log.Event(LOGL_WARN, "Clock has reached its maximum value 0%lx and can no longer advance\n", m_timeClock.GetTimeRaw());
 		return false;
 	}
 

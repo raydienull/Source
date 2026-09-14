@@ -8,7 +8,7 @@
 #define _INC_GRAYSVR_H_
 #pragma once
 
-#include <limits.h>	// INT_MAX / INT_MIN, used below before graycom.h is pulled in
+#include <limits.h>	// INT_MAX / INT_MIN / LONG_MAX, used below before graycom.h is pulled in
 
 //	Enable advanced exceptions catching. Consumes some more resources, but is very useful
 //	for debug on a running environment. Also it makes sphere more stable since exceptions
@@ -50,7 +50,16 @@ public:
 	}
 	int GetTimeDiff( const CServTime & time ) const
 	{
-		return( m_lPrivateTime - time.m_lPrivateTime );
+		// Clamped: the result is an int, so on a build where long is wider a
+		// far-future stamp would truncate and could come back negative, which
+		// every caller reads as "already expired".
+		long long iDiff = static_cast<long long>(m_lPrivateTime) - time.m_lPrivateTime;
+		if ( iDiff > INT_MAX )
+			return INT_MAX;
+		if ( iDiff < INT_MIN )
+			return INT_MIN;
+
+		return static_cast<int>(iDiff);
 	}
 	void Init()
 	{
@@ -67,22 +76,29 @@ public:
 	{
 		return( m_lPrivateTime > 0 ? true : false );
 	}
+	// Clamp a stamp into range. A stamp is never negative, and it saturates
+	// instead of wrapping: on a build where long is 32 bits, a far-future stamp
+	// used to wrap to a negative value and get clamped to 0, which reads as
+	// "no timer set" and therefore as already expired.
+	static long ClampTime( long long iTime )
+	{
+		if ( iTime < 0 )
+			return 0;
+		if ( iTime > LONG_MAX )
+			return LONG_MAX;
+
+		return static_cast<long>(iTime);
+	}
 	CServTime operator+( int iTimeDiff ) const
 	{
 		CServTime time;
-		time.m_lPrivateTime = m_lPrivateTime + iTimeDiff;
-		if ( time.m_lPrivateTime < 0 )
-			time.m_lPrivateTime = 0;
-
+		time.m_lPrivateTime = ClampTime( static_cast<long long>(m_lPrivateTime) + iTimeDiff );
 		return( time );
 	}
 	CServTime operator-( int iTimeDiff ) const
 	{
 		CServTime time;
-		time.m_lPrivateTime = m_lPrivateTime - iTimeDiff;
-		if ( time.m_lPrivateTime < 0 )
-			time.m_lPrivateTime = 0;
-
+		time.m_lPrivateTime = ClampTime( static_cast<long long>(m_lPrivateTime) - iTimeDiff );
 		return( time );
 	}
 	int operator-( CServTime time ) const
