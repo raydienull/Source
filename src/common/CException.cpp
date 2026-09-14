@@ -156,7 +156,7 @@ bool CGrayException::GetErrorMessage(LPTSTR lpszError, UINT nMaxError, UINT * pn
 // --------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------
 
-void Assert_CheckFail( LPCTSTR pExp, LPCTSTR pFile, long lLine )
+[[noreturn]] void Assert_CheckFail( LPCTSTR pExp, LPCTSTR pFile, long lLine )
 {
 	throw CGrayAssert(LOGL_CRIT, pExp, pFile, lLine);
 }
