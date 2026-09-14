@@ -217,76 +217,48 @@ void CTimedFunctionHandler::OnTick()
 	}
 
 	int tick = m_curTick;
-	std::vector<TimedFunction *>::iterator it;
 	ProfileTask scriptsTask(PROFILE_SCRIPTS);
 
-	if ( m_timedFunctions[tick].size() > 0 )
+	// Take everything that is due out of the bucket before running any of it.
+	// The functions below can erase timed functions - TIMERF CLEAR does, and so
+	// does deleting an object, through CObjBase::Delete - which would leave an
+	// iterator held across the call pointing into a vector that has shifted.
+	std::vector<TimedFunction *> expired;
+	std::vector<TimedFunction *> & bucket = m_timedFunctions[tick];
+
+	for ( std::vector<TimedFunction *>::iterator it = bucket.begin(); it != bucket.end(); )
 	{
-		for ( it = m_timedFunctions[tick].begin(); it != m_timedFunctions[tick].end(); ) 
+		TimedFunction * tf = *it;
+		tf->elapsed -= 1;
+		if ( tf->elapsed <= 0 )
 		{
-			TimedFunction* tf = *it;
-			tf->elapsed -= 1;
-			if ( tf->elapsed <= 0 ) 
-			{
-				CScript s(tf->funcname);
-				CObjBase * obj = tf->uid.ObjFind();
-				int theEnd = 0;
-
-				if ( obj != NULL ) //just in case
-				{	
-					CObjBaseTemplate * topobj = obj->GetTopLevelObj();
-					CTextConsole* src;
-
-					if ( topobj->IsChar() ) 
-					{
-						src = dynamic_cast <CTextConsole*> ( topobj );
-					} 
-					else 
-					{
-						src = &g_Serv;
-					}
-
-					m_tFrecycled.push_back( tf );
-					//vector::erase crashes if the iterator is pointing at the only thing left in the list. So, we check if size is 1 and do pop_back instead if that's the case. -SL
-					if ( m_timedFunctions[tick].size()==1 )
-					{
-						m_timedFunctions[tick].pop_back();
-						theEnd = 1;
-					}
-					else
-					{
-						it=m_timedFunctions[tick].erase( it );
-					}
-
-					obj->r_Verb( s, src );
-				} 
-				else 
-				{
-					m_tFrecycled.push_back( tf );
-					//vector::erase crashes if the iterator is pointing at the only thing left in the list. So, we check if size is 1 and do pop_back instead if that's the case. -SL
-					if ( m_timedFunctions[tick].size()==1 )
-					{
-						m_timedFunctions[tick].pop_back();
-						theEnd = 1;
-					}
-					else
-					{
-						it = m_timedFunctions[tick].erase( it );
-					}
-				}
-
-				if (theEnd) 
-				{
-					break;
-				}
-			}
-			else
-			{
-				++it;
-			}
+			expired.push_back( tf );
+			it = bucket.erase( it );
+		}
+		else
+		{
+			++it;
 		}
 	}
-	
+
+	for ( size_t i = 0; i < expired.size(); ++i )
+	{
+		TimedFunction * tf = expired[i];
+		CObjBase * obj = tf->uid.ObjFind();
+		if ( obj != NULL )	// it may have been deleted in the meantime
+		{
+			CScript s( tf->funcname );	// takes its own copy of the text
+			CObjBaseTemplate * topobj = obj->GetTopLevelObj();
+			CTextConsole * src = topobj->IsChar() ? dynamic_cast<CTextConsole *>(topobj) : &g_Serv;
+
+			obj->r_Verb( s, src );
+		}
+
+		// recycled only once the call is done, so that a TIMERF started from
+		// inside it cannot be handed this same entry
+		m_tFrecycled.push_back( tf );
+	}
+
 	m_isBeingProcessed = false;
 
 	while ( m_tFqueuedToBeAdded.size() > 0 )
@@ -309,16 +281,7 @@ void CTimedFunctionHandler::Erase( CGrayUID uid )
 			if ( tf->uid == uid) 
 			{
 				m_tFrecycled.push_back( tf );
-				//vector::erase crashes if the iterator is pointing at the only thing left in the list. So, we check if size is 1 and do pop_back instead if that's the case. -SL
-				if ( m_timedFunctions[tick].size()==1 )
-				{
-					m_timedFunctions[tick].pop_back();
-					break;
-				}
-				else
-				{
-					it = m_timedFunctions[tick].erase( it );
-				}
+				it = m_timedFunctions[tick].erase( it );	// erasing the last element yields end(), which is fine
 			}
 			else
 			{
