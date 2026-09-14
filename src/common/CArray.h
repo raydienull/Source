@@ -7,6 +7,8 @@
 #ifndef _INC_CARRAY_H
 #define _INC_CARRAY_H
 
+#include <type_traits>
+
 #ifndef _WIN32
 	#define STANDARD_CPLUSPLUS_THIS(_x_) this->_x_
 #else
@@ -85,6 +87,11 @@ template<class TYPE, class ARG_TYPE>
 class CGTypedArray
 {
 	// NOTE: This will not call true constructors or destructors !
+	// Elements are zero filled on growth and moved with memmove, so anything
+	// that owns a resource or has a vtable must use std::vector instead.
+	static_assert(std::is_trivially_copyable<TYPE>::value,
+		"CGTypedArray does not construct, copy or destroy its elements; TYPE must be trivially copyable");
+
 	private:
 		TYPE* m_pData;			// the actual array of data
 		size_t m_nCount;			// # of elements currently in the list

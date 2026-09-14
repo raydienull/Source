@@ -9,6 +9,7 @@
 
 #include "CRect.h"
 #include "graymul.h"
+#include <vector>
 
 class CObjBaseTemplate : public CGObListRec
 {
@@ -468,7 +469,7 @@ private:
 public:
 	static const char *m_sClassName;
 	CGRect m_rectUnion;	// The union rectangle.
-	CGTypedArray<CGRect, const CGRect&> m_Rects;
+	std::vector<CGRect> m_Rects;	// CGRect is polymorphic, so it cannot live in CGTypedArray
 	bool IsRegionEmpty() const
 	{
 		return( m_rectUnion.IsRectEmpty());
@@ -476,7 +477,7 @@ public:
 	void EmptyRegion()
 	{
 		m_rectUnion.SetRectEmpty();
-		m_Rects.Empty();
+		m_Rects.clear();
 	}
 	size_t GetRegionRectCount() const;
 	CGRect & GetRegionRect(size_t i);

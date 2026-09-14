@@ -1043,6 +1043,32 @@ void CScriptObjectContext::Close()
 /////////////////////////////////////////////////
 // -CResourceRefArray
 
+size_t CResourceRefArray::FindPtr( const CResourceLink * pLink ) const
+{
+	ADDTOCALLSTACK("CResourceRefArray::FindPtr");
+	if ( pLink == NULL )
+		return BadIndex();
+
+	size_t iQty = GetCount();
+	for ( size_t i = 0; i < iQty; ++i )
+	{
+		if ( GetAt(i) == pLink )
+			return i;
+	}
+	return BadIndex();
+}
+
+bool CResourceRefArray::RemovePtr( const CResourceLink * pLink )
+{
+	ADDTOCALLSTACK("CResourceRefArray::RemovePtr");
+	size_t i = FindPtr(pLink);
+	if ( i == BadIndex() )
+		return false;
+
+	RemoveAt(i);
+	return true;
+}
+
 bool CResourceRefArray::r_LoadVal( CScript & s, RES_TYPE restype )
 {
 	ADDTOCALLSTACK("CResourceRefArray::r_LoadVal");
@@ -1158,7 +1184,7 @@ size_t CResourceRefArray::FindResourceType( RES_TYPE restype ) const
 	size_t iQty = GetCount();
 	for ( size_t i = 0; i < iQty; ++i )
 	{
-		RESOURCE_ID ridtest = GetAt(i).GetRef()->GetResourceID();
+		RESOURCE_ID ridtest = GetAt(i)->GetResourceID();
 		if ( ridtest.GetResType() == restype )
 			return( i );
 	}
@@ -1172,7 +1198,7 @@ size_t CResourceRefArray::FindResourceID( RESOURCE_ID_BASE rid ) const
 	size_t iQty = GetCount();
 	for ( size_t i = 0; i < iQty; i++ )
 	{
-		RESOURCE_ID ridtest = GetAt(i).GetRef()->GetResourceID();
+		RESOURCE_ID ridtest = GetAt(i)->GetResourceID();
 		if ( ridtest == rid )
 			return i;
 	}

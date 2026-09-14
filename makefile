@@ -51,8 +51,7 @@ endif
 # Warnings are enabled. The categories still outstanding are silenced one by one
 # instead of hiding everything behind -w, so that the count can only go down:
 #   overloaded-virtual - the CScriptObj / CGObArray hierarchies hide base overloads
-#   class-memaccess    - CGTypedArray moves its elements with memmove/memcpy
-WARN_FLAGS	:= -Wall -Wextra -Wno-overloaded-virtual -Wno-class-memaccess \
+WARN_FLAGS	:= -Wall -Wextra -Wno-overloaded-virtual \
 		   -Wno-unused-but-set-variable -Wno-unknown-pragmas
 
 CXXFLAGS	= $(COMMON_FLAGS) -std=gnu++14 $(WARN_FLAGS) $(DEFINES) $(DB_CFLAGS)
