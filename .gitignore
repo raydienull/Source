@@ -1,0 +1,22 @@
+# Build output
+/build/
+*.o
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.iobj
+*.ipdb
+
+# Generated at build time
+/src/common/version.h
+
+# Visual Studio / vcpkg
+.vs/
+*.user
+/vcpkg_installed/
+
+# Server runtime data
+/accounts/
+/logs/
+/save/
