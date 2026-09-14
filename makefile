@@ -48,8 +48,16 @@ ifdef NIGHTLY
 	DEFINES		+= -D_NIGHTLYBUILD
 endif
 
-CXXFLAGS	:= $(COMMON_FLAGS) -std=gnu++14 -fpermissive -w $(DEFINES) $(DB_CFLAGS)
-CFLAGS		:= $(COMMON_FLAGS) -w $(DEFINES) -DZ_HAVE_UNISTD_H
+# Warnings are enabled. The categories still outstanding are silenced one by one
+# instead of hiding everything behind -w, so that the count can only go down:
+#   overloaded-virtual - the CScriptObj / CGObArray hierarchies hide base overloads
+#   class-memaccess    - CGTypedArray moves its elements with memmove/memcpy
+WARN_FLAGS	:= -Wall -Wextra -Wno-overloaded-virtual -Wno-class-memaccess \
+		   -Wno-unused-but-set-variable -Wno-unknown-pragmas
+
+CXXFLAGS	= $(COMMON_FLAGS) -std=gnu++14 $(WARN_FLAGS) $(DEFINES) $(DB_CFLAGS)
+# C sources are all vendored (zlib, libev)
+CFLAGS		= $(COMMON_FLAGS) -w $(DEFINES) -DZ_HAVE_UNISTD_H
 
 LDFLAGS		:= $(ARCH_FLAGS) -pthread
 ifndef DEBUG
@@ -201,6 +209,9 @@ $(VERSION_FILE): version
 $(TARGET): $(OBJS)
 	@echo '  Linking $@'
 	@$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
+
+# Vendored C++ is not ours to clean up
+$(BUILD_DIR)/src/common/twofish/%.o: WARN_FLAGS := -w
 
 $(BUILD_DIR)/%.cpp.o: %.cpp | $(VERSION_FILE)
 	@mkdir -p $(dir $@)
