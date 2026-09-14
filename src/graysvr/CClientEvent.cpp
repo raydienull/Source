@@ -2513,12 +2513,12 @@ void CClient::Event_AOSPopupMenuSelect( DWORD uid, WORD EntryTag ) //do somethin
 			break;
 
 		case POPUP_BANKBOX:
-			if ( pChar->m_pNPC->m_Brain == NPCBRAIN_BANKER )
+			if ( pChar->m_pNPC && pChar->m_pNPC->m_Brain == NPCBRAIN_BANKER )
 				addBankOpen( m_pChar );
 			break;
 
 		case POPUP_BANKBALANCE:
-			if ( pChar->m_pNPC->m_Brain == NPCBRAIN_BANKER )
+			if ( pChar->m_pNPC && pChar->m_pNPC->m_Brain == NPCBRAIN_BANKER )
 				SysMessagef( "You have %d gold piece(s) in your bankbox", m_pChar->GetBank()->ContentCount( RESOURCE_ID(RES_TYPEDEF,IT_GOLD) ) );
 			break;
 
@@ -2533,12 +2533,12 @@ void CClient::Event_AOSPopupMenuSelect( DWORD uid, WORD EntryTag ) //do somethin
 			break;
 
 		case POPUP_STABLESTABLE:
-			if ( pChar->m_pNPC->m_Brain == NPCBRAIN_STABLE )
+			if ( pChar->m_pNPC && pChar->m_pNPC->m_Brain == NPCBRAIN_STABLE )
 				pChar->NPC_OnHear("stable", m_pChar);
 			break;
 
 		case POPUP_STABLERETRIEVE:
-			if ( pChar->m_pNPC->m_Brain == NPCBRAIN_STABLE )
+			if ( pChar->m_pNPC && pChar->m_pNPC->m_Brain == NPCBRAIN_STABLE )
 				pChar->NPC_OnHear("retrieve", m_pChar);
 			break;
 	}
