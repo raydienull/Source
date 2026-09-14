@@ -2608,7 +2608,6 @@ bool CChar::Death()
 		{
 			CWorldSearch AreaChars(GetTopPoint(), UO_MAP_VIEW_SIZE);
 			AreaChars.SetSearchSquare(true);
-			DWORD	dSeeChars(0);
 			for (;;)
 			{
 				CChar	*pChar = AreaChars.GetChar();
@@ -3950,7 +3949,7 @@ bool CChar::OnTick()
 	if ( IsSetSpecific )
 	{
 		TIME_PROFILE_END;
-		DEBUG_ERR(("CChar::OnTick(%lx) took %lld.%lld to run\n", (DWORD)GetUID(), static_cast<INT64>(TIME_PROFILE_GET_HI), static_cast<INT64>(TIME_PROFILE_GET_LO)));
+		DEBUG_ERR(("CChar::OnTick(%lx) took %" FMTINT64 ".%" FMTINT64 " to run\n", (DWORD)GetUID(), static_cast<INT64>(TIME_PROFILE_GET_HI), static_cast<INT64>(TIME_PROFILE_GET_LO)));
 	}
 	return true;
 }

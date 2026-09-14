@@ -8,6 +8,8 @@
 #pragma once
 
 #include "CTime.h"
+#include <limits>
+#include <vector>
 
 enum RES_TYPE	// all the script resource blocks we know how to deal with !
 {
@@ -624,11 +626,17 @@ public:
     }
 };
 
-class CResourceRefArray : public CGPtrTypeArray<CResourceRef>
+class CResourceRefArray
 {
 	// Define a list of pointer references to resource. (Not owned by the list)
 	// An indexed list of CResourceLink s.
+	//
+	// CResourceRef is reference counted, so it cannot live in CGTypedArray:
+	// that container moves its elements with memmove and never runs their
+	// destructors, which leaked an instance reference per element.
 private:
+	std::vector<CResourceRef> m_refs;
+
 	LPCTSTR GetResourceName( size_t iIndex ) const
 	{
 		// look up the name of the fragment given it's index.
@@ -644,6 +652,38 @@ private:
 	CResourceRefArray& operator=(const CResourceRefArray& other);
 
 public:
+	inline size_t BadIndex() const { return (std::numeric_limits<size_t>::max)(); }
+	size_t GetCount() const { return m_refs.size(); }
+	bool IsValidIndex( size_t i ) const { return ( i < m_refs.size() ) && ( m_refs[i].GetRef() != NULL ); }
+	CResourceLink * GetAt( size_t i ) const
+	{
+		ASSERT( i < m_refs.size() );
+		return m_refs[i].GetRef();
+	}
+	CResourceLink * operator[]( size_t i ) const { return GetAt(i); }
+
+	size_t Add( CResourceLink * pLink )
+	{
+		m_refs.push_back( CResourceRef( pLink ));
+		return m_refs.size() - 1;
+	}
+	void RemoveAt( size_t i )
+	{
+		if ( i < m_refs.size() )
+			m_refs.erase( m_refs.begin() + i );
+	}
+	void RemoveAll() { m_refs.clear(); }
+	void Empty() { RemoveAll(); }
+	void Copy( const CResourceRefArray * pArray )
+	{
+		if ( pArray != this )
+			m_refs = pArray->m_refs;
+	}
+
+	size_t FindPtr( const CResourceLink * pLink ) const;
+	bool ContainsPtr( const CResourceLink * pLink ) const { return FindPtr(pLink) != BadIndex(); }
+	bool RemovePtr( const CResourceLink * pLink );
+
 	size_t FindResourceType( RES_TYPE type ) const;
 	size_t FindResourceID( RESOURCE_ID_BASE rid ) const;
 	size_t FindResourceName( RES_TYPE restype, LPCTSTR pszKey ) const;

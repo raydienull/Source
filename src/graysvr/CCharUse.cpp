@@ -363,7 +363,7 @@ bool CChar::Use_Train_Dummy( CItem * pItem, bool fSetup )
 
 	ASSERT(pItem);
 	SKILL_TYPE skill = Fight_GetWeaponSkill();
-	char skilltag[32];
+	char skilltag[64];	// "OVERRIDE.PracticeMax.SKILL_" alone is 27 characters
 	int skillcheck = 0;
 	sprintf( skilltag, "OVERRIDE.PracticeMax.SKILL_%d", skill &~ 0xD2000000 );
 

@@ -183,12 +183,8 @@ CResource::CResource()
 	m_iLevelMode = LEVEL_MODE_DOUBLE;
 	m_iLevelNextAt = 0;
 
-#ifndef _DBPLUGIN
 	//	mySQL support
 	m_bMySql = false;
-#else
-	m_iDbQueryBuffer = DEFAULT_RESULT_SIZE;
-#endif
 
 	m_cCommandPrefix = '.';
 
@@ -396,14 +392,6 @@ enum RC_TYPE
 	RC_CORPSEPLAYERDECAY,
 	RC_CRIMINALTIMER,		// m_iCriminalTimer
 	RC_CUOSTATUS,			// m_fCUOStatus
-#ifdef _DBPLUGIN
-	RC_DBDATABASE,			//	m_sDbDatabase
-	RC_DBDLL,				//	m_sDbDll
-	RC_DBHOST,				//	m_sDbHost
-	RC_DBPASSWORD,			//	m_sDbPass
-	RC_DBQUERYBUFFER,		//	m_iDbQueryBuffer
-	RC_DBUSER,				//	m_sDbUser
-#endif
 	RC_DEADCANNOTSEELIVING,
 	RC_DEADSOCKETTIME,
 	RC_DEBUGFLAGS,
@@ -486,13 +474,11 @@ enum RC_TYPE
 	RC_MULFILES,
 	RC_MURDERDECAYTIME,			// m_iMurderDecayTime;
 	RC_MURDERMINCOUNT,			//	m_iMurderMinCount
-#ifndef _DBPLUGIN
 	RC_MYSQL,					//	m_bMySql
 	RC_MYSQLDB,					//	m_sMySqlDatabase
 	RC_MYSQLHOST,				//	m_sMySqlHost
 	RC_MYSQLPASS,				//	m_sMySqlPassword
 	RC_MYSQLUSER,				//	m_sMySqlUser
-#endif
 	RC_NETTTL,					// m_iNetHistoryTTL
 #ifdef _MTNETWORK
 	RC_NETWORKTHREADPRIORITY,	// m_iNetworkThreadPriority
@@ -614,14 +600,6 @@ const CAssocReg CResource::sm_szLoadKeys[RC_QTY+1] =
 	{ "CORPSEPLAYERDECAY",		{ ELEM_INT,		OFFSETOF(CResource,m_iDecay_CorpsePlayer),	0 }},
 	{ "CRIMINALTIMER",			{ ELEM_INT,		OFFSETOF(CResource,m_iCriminalTimer),		0 }},
 	{ "CUOSTATUS",				{ ELEM_BOOL,	OFFSETOF(CResource,m_fCUOStatus),			0 }},
-#ifdef _DBPLUGIN
-	{ "DBDATABASE",				{ ELEM_CSTRING,	OFFSETOF(CResource,m_sDbDatabase),			0 }},
-	{ "DBDLL",					{ ELEM_CSTRING,	OFFSETOF(CResource,m_sDbDll),				0 }},
-	{ "DBHOST",					{ ELEM_CSTRING, OFFSETOF(CResource,m_sDbHost),				0 }},
-	{ "DBPASSWORD",				{ ELEM_CSTRING,	OFFSETOF(CResource,m_sDbPass),				0 }},
-	{ "DBQUERYBUFFER",			{ ELEM_INT,		OFFSETOF(CResource,m_iDbQueryBuffer),		0 }},
-	{ "DBUSER",					{ ELEM_CSTRING,	OFFSETOF(CResource,m_sDbUser),				0 }},
-#endif
 	{ "DEADCANNOTSEELIVING",    { ELEM_INT,    OFFSETOF(CResource,m_fDeadCannotSeeLiving), 0 }},
 	{ "DEADSOCKETTIME",			{ ELEM_INT,		OFFSETOF(CResource,m_iDeadSocketTime),		0 }},
 	{ "DEBUGFLAGS",				{ ELEM_WORD,	OFFSETOF(CResource,m_wDebugFlags),			0 }},
@@ -704,13 +682,11 @@ const CAssocReg CResource::sm_szLoadKeys[RC_QTY+1] =
 	{ "MULFILES",				{ ELEM_VOID,	0,											0 }},
 	{ "MURDERDECAYTIME",		{ ELEM_INT,		OFFSETOF(CResource,m_iMurderDecayTime),		0 }},
 	{ "MURDERMINCOUNT",			{ ELEM_INT,		OFFSETOF(CResource,m_iMurderMinCount),		0 }}, // amount of murders before we get title.
-#ifndef _DBPLUGIN
 	{ "MYSQL",					{ ELEM_BOOL,	OFFSETOF(CResource,m_bMySql),				0 }},
 	{ "MYSQLDATABASE",			{ ELEM_CSTRING,	OFFSETOF(CResource,m_sMySqlDB),				0 }},
 	{ "MYSQLHOST",				{ ELEM_CSTRING, OFFSETOF(CResource,m_sMySqlHost),			0 }},
 	{ "MYSQLPASSWORD",			{ ELEM_CSTRING,	OFFSETOF(CResource,m_sMySqlPass),			0 }},
 	{ "MYSQLUSER",				{ ELEM_CSTRING,	OFFSETOF(CResource,m_sMySqlUser),			0 }},
-#endif
 	{ "NETTTL",					{ ELEM_INT,		OFFSETOF(CResource,m_iNetHistoryTTL),		0 }},
 #ifdef _MTNETWORK
 	{ "NETWORKTHREADPRIORITY",	{ ELEM_INT,		OFFSETOF(CResource,m_iNetworkThreadPriority), 0 }},
@@ -939,31 +915,6 @@ bool CResource::r_LoadVal( CScript &s )
 		case RC_STRIPPATH:	// Put TNG stripped files here.
 			m_sStripPath = CGFile::GetMergedFileName( s.GetArgStr(), "" );
 			break;
-#ifdef _DBPLUGIN
-		case RC_DBDLL:
-			{
-				m_sDbDll.Empty();
-				if ( s.HasArgs() )
-				{
-					TCHAR * pTmpName = Str_TrimWhitespace( s.GetArgStr() );
-					if ( pTmpName && *pTmpName )
-					{
-						m_sDbDll = pTmpName;
-					}
-
-					cDatabaseLoader::ForceInstanceReload();
-				}
-			} break;
-
-		case RC_DBQUERYBUFFER:
-			{
-				if ( s.HasArgs() )
-				{
-					int iTempValue = s.GetArgVal();
-					m_iDbQueryBuffer = ( iTempValue >= 1 ) ? iTempValue : DEFAULT_RESULT_SIZE;
-				}
-			} break;
-#endif
 		case RC_DEADSOCKETTIME:
 			m_iDeadSocketTime = s.GetArgVal()*60*TICK_PER_SEC;
 			break;
@@ -3698,13 +3649,13 @@ bool CResource::Load( bool fResync )
 
 	// Open the MUL files I need.
 	VERFILE_TYPE i = g_Install.OpenFiles(
-		(1<<VERFILE_MAP)|
-		(1<<VERFILE_STAIDX)|
-		(1<<VERFILE_STATICS)|
-		(1<<VERFILE_TILEDATA)|
-		(1<<VERFILE_MULTIIDX)|
-		(1<<VERFILE_MULTI)|
-		(1<<VERFILE_VERDATA)
+		(1ULL<<VERFILE_MAP)|
+		(1ULL<<VERFILE_STAIDX)|
+		(1ULL<<VERFILE_STATICS)|
+		(1ULL<<VERFILE_TILEDATA)|
+		(1ULL<<VERFILE_MULTIIDX)|
+		(1ULL<<VERFILE_MULTI)|
+		(1ULL<<VERFILE_VERDATA)
 		);
 	if ( i != VERFILE_QTY )
 	{

@@ -103,13 +103,10 @@ IThread * ThreadHolder::getThreadAt(size_t at)
 
 void ThreadHolder::init()
 {
-	if( !m_inited )
-	{
-		memset(g_tmpStrings, 0, sizeof(g_tmpStrings));
-		memset(g_tmpTemporaryStringStorage, 0, sizeof(g_tmpTemporaryStringStorage));
-
-		m_inited = true;
-	}
+	// g_tmpStrings and g_tmpTemporaryStringStorage are ~25 MB of globals, so they
+	// are already zero initialised. Memsetting them here only forced every page
+	// resident before the server had read a single script.
+	m_inited = true;
 }
 
 /*
@@ -567,7 +564,7 @@ void AbstractSphereThread::printStackTrace()
 			break;
 
 		timedelta = static_cast<long>(m_stackInfo[i].startTime - startTime);
-		g_Log.EventDebug(">>         %u     | %2d | %28s | +%ld %s\n",
+		g_Log.EventDebug(">>         %u     | %2" FMTSIZE_T " | %28s | +%ld %s\n",
 			threadId, i, m_stackInfo[i].functionName, timedelta,
 				( i == (m_stackPos - 1) ) ?
 				"<-- exception catch point (below is guessed and could be incorrect!)" :

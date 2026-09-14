@@ -900,7 +900,7 @@ int CClient::OnSkill_EvalInt( CGrayUID uid, int iSkillLevel, bool fTest )
 	int iIntEntry = (iIntVal-1) / 10;
 	if ( iIntEntry < 0 )
 		iIntEntry = 0;
-	if ( iIntEntry >= COUNTOF( sm_szIntDesc ))
+	if ( iIntEntry >= static_cast<int>(COUNTOF( sm_szIntDesc )))
 		iIntEntry = COUNTOF( sm_szIntDesc )-1;
 
 	SysMessagef( g_Cfg.GetDefaultMsg( DEFMSG_EVALINT_RESULT ), static_cast<LPCTSTR>(pChar->GetName()), static_cast<LPCTSTR>(sm_szIntDesc[iIntEntry]));
@@ -934,7 +934,7 @@ int CClient::OnSkill_EvalInt( CGrayUID uid, int iSkillLevel, bool fTest )
 		int iMagicEntry = iMagicSkill / 200;
 		if ( iMagicEntry < 0 )
 			iMagicEntry = 0;
-		if ( iMagicEntry >= COUNTOF(sm_szMagicDesc))
+		if ( iMagicEntry >= static_cast<int>(COUNTOF(sm_szMagicDesc)))
 			iMagicEntry = COUNTOF(sm_szMagicDesc)-1;
 
 		int iManaEntry = 0;
@@ -943,7 +943,7 @@ int CClient::OnSkill_EvalInt( CGrayUID uid, int iSkillLevel, bool fTest )
 
 		if ( iManaEntry < 0 )
 			iManaEntry = 0;
-		if ( iManaEntry >= COUNTOF(sm_szManaDesc))
+		if ( iManaEntry >= static_cast<int>(COUNTOF(sm_szManaDesc)))
 			iManaEntry = COUNTOF(sm_szManaDesc)-1;
 
 		SysMessagef( g_Cfg.GetDefaultMsg( DEFMSG_EVALINT_RESULT_2 ), static_cast<LPCTSTR>(sm_szMagicDesc[iMagicEntry]), static_cast<LPCTSTR>(sm_szManaDesc[iManaEntry]));
@@ -1137,14 +1137,14 @@ int CClient::OnSkill_Anatomy( CGrayUID uid, int iSkillLevel, bool fTest )
 	int iStrEntry = (iStrVal-1)/10;
 	if ( iStrEntry < 0 )
 		iStrEntry = 0;
-	if ( iStrEntry >= COUNTOF( sm_szStrEval ))
+	if ( iStrEntry >= static_cast<int>(COUNTOF( sm_szStrEval )))
 		iStrEntry = COUNTOF( sm_szStrEval )-1;
 
 	int iDexVal = pChar->Stat_GetAdjusted(STAT_DEX);
 	int iDexEntry = (iDexVal-1)/10;
 	if ( iDexEntry < 0 )
 		iDexEntry = 0;
-	if ( iDexEntry >= COUNTOF( sm_szDexEval ))
+	if ( iDexEntry >= static_cast<int>(COUNTOF( sm_szDexEval )))
 		iDexEntry = COUNTOF( sm_szDexEval )-1;
 
 	TCHAR * pszTemp = Str_GetTemp();
@@ -2324,7 +2324,7 @@ static LPCTSTR const sm_Txt_LoomUse[] =
 			iUsed = pItemUse->ConsumeAmount( iNeed );
 		}
 
-		if ( (iHave  + iUsed) < (COUNTOF( sm_Txt_LoomUse ) - 1) )
+		if ( (iHave + iUsed) < static_cast<int>(COUNTOF( sm_Txt_LoomUse ) - 1) )
 		{
 			pItemTarg->m_itLoom.m_ClothQty += iUsed;
 			SysMessage( sm_Txt_LoomUse[ pItemTarg->m_itLoom.m_ClothQty ] );

@@ -1330,7 +1330,7 @@ void CClient::Event_VendorSell(CChar* pVendor, const VendorItem* items, size_t i
 		INT64 iPrice = (INT64)pItemSell->GetVendorPrice(iConvertFactor) * amount;
 
 		// Can vendor afford this ?
-		if ( iPrice > pBank->m_itEqBankBox.m_Check_Amount )
+		if ( iPrice > static_cast<INT64>(pBank->m_itEqBankBox.m_Check_Amount) )
 		{
 			fShortfall = true;
 			break;
@@ -1914,7 +1914,7 @@ void CClient::Event_TalkUNICODE( NWORD* wszText, int iTextLen, HUE_TYPE wHue, TA
 	if ( mMode == 1 || mMode == 3 || mMode == 4 || mMode == 5 || mMode == 6 || mMode == 7 || mMode == 10 || mMode == 11 || mMode == 12 )
 		return;
 
-	if (( wHue < 0 ) || ( wHue > 0x03e9 ))
+	if ( wHue > 0x03e9 )	// HUE_TYPE is unsigned, so there is no negative case
 		wHue = HUE_TEXT_DEF;
 
 	// store the default language of choice. CLanguageID
@@ -2513,12 +2513,12 @@ void CClient::Event_AOSPopupMenuSelect( DWORD uid, WORD EntryTag ) //do somethin
 			break;
 
 		case POPUP_BANKBOX:
-			if ( pChar->m_pNPC->m_Brain == NPCBRAIN_BANKER )
+			if ( pChar->m_pNPC && pChar->m_pNPC->m_Brain == NPCBRAIN_BANKER )
 				addBankOpen( m_pChar );
 			break;
 
 		case POPUP_BANKBALANCE:
-			if ( pChar->m_pNPC->m_Brain == NPCBRAIN_BANKER )
+			if ( pChar->m_pNPC && pChar->m_pNPC->m_Brain == NPCBRAIN_BANKER )
 				SysMessagef( "You have %d gold piece(s) in your bankbox", m_pChar->GetBank()->ContentCount( RESOURCE_ID(RES_TYPEDEF,IT_GOLD) ) );
 			break;
 
@@ -2533,12 +2533,12 @@ void CClient::Event_AOSPopupMenuSelect( DWORD uid, WORD EntryTag ) //do somethin
 			break;
 
 		case POPUP_STABLESTABLE:
-			if ( pChar->m_pNPC->m_Brain == NPCBRAIN_STABLE )
+			if ( pChar->m_pNPC && pChar->m_pNPC->m_Brain == NPCBRAIN_STABLE )
 				pChar->NPC_OnHear("stable", m_pChar);
 			break;
 
 		case POPUP_STABLERETRIEVE:
-			if ( pChar->m_pNPC->m_Brain == NPCBRAIN_STABLE )
+			if ( pChar->m_pNPC && pChar->m_pNPC->m_Brain == NPCBRAIN_STABLE )
 				pChar->NPC_OnHear("retrieve", m_pChar);
 			break;
 	}
@@ -2758,7 +2758,7 @@ bool CClient::xPacketFilter( const BYTE * pData, size_t iLen )
 	{
 		CScriptTriggerArgs Args(pData[0]);
 		enum TRIGRET_TYPE trigReturn;
-		TCHAR idx[5];
+		TCHAR idx[24];	// the index can reach the packet length, not just 4 digits
 
 		Args.m_s1 = GetPeerStr();
 		Args.m_pO1 = this; // Yay for ARGO.SENDPACKET
@@ -2784,7 +2784,7 @@ bool CClient::xPacketFilter( const BYTE * pData, size_t iLen )
 		//	Fill locals [0..X] to the first X bytes of the packet
 		for ( size_t i = 0; i < bytes; ++i )
 		{
-			sprintf(idx, "%" FMTSIZE_T, i);
+			snprintf(idx, sizeof(idx), "%" FMTSIZE_T, i);
 			Args.m_VarsLocal.SetNum(idx, static_cast<int>(pData[i]));
 		}
 

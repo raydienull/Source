@@ -2116,7 +2116,7 @@ int CClient::addShopItems(CChar * pVendor, LAYER_TYPE layer, bool bReal)
 
 	// Send a warning if the vendor somehow has more stock than the allowed limit
 	if ( pContainer->GetCount() > minimum(MAX_ITEMS_VENDOR, MAX_ITEMS_CONT) )
-		g_Log.Event( LOGL_WARN, "Vendor 0%lx '%s' has exceeded their stock limit! (%d/%d items)\n", static_cast<DWORD>(pVendor->GetUID()), static_cast<LPCTSTR>(pVendor->GetName()), pContainer->GetCount(), minimum(MAX_ITEMS_VENDOR, MAX_ITEMS_CONT));
+		g_Log.Event( LOGL_WARN, "Vendor 0%lx '%s' has exceeded their stock limit! (%" FMTSIZE_T "/%d items)\n", static_cast<DWORD>(pVendor->GetUID()), static_cast<LPCTSTR>(pVendor->GetName()), pContainer->GetCount(), minimum(MAX_ITEMS_VENDOR, MAX_ITEMS_CONT));
 
 	return count;
 }

@@ -201,8 +201,9 @@ LONG CItemVendable::GetVendorPrice( int iConvertFactor )
 	}
 
 	lPrice += IMULDIV( lPrice, maximum(iConvertFactor, -100), 100 );
-	if (lPrice > LONG_MAX)
-		return LONG_MAX;
+	// prices are a 32-bit game value; LONG_MAX is 64-bit where long is
+	if (lPrice > 0x7FFFFFFF)
+		return 0x7FFFFFFF;
 	else if (lPrice <= 0)
 		return 0;
 	

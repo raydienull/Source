@@ -117,6 +117,35 @@ NetState::NetState(long id)
 
 NetState::~NetState(void)
 {
+	// clear() is the full teardown, but it touches g_Serv / g_World / g_Log and
+	// states are destroyed during static destruction. Release only our memory.
+	clearQueues();
+
+	if (m_outgoing.currentTransaction != NULL)
+	{
+		delete m_outgoing.currentTransaction;
+		m_outgoing.currentTransaction = NULL;
+	}
+
+	if (m_outgoing.pendingTransaction != NULL)
+	{
+		delete m_outgoing.pendingTransaction;
+		m_outgoing.pendingTransaction = NULL;
+	}
+
+	if (m_incoming.buffer != NULL)
+	{
+		delete m_incoming.buffer;
+		m_incoming.buffer = NULL;
+	}
+
+#ifdef _MTNETWORK
+	if (m_incoming.rawBuffer != NULL)
+	{
+		delete m_incoming.rawBuffer;
+		m_incoming.rawBuffer = NULL;
+	}
+#endif
 }
 
 void NetState::clear(void)
@@ -157,14 +186,6 @@ void NetState::clear(void)
 
 	// empty queues
 	clearQueues();
-
-	// clean junk queue entries
-	for (size_t i = 0; i < PacketSend::PRI_QTY; i++)
-		m_outgoing.queue[i].clean();
-	m_outgoing.asyncQueue.clean();
-#ifdef _MTNETWORK
-	m_incoming.rawPackets.clean();
-#endif
 
 	if (m_outgoing.currentTransaction != NULL)
 	{
@@ -538,7 +559,6 @@ HistoryIP& IPHistoryManager::getHistoryForIP(const CSocketAddressIP& ip)
 
 	// create a new entry
 	HistoryIP hist;
-	memset(&hist, 0, sizeof(hist));
 	hist.m_ip = ip;
 	hist.m_pingDecay = NETHISTORY_PINGDECAY;
 	hist.update();
@@ -1013,12 +1033,13 @@ void NetworkIn::tick(void)
 
 		// receive data
 		EXC_SET("messages - receive");
-		size_t received = client->m_socket.Receive(buffer, NETWORK_BUFFERSIZE, 0);
-		if (received <= 0 || received > NETWORK_BUFFERSIZE)
+		int iReceived = client->m_socket.Receive(buffer, NETWORK_BUFFERSIZE, 0);
+		if (iReceived <= 0 || iReceived > static_cast<int>(NETWORK_BUFFERSIZE))
 		{
 			client->markReadClosed();
 			continue;
 		}
+		size_t received = static_cast<size_t>(iReceived);
 
 		EXC_SET("start client profile");
 		CurrentProfileData.Count(PROFILE_DATA_RX, received);
@@ -1391,10 +1412,6 @@ int NetworkIn::checkForData(fd_set* storage)
 		NetState* state = m_states[l];
 		if ( state->isInUse() == false )
 			continue;
-
-		EXC_SET("cleaning queues");
-		for (int i = 0; i < PacketSend::PRI_QTY; i++)
-			state->m_outgoing.queue[i].clean();
 
 		EXC_SET("check closing");
 		if (state->isClosing())
@@ -2021,7 +2038,6 @@ int NetworkOut::proceedQueueAsync(CClient* client)
 	if (state->isWriteClosed() || state->isAsyncMode() == false)
 		return 0;
 
-	state->m_outgoing.asyncQueue.clean();
 	if (state->m_outgoing.asyncQueue.empty() || state->isSendingAsync())
 		return 0;
 
@@ -2360,16 +2376,26 @@ int NetworkOut::sendBytesNow(CClient* client, const BYTE* data, DWORD length)
  *
  *
  ***************************************************************************/
-inline void AddSocketToSet(fd_set& fds, SOCKET socket, int& count)
+inline bool AddSocketToSet(fd_set& fds, SOCKET socket, int& count)
 {
+	// returns false when the socket does not fit in the set, which must never
+	// be ignored: FD_SET would write outside it
 #ifdef _WIN32
 	UNREFERENCED_PARAMETER(count);
+	if (fds.fd_count >= FD_SETSIZE)
+		return false;
+
 	FD_SET(socket, &fds);
 #else
+	// fd_set is a fixed FD_SETSIZE bitmap and FD_SET does not bounds check
+	if (socket < 0 || socket >= FD_SETSIZE)
+		return false;
+
 	FD_SET(socket, &fds);
 	if (socket > count)
 		count = socket;
 #endif
+	return true;
 }
 
 /***************************************************************************
@@ -2452,6 +2478,19 @@ NetworkManager::~NetworkManager(void)
 		delete *it;
 		it = m_threads.erase(it);
 	}
+
+	if (m_states != NULL)
+	{
+		for (size_t l = 0; l < m_stateCount; l++)
+		{
+			delete m_states[l];
+			m_states[l] = NULL;
+		}
+
+		delete[] m_states;
+		m_states = NULL;
+	}
+	m_stateCount = 0;
 }
 
 void NetworkManager::createNetworkThreads(size_t count)
@@ -2523,7 +2562,17 @@ bool NetworkManager::checkNewConnection(void)
 	int count = 0;
 
 	FD_ZERO(&fds);
-	AddSocketToSet(fds, mainSocket, count);
+	if (AddSocketToSet(fds, mainSocket, count) == false)
+	{
+		static bool fReported = false;
+		if (fReported == false)
+		{
+			fReported = true;
+			g_Log.Event(LOGM_CLIENTS_LOG|LOGL_CRIT, "Listen socket %d is out of select() range (FD_SETSIZE=%d). No new connections can be accepted.\n",
+				static_cast<int>(mainSocket), static_cast<int>(FD_SETSIZE));
+		}
+		return false;
+	}
 
 	timeval Timeout;		// time to wait for data.
 	Timeout.tv_sec=0;
@@ -2701,12 +2750,6 @@ void NetworkManager::tick(void)
 		NetState* state = m_states[i];
 		if (state->isInUse() == false)
 			continue;
-
-		// clean packet queue entries
-		EXC_SET("cleaning queues");
-		for (int priority = 0; priority < PacketSend::PRI_QTY; ++priority)
-			state->m_outgoing.queue[priority].clean();
-		state->m_outgoing.asyncQueue.clean();
 
 		EXC_SET("check closing");
 		if (state->isClosing() == false)
@@ -3016,20 +3059,18 @@ void NetworkInput::receiveData()
 		EXC_SET("start network profile");
 		ProfileTask networkTask(PROFILE_NETWORK_RX);
 		if ( ! FD_ISSET(state->m_socket.GetSocket(), &fds))
-		{
-			state->m_incoming.rawPackets.clean();
 			continue;
-		}
 			
 		// receive data
 		EXC_SET("messages - receive");
-		size_t received = state->m_socket.Receive(m_receiveBuffer, NETWORK_BUFFERSIZE, 0);
-		if (received <= 0 || received > NETWORK_BUFFERSIZE)
+		int iReceived = state->m_socket.Receive(m_receiveBuffer, NETWORK_BUFFERSIZE, 0);
+		if (iReceived <= 0 || iReceived > static_cast<int>(NETWORK_BUFFERSIZE))
 		{
 			state->markReadClosed();
 			EXC_SET("next state");
 			continue;
 		}
+		size_t received = static_cast<size_t>(iReceived);
 
 		EXC_SET("start client profile");
 		CurrentProfileData.Count(PROFILE_DATA_RX, received);
@@ -3187,7 +3228,15 @@ bool NetworkInput::checkForData(fd_set& fds)
 		if (state->isClosing() || state->m_socket.IsOpen() == false)
 			continue;
 
-		AddSocketToSet(fds, state->m_socket.GetSocket(), count);
+		EXC_SET("add socket to set");
+		if (AddSocketToSet(fds, state->m_socket.GetSocket(), count) == false)
+		{
+			// the server holds more descriptors than select() can watch, so this
+			// client can never be read from again
+			g_Log.Event(LOGM_CLIENTS_LOG|LOGL_ERROR, "%lx:Socket %d is out of select() range (FD_SETSIZE=%d). Disconnecting client.\n",
+				state->id(), static_cast<int>(state->m_socket.GetSocket()), static_cast<int>(FD_SETSIZE));
+			state->markReadClosed();
+		}
 	}
 		
 	EXC_SET("prepare timeout");
@@ -3233,23 +3282,42 @@ bool NetworkInput::processGameClientData(NetState* state, Packet* buffer)
 	ASSERT(client != NULL);
 
 	EXC_SET("decrypt message");
-	client->m_Crypt.Decrypt(m_decryptBuffer, buffer->getRemainingData(), buffer->getRemainingLength());
+	// the raw buffer holds everything the receive thread queued since the last
+	// pass, which can be several reads, so it may be larger than m_decryptBuffer
+	const BYTE* rawData = buffer->getRemainingData();
+	size_t rawLength = buffer->getRemainingLength();
 
-	if (state->m_incoming.buffer == NULL)
+	while (rawLength > 0)
 	{
-		// create new buffer
-		state->m_incoming.buffer = new Packet(m_decryptBuffer, buffer->getRemainingLength());
-	}
-	else
-	{
-		// append to buffer
-		size_t pos = state->m_incoming.buffer->getPosition();
-		state->m_incoming.buffer->seek(state->m_incoming.buffer->getLength());
-		state->m_incoming.buffer->writeData(m_decryptBuffer, buffer->getRemainingLength());
-		state->m_incoming.buffer->seek(pos);
+		size_t sliceLength = minimum(rawLength, static_cast<size_t>(NETWORK_BUFFERSIZE));
+		client->m_Crypt.Decrypt(m_decryptBuffer, rawData, sliceLength);
+
+		if (state->m_incoming.buffer == NULL)
+		{
+			// create new buffer
+			state->m_incoming.buffer = new Packet(m_decryptBuffer, sliceLength);
+		}
+		else
+		{
+			// append to buffer
+			size_t pos = state->m_incoming.buffer->getPosition();
+			state->m_incoming.buffer->seek(state->m_incoming.buffer->getLength());
+			state->m_incoming.buffer->writeData(m_decryptBuffer, sliceLength);
+			state->m_incoming.buffer->seek(pos);
+		}
+
+		rawData += sliceLength;
+		rawLength -= sliceLength;
 	}
 
 	Packet* packet = state->m_incoming.buffer;
+	if (packet == NULL)
+	{
+		// nothing to parse
+		buffer->seek(buffer->getLength());
+		return true;
+	}
+
 	size_t remainingLength = packet->getRemainingLength();
 
 	EXC_SET("record message");
@@ -3374,7 +3442,13 @@ bool NetworkInput::processOtherClientData(NetState* state, Packet* buffer)
 
 			// first real data from client which we can use to log in
 			EXC_SET("encryption setup");
-			ASSERT(buffer->getRemainingLength() <= sizeof(CEvent));
+			if (buffer->getRemainingLength() > sizeof(CEvent))
+			{
+				// more setup data than any real client sends, and more than evt can hold
+				g_Log.Event(LOGM_CLIENTS_LOG|LOGL_WARN, "%lx:Client sent %" FMTSIZE_T " bytes of setup data (maximum is %" FMTSIZE_T ")\n",
+					state->id(), buffer->getRemainingLength(), sizeof(CEvent));
+				return false;
+			}
 
 			CEvent evt;
 			memcpy(&evt, buffer->getRemainingData(), buffer->getRemainingLength());

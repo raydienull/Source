@@ -39,7 +39,8 @@ bool CacheableScriptFile::OpenBase(void *pExtra)
 	while ( !feof(m_pStream) ) 
 	{
 		buf.setAt(0, '\0');
-		fgets(buf, SCRIPT_MAX_LINE_LEN, m_pStream);
+		if ( fgets(buf, SCRIPT_MAX_LINE_LEN, m_pStream) == NULL )
+			break;	// eof or a read error; feof() alone never ends the loop on the latter
 		nStrLen = strlen(buf);
 
 		// first line may contain utf marker

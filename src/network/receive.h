@@ -235,6 +235,8 @@ struct VendorItem
 	CGrayUID m_serial;
 	WORD m_amount;
 	DWORD m_price;
+
+	VendorItem() : m_serial(static_cast<DWORD>(UID_CLEAR)), m_amount(0), m_price(0) { }
 };
 
 class PacketVendorBuyReq : public Packet

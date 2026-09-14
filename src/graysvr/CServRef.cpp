@@ -55,8 +55,9 @@ CServerDef::CServerDef( LPCTSTR pszName, CSocketAddressIP dwIP ) :
 DWORD CServerDef::StatGet(SERV_STAT_TYPE i) const
 {
 	ADDTOCALLSTACK("CServerDef::StatGet");
-	ASSERT( i >= 0 && i <= SERV_STAT_QTY );
-	DWORD	d = m_dwStat[i];
+	ASSERT( i >= 0 && i <= SERV_STAT_MEM );
+	// SERV_STAT_MEM is virtual and sits one past the array
+	DWORD	d = ( i < SERV_STAT_QTY ) ? m_dwStat[i] : 0;
 	EXC_TRY("StatGet");
 	if ( i == SERV_STAT_MEM )	// memory information
 	{

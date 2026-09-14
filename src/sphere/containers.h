@@ -2,28 +2,27 @@
 #define __CONTAINERS_H__
 #pragma once
 
-// a thread-safe implementation of a queue container that doesn't use any locks
-// this only works as long as there is only a single reader thread and writer thread
+#include <deque>
+#include <mutex>
+
+// A queue shared between one reader thread and one writer thread.
+//
+// This used to be a lock-free queue over a std::list, using a dummy element and
+// a reader-owned iterator. It had no atomics and no barriers: the writer read
+// the reader's iterator in order to reclaim consumed nodes, and the reader
+// walked links the writer was rewriting. That is a data race by the standard
+// and only worked because a pointer-sized load is atomic in practice on x86.
+// These queues hold a handful of packets per client, so a mutex costs nothing
+// worth having a memory model argument about.
 template<class T>
 class ThreadSafeQueue
 {
-public:
-	typedef std::list<T> list;
-	typedef typename std::list<T>::iterator iterator;
-	typedef typename std::list<T>::const_iterator const_iterator;
-
 private:
-	list m_list;
-	iterator m_head;
-	iterator m_tail;
+	std::deque<T> m_queue;
+	mutable std::mutex m_mutex;
 
 public:
-	ThreadSafeQueue()
-	{
-		m_list.push_back(T()); // at least one element must be in the queue
-		m_head = m_list.begin();
-		m_tail = m_list.end();
-	}
+	ThreadSafeQueue() { }
 
 private:
 	ThreadSafeQueue(const ThreadSafeQueue& copy);
@@ -33,71 +32,42 @@ public:
 	// Append an element to the end of the queue (writer)
 	void push(const T& value)
 	{
-		m_list.push_back(value);
-		m_tail = m_list.end();
-		clean();
-	}
-
-	// Erase elements from before reader head (writer)
-	void clean(void)
-	{
-		m_list.erase(m_list.begin(), m_head);
+		std::lock_guard<std::mutex> lock(m_mutex);
+		m_queue.push_back(value);
 	}
 
 	// Retrieve the number of elements in the queue (reader/writer)
 	size_t size(void) const
 	{
-		if (empty())
-			return 0;
-
-		size_t toSkip = 1;
-		for (const_iterator it = m_list.begin(); it != m_head && it != m_list.end(); ++it)
-		{
-			if (it == m_list.end())
-				break;
-
-			toSkip++;
-		}
-
-		return m_list.size() - toSkip;
+		std::lock_guard<std::mutex> lock(m_mutex);
+		return m_queue.size();
 	}
 
 	// Determine if the queue is empty (reader/writer)
 	bool empty(void) const
 	{
-		iterator next = m_head;
-		++next;
-
-		return (next == m_tail);
+		std::lock_guard<std::mutex> lock(m_mutex);
+		return m_queue.empty();
 	}
 
 	// Remove the first element from the queue (reader)
 	void pop(void)
 	{
-		if (empty())
+		std::lock_guard<std::mutex> lock(m_mutex);
+		if (m_queue.empty())
 			throw CException(LOGL_ERROR, 0, "No elements to read from queue.");
 
-		iterator next = m_head;
-		++next;
-
-		if (next != m_tail)
-			m_head = next;
+		m_queue.pop_front();
 	}
 
 	// Retrieve the first element in the queue (reader)
 	T front(void) const
 	{
-		if (empty() == false)
-		{
-			iterator next = m_head;
-			++next;
+		std::lock_guard<std::mutex> lock(m_mutex);
+		if (m_queue.empty())
+			throw CException(LOGL_ERROR, 0, "No elements to read from queue.");
 
-			if (next != m_tail)
-				return *next;
-		}
-
-		// this should never happen
-		throw CException(LOGL_ERROR, 0, "No elements to read from queue.");
+		return m_queue.front();
 	}
 };
 

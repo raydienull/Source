@@ -860,18 +860,12 @@ void CAccount::ClearPasswordTries(bool bAll)
 	{
 		long timeCurrent = CServTime::GetCurrentTime().GetTimeRaw();
 
-		for ( BlockLocalTime_t::iterator itData = m_BlockIP.begin(); itData != m_BlockIP.end(); ++itData )
+		for ( BlockLocalTime_t::iterator itData = m_BlockIP.begin(); itData != m_BlockIP.end(); )
 		{
-			BlockLocalTimePair_t itResult = (*itData).second;
-			if (( timeCurrent - itResult.first.m_Last ) > 3*60*TICK_PER_SEC )
-			{
-				m_BlockIP.erase(itData);
-			}
-
-			if ( itData != m_BlockIP.begin() )
-			{
-				--itData;
-			}
+			if (( timeCurrent - itData->second.first.m_Last ) > 3*60*TICK_PER_SEC )
+				itData = m_BlockIP.erase(itData);
+			else
+				++itData;
 		}
 	}
 }

@@ -94,7 +94,9 @@
 #define SleepEx(mSec, unused)		usleep(mSec*1000)	// arg is microseconds = 1/1000000
 
 // printf format identifiers
+#include <inttypes.h>
 #define FMTSIZE_T "zu" // linux uses %zu to format size_t
+#define FMTINT64 PRId64 // int64_t is long on LP64 and long long on ILP32
 
 inline void _strupr( TCHAR * pszStr )
 {

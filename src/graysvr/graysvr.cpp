@@ -776,6 +776,7 @@ void defragSphere(char *path)
 		"After finished, you will have your '" GRAY_FILE "*.scp' files converted and saved as '" GRAY_FILE "*.scp.new'.\n");
 
 	uids = (DWORD*)calloc(MAX_UID, sizeof(DWORD));
+	ASSERT(uids != NULL);
 	for ( i = 0; i < 3; i++ )
 	{
 		strcpy(z, path);
@@ -792,7 +793,8 @@ void defragSphere(char *path)
 		dBytesRead = dTotalMb = 0;
 		while ( !feof(inf.m_pStream) )
 		{
-			fgets(buf, sizeof(buf), inf.m_pStream);
+			if ( fgets(buf, sizeof(buf), inf.m_pStream) == NULL )
+				break;	// eof or a read error; buf is not cleared, so strlen would reread the last line
 			dBytesRead += strlen(buf);
 			if ( dBytesRead > mb10 )
 			{

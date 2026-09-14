@@ -164,7 +164,8 @@ void CClient::addSysMessage(LPCTSTR pszMsg) // System message (In lower left cor
 	HUE_TYPE pHue = static_cast<HUE_TYPE>(g_Exp.m_VarDefs.GetKeyNum("SMSG_DEF_COLOR"));
 	FONT_TYPE pFont = static_cast<FONT_TYPE>(g_Exp.m_VarDefs.GetKeyNum("SMSG_DEF_FONT"));
 
-	addBarkParse(pszMsg, NULL, (pHue ? pHue : HUE_TEXT_DEF), TALKMODE_SYSTEM, (pFont ? pFont : FONT_NORMAL));
+	addBarkParse(pszMsg, NULL, (pHue ? pHue : static_cast<HUE_TYPE>(HUE_TEXT_DEF)), TALKMODE_SYSTEM,
+		(pFont ? pFont : static_cast<FONT_TYPE>(FONT_NORMAL)));
 }
 
 
@@ -352,7 +353,7 @@ bool CClient::OnRxConsole( const BYTE * pData, size_t iLen )
 			{
 				if ( !m_zLogin[0] )
 				{
-					if ( m_Targ_Text.GetLength() > (COUNTOF(m_zLogin) - 1) )
+					if ( m_Targ_Text.GetLength() > static_cast<int>(COUNTOF(m_zLogin) - 1) )
 					{
 						SysMessage("Login?:\n");
 					}

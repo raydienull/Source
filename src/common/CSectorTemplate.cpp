@@ -417,10 +417,15 @@ CPointMap CSectorBase::GetBasePoint() const
 	ADDTOCALLSTACK("CSectorBase::GetBasePoint");
 	// What is the coord base of this sector. upper left point.
 	ASSERT( m_index >= 0 && m_index < g_MapList.GetSectorQty(m_map) );
-	CPointMap pt(( m_index % g_MapList.GetSectorCols(m_map)) * g_MapList.GetSectorSize(m_map),
-		( m_index / g_MapList.GetSectorCols(m_map) ) * g_MapList.GetSectorSize(m_map),
+	int iSectorCols = g_MapList.GetSectorCols(m_map);
+	if ( iSectorCols <= 0 )	// map has no sector size configured
+		return CPointMap( 0, 0, 0, static_cast<unsigned char>(m_map) );
+
+	int iSectorSize = g_MapList.GetSectorSize(m_map);
+	CPointMap pt( static_cast<WORD>(( m_index % iSectorCols ) * iSectorSize),
+		static_cast<WORD>(( m_index / iSectorCols ) * iSectorSize),
 		0,
-		m_map);
+		static_cast<unsigned char>(m_map));
 	return( pt );
 }
 

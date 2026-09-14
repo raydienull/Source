@@ -107,7 +107,9 @@ int CFileList::ReadDir( LPCTSTR pszFileDir, bool bShowError )
 		if ( fileinfo->d_name[0] == '.' )
 			continue;
 
-		sprintf(szFilename, "%s%s", szFileDir, fileinfo->d_name);
+		if ( snprintf(szFilename, sizeof(szFilename), "%s%s", szFileDir, fileinfo->d_name) >= static_cast<int>(sizeof(szFilename)) )
+			continue;	// the path does not fit, so do not test a truncated name
+
 		len = strlen(szFilename);
 		if ( len > 4 && !strcmpi(&szFilename[len - 4], GRAY_SCRIPT) )
 			AddHead(fileinfo->d_name);

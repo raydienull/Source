@@ -336,7 +336,7 @@ size_t CGrayMulti::Load( MULTI_TYPE id )
 	Release();
 	InitCacheTime();		// This is invalid !
 
-	if ( id < 0 || id >= MULTI_QTY )
+	if ( id >= MULTI_QTY )	// MULTI_TYPE is unsigned, so there is no negative case
 		return( 0 );
 	m_id = id;
 

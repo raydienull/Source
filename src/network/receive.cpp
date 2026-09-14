@@ -752,7 +752,6 @@ bool PacketVendorBuyReq::onReceive(NetState* net)
 	int iConvertFactor = vendor->NPC_GetVendorMarkup(buyer);
 
 	VendorItem items[MAX_ITEMS_CONT];
-	memset(items, 0, sizeof(items));
 	size_t itemCount = minimum((packetLength - 8) / 7, MAX_ITEMS_CONT);
 
 	// check buying speed
@@ -1006,8 +1005,10 @@ bool PacketBookPageEdit::onReceive(NetState* net)
 		while (lineCount > 0)
 		{
 			len += readStringNullASCII(content + len, SCRIPT_MAX_LINE_LEN-1 - len);
-			if (len >= SCRIPT_MAX_LINE_LEN)
+			if (len >= SCRIPT_MAX_LINE_LEN - 1)
 			{
+				// no room left for the separator, and 'SCRIPT_MAX_LINE_LEN-1 - len'
+				// would underflow on the next read
 				len = SCRIPT_MAX_LINE_LEN - 1;
 				break;
 			}
@@ -1863,7 +1864,6 @@ bool PacketVendorSellReq::onReceive(NetState* net)
 	}
 
 	VendorItem items[MAX_ITEMS_CONT];
-	memset(items, 0, sizeof(items));
 
 	for (size_t i = 0; i < itemCount; i++)
 	{
@@ -2426,7 +2426,7 @@ bool PacketClientVersion::onReceive(NetState* net)
 
 		DEBUG_MSG(("Getting cliver 0x%lx/0x%lx\n", version, (version&0xFFFFF0)));
 		
-		if (g_Serv.m_ClientVersion.GetClientVer() != 0 && ((version&0xFFFFF0) != g_Serv.m_ClientVersion.GetClientVer()))
+		if (g_Serv.m_ClientVersion.GetClientVer() != 0 && ((version&0xFFFFF0) != static_cast<DWORD>(g_Serv.m_ClientVersion.GetClientVer())))
 		{
 			client->addLoginErr(PacketLoginError::BadVersion);
 		}

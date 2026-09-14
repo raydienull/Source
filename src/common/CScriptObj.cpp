@@ -299,7 +299,7 @@ bool CScriptTriggerArgs::r_WriteVal( LPCTSTR pszKey, CGString &sVal, CTextConsol
 				// add empty arguments if they are provided
 				if ( (*s == ',') && (!fQuotes))
 				{
-					m_v.Add( '\0' );
+					m_v.Add( NULL );	// empty argument
 					++s;
 					continue;
 				}
@@ -3055,7 +3055,7 @@ LPCTSTR const CFileObjContainer::sm_szVerbKeys[CFOV_QTY+1] =
 CFileObj * CFileObjContainer::GetObjectAt( size_t iWhere )
 {
 	ADDTOCALLSTACK("CFileObjContainer::GetObjectAt");
-	if ( iWhere > sFileList.size() )
+	if ( iWhere >= sFileList.size() )
 		return NULL;
 
 	return sFileList.at(iWhere);
