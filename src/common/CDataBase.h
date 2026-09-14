@@ -6,22 +6,14 @@
 #define	CDATABASE_H
 
 #include "../common/graycom.h"
-#ifndef _DBPLUGIN
 	#include <mysql.h>
 	#include <errmsg.h>	// mysql standard include
-#else
-	#include "../common/CDatabaseLoader.h"
-#endif
 #include "../common/CScriptObj.h"
 #include "../sphere/mutex.h"
 
-#ifndef _DBPLUGIN
 	// The client library (MariaDB Connector/C) is linked by the build system
 
 	#define	MIN_MYSQL_VERSION_ALLOW	40115
-#else
-	#define DEFAULT_RESULT_SIZE 30
-#endif
 
 class CDataBase : public CScriptObj
 {
@@ -49,20 +41,6 @@ public:
 
 	//	set / get / info methods
 	bool	isConnected();
-#ifdef _DBPLUGIN
-
-private:
-	fieldarray_t * GetFieldArrayBuffer();
-	int GetFieldArraySize();
-	void ResizeFieldArraySize(int howmuch, bool bForceResize = false);
-
-	resultarray_t * GetResultArrayBuffer();
-	int GetResultArraySize();
-	void ResizeResultArraySize(int howmuch, bool bForceResize = false);
-
-public:
-
-#endif
 
 	bool OnTick();
 	int FixWeirdness();
@@ -87,24 +65,8 @@ private:
 	typedef std::queue<FunctionArgsPair_t> QueueFunction_t;
 
 protected:
-#ifndef _DBPLUGIN
 	bool	_bConnected;					//	are we online?
 	MYSQL	*_myData;						//	mySQL link
-#else
-	struct __fieldarray_container
-	{
-		fieldarray_t * faData;
-		int faDataSize;
-		int faDataActualSize;
-	} m_faContainer;
-
-	struct __resultarray_container
-	{
-		resultarray_t * raData;
-		int raDataSize;
-		int raDataActualSize;
-	} m_raContainer;
-#endif
 	QueueFunction_t m_QueryArgs;
 
 private:
