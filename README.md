@@ -28,14 +28,16 @@ Each release includes a `SHA256SUMS.txt` file to verify the downloads.
 
 ### Running on Linux
 
-The x86 build is a 32-bit binary. On a 64-bit Debian or Ubuntu system, install the 32-bit
-MariaDB client library first:
+The x86 build is a 32-bit binary that requires glibc 2.34 or later (Debian 12, Ubuntu 22.04 or newer).
+On a 64-bit system, install the 32-bit runtime libraries first:
 
 ```sh
 sudo dpkg --add-architecture i386
 sudo apt-get update
-sudo apt-get install libmariadb3:i386
+sudo apt-get install libmariadb3:i386 libstdc++6:i386
 ```
+
+The server can run without a terminal attached (for example, as a systemd service or in a container).
 
 ## Repository layout
 
