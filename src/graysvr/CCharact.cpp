@@ -3793,17 +3793,15 @@ bool CChar::OnTick()
 		}
 
 		EXC_SET("last attackers");
-		if ( m_lastAttackers.size() )
+		// Age every attacker, and drop all the ones that have timed out. The old
+		// loop stopped at the first expired entry, so everything behind it was
+		// not aged that tick and only one entry could ever expire per tick.
+		for ( std::vector<LastAttackers>::iterator it = m_lastAttackers.begin(); it != m_lastAttackers.end(); )
 		{
-			for ( std::vector<LastAttackers>::iterator it = m_lastAttackers.begin(); it != m_lastAttackers.end(); ++it)
-			{
-				LastAttackers & refAttacker = *it;
-				if ( ( ++(refAttacker.elapsed) > g_Cfg.m_iAttackerTimeout ) && ( g_Cfg.m_iAttackerTimeout > 0 ) )
-				{
-					m_lastAttackers.erase(it);
-					break;
-				}
-			}
+			if ( ( ++(it->elapsed) > g_Cfg.m_iAttackerTimeout ) && ( g_Cfg.m_iAttackerTimeout > 0 ) )
+				it = m_lastAttackers.erase( it );
+			else
+				++it;
 		}
 
 		if ( IsClient() )
