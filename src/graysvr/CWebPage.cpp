@@ -160,7 +160,7 @@ bool CWebPageDef::r_LoadVal( CScript & s ) // Load an item Script
 		case WC_WEBPAGESRC:
 			return SetSourceFile( s.GetArgStr(), NULL );
 		case WC_WEBPAGEUPDATE:	// (seconds)
-			m_iUpdatePeriod = s.GetArgVal() * TICK_PER_SEC;
+			m_iUpdatePeriod = Calc_TicksFromSeconds(s.GetArgVal());
 			if ( m_iUpdatePeriod && m_type == WEBPAGE_TEXT )
 			{
 				m_type = WEBPAGE_TEMPLATE;

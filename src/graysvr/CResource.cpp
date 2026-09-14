@@ -779,7 +779,7 @@ bool CResource::r_LoadVal( CScript &s )
 			int index = ATOI(s.GetKey()+5);
 			if (index < 0 || index >= STAT_QTY)
 				return false;
-			g_Cfg.m_iRegenRate[index] = (s.GetArgVal() * TICK_PER_SEC);
+			g_Cfg.m_iRegenRate[index] = Calc_TicksFromSeconds(s.GetArgVal());
 			return true;
 		}
 		else if ( s.IsKeyHead("MAP", 3) )		//	MAPx=settings
@@ -893,7 +893,7 @@ bool CResource::r_LoadVal( CScript &s )
 			m_iBankWMax = s.GetArgVal() * WEIGHT_UNITS;
 			break;
 		case RC_CLIENTLINGER:
-			m_iClientLingerTime = s.GetArgVal() * TICK_PER_SEC;
+			m_iClientLingerTime = Calc_TicksFromSeconds(s.GetArgVal());
 			break;
 		case RC_CLIENTMAX:
 		case RC_CLIENTS:
@@ -928,7 +928,7 @@ bool CResource::r_LoadVal( CScript &s )
 			g_Log.SetLogMask( s.GetArgFlag( g_Log.GetLogMask(), LOGM_PLAYER_SPEAK ));
 			break;
 		case RC_HITSUPDATERATE:
-			m_iHitsUpdateRate = s.GetArgVal() * TICK_PER_SEC;
+			m_iHitsUpdateRate = Calc_TicksFromSeconds(s.GetArgVal());
 			break;
 		case RC_LOG:
 			g_Log.OpenLog( s.GetArgStr());
@@ -940,7 +940,7 @@ bool CResource::r_LoadVal( CScript &s )
 			g_Install.SetPreferPath( CGFile::GetMergedFileName( s.GetArgStr(), "" ));
 			break;
 		case RC_MAPCACHETIME:
-			m_iMapCacheTime = s.GetArgVal() * TICK_PER_SEC;
+			m_iMapCacheTime = Calc_TicksFromSeconds(s.GetArgVal());
 			break;
 		case RC_MAXACCOUNTLOGINTRIES:
 			{
@@ -972,7 +972,7 @@ bool CResource::r_LoadVal( CScript &s )
 				m_iMaxKarma = m_iMinKarma + 1;
 			break;
 		case RC_MURDERDECAYTIME:
-			m_iMurderDecayTime = s.GetArgVal() * TICK_PER_SEC;
+			m_iMurderDecayTime = Calc_TicksFromSeconds(s.GetArgVal());
 			break;
 		case RC_WOOLGROWTHTIME:
 			m_iWoolGrowthTime = s.GetArgVal() * 60 * TICK_PER_SEC;
@@ -1042,7 +1042,7 @@ bool CResource::r_LoadVal( CScript &s )
 			break;
 
 		case RC_TOOLTIPCACHE:
-			g_Cfg.m_iTooltipCache = s.GetArgVal() * TICK_PER_SEC;
+			g_Cfg.m_iTooltipCache = Calc_TicksFromSeconds(s.GetArgVal());
 			break;
 			
 #ifdef _MTNETWORK

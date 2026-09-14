@@ -3225,7 +3225,7 @@ bool CFileObjContainer::r_LoadVal( CScript & s )
 			break;
 
 		case CFO_GLOBALTIMEOUT:
-			iGlobalTimeout = abs(s.GetArgVal()*TICK_PER_SEC);
+			iGlobalTimeout = Calc_TicksFromSeconds(labs(s.GetArgVal()));
 			break;
 
 		default:

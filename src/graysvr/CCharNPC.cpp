@@ -511,7 +511,7 @@ bool CCharPlayer::r_LoadVal( CChar * pChar, CScript &s )
 				pChar->GetClient()->addKRToolbar( m_bKrToolbarEnabled );
 			return true;
 		case CPC_LASTUSED:
-			m_timeLastUsed = CServTime::GetCurrentTime() - ( s.GetArgVal() * TICK_PER_SEC );
+			m_timeLastUsed = CServTime::GetCurrentTime() - Calc_TicksFromSeconds(s.GetArgVal());
 			return( true );
 		case CPC_LUCK:
 			{

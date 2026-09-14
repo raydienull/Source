@@ -2188,7 +2188,7 @@ do_default:
 			SetID(static_cast<CREID_TYPE>(g_Cfg.ResourceGetIndexType( RES_CHARDEF, s.GetArgStr())));
 			break;
 		case CHC_CREATE:
-			m_timeCreate = CServTime::GetCurrentTime() - ( s.GetArgVal() * TICK_PER_SEC );
+			m_timeCreate = CServTime::GetCurrentTime() - Calc_TicksFromSeconds(s.GetArgVal());
 			break;
 		case CHC_DIR:
 			{

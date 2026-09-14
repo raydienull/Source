@@ -8,6 +8,8 @@
 #define _INC_GRAYSVR_H_
 #pragma once
 
+#include <limits.h>	// INT_MAX / INT_MIN, used below before graycom.h is pulled in
+
 //	Enable advanced exceptions catching. Consumes some more resources, but is very useful
 //	for debug on a running environment. Also it makes sphere more stable since exceptions
 //	are local
@@ -117,6 +119,19 @@ public:
 	}
 	static CServTime GetCurrentTime();
 };
+
+// Seconds to ticks, saturating instead of wrapping.
+// A plain "iSeconds * TICK_PER_SEC" turns a delay above INT_MAX/TICK_PER_SEC
+// into a small or negative one, so a timer meant to be years away fires at once.
+inline int Calc_TicksFromSeconds( long lSeconds )
+{
+	if ( lSeconds > (INT_MAX / TICK_PER_SEC) )
+		return INT_MAX;
+	if ( lSeconds < (INT_MIN / TICK_PER_SEC) )
+		return INT_MIN;
+
+	return static_cast<int>(lSeconds) * TICK_PER_SEC;
+}
 
 enum RESDISPLAY_VERSION
 {
