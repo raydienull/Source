@@ -62,7 +62,7 @@ public:
 public:
 	bool FindInstall();
 	void DetectMulVersions();
-	VERFILE_TYPE OpenFiles( DWORD dwMask );
+	VERFILE_TYPE OpenFiles( unsigned long long dwMask );	// VERFILE_QTY is 33, so a DWORD mask is too narrow
 	bool OpenFile( CGFile & file, LPCTSTR pszName, WORD wFlags );
 	bool OpenFile( VERFILE_TYPE i );
 	void CloseFiles();

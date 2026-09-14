@@ -2180,13 +2180,15 @@ public:
 	}
 	int GetSectorCols(int map)
 	{
-		if (( map < 0 ) || ( map > 255 )) return 0;
-		return (m_sizex[map] / GetSectorSize(map));
+		int iSize = GetSectorSize(map);	// 0 for an invalid or unconfigured map
+		if ( iSize <= 0 ) return 0;
+		return (m_sizex[map] / iSize);
 	}
 	int GetSectorRows(int map)
 	{
-		if (( map < 0 ) || ( map > 255 )) return 0;
-		return (m_sizey[map] / GetSectorSize(map));
+		int iSize = GetSectorSize(map);	// 0 for an invalid or unconfigured map
+		if ( iSize <= 0 ) return 0;
+		return (m_sizey[map] / iSize);
 	}
 	int GetSectorQty(int map)
 	{

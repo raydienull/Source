@@ -836,8 +836,12 @@ CSector * CPointBase::GetSector() const
 			m_x, m_y, m_map, g_MapList.GetX(m_map), g_MapList.GetY(m_map));
 		return g_World.GetSector(m_map, 0);
 	}
+	int iSectorSize = g_MapList.GetSectorSize(m_map);
+	if ( iSectorSize <= 0 )	// map has no sector size configured
+		return g_World.GetSector(m_map, 0);
+
 	// Get the world Sector we are in.
-	return g_World.GetSector(m_map, ((m_y / g_MapList.GetSectorSize(m_map) * g_MapList.GetSectorCols(m_map)) + ( m_x / g_MapList.GetSectorSize(m_map) )));
+	return g_World.GetSector(m_map, ((m_y / iSectorSize * g_MapList.GetSectorCols(m_map)) + ( m_x / iSectorSize )));
 }
 
 CRegionBase * CPointBase::GetRegion( DWORD dwType ) const
@@ -989,21 +993,26 @@ CSector * CGRect::GetSector( int i ) const	// ge all the sectors that make up th
 	// get all the CSector(s) that overlap this rect.
 	// RETURN: NULL = no more
 
+	int iSectorSize = g_MapList.GetSectorSize(m_map);
+	if ( iSectorSize <= 0 )	// invalid or unconfigured map
+		return NULL;
+	int iSectorCols = g_MapList.GetSectorCols(m_map);
+
 	// Align new rect.
 	CRectMap rect;
-	rect.m_left = m_left &~ (g_MapList.GetSectorSize(m_map)-1);
-	rect.m_right = ( m_right | (g_MapList.GetSectorSize(m_map)-1)) + 1;
-	rect.m_top = m_top &~ (g_MapList.GetSectorSize(m_map)-1);
-	rect.m_bottom = ( m_bottom | (g_MapList.GetSectorSize(m_map)-1)) + 1;
+	rect.m_left = m_left &~ (iSectorSize-1);
+	rect.m_right = ( m_right | (iSectorSize-1)) + 1;
+	rect.m_top = m_top &~ (iSectorSize-1);
+	rect.m_bottom = ( m_bottom | (iSectorSize-1)) + 1;
 	rect.m_map = m_map;
 	rect.NormalizeRectMax();
 
-	int width = (rect.GetWidth()) / g_MapList.GetSectorSize(m_map);
-	ASSERT(width <= g_MapList.GetSectorCols(m_map));
-	int height = (rect.GetHeight()) / g_MapList.GetSectorSize(m_map);
+	int width = (rect.GetWidth()) / iSectorSize;
+	ASSERT(width <= iSectorCols);
+	int height = (rect.GetHeight()) / iSectorSize;
 	ASSERT(height <= g_MapList.GetSectorRows(m_map));
 
-	int iBase = (( rect.m_top / g_MapList.GetSectorSize(m_map)) * g_MapList.GetSectorCols(m_map)) + ( rect.m_left / g_MapList.GetSectorSize(m_map) );
+	int iBase = (( rect.m_top / iSectorSize) * iSectorCols) + ( rect.m_left / iSectorSize );
 
 	if ( i >= ( height * width ))
 	{
@@ -1014,7 +1023,7 @@ CSector * CGRect::GetSector( int i ) const	// ge all the sectors that make up th
 		return( NULL );
 	}
 
-	int indexoffset = (( i / width ) * g_MapList.GetSectorCols(m_map)) + ( i % width );
+	int indexoffset = (( i / width ) * iSectorCols) + ( i % width );
 
 	return g_World.GetSector(m_map, iBase+indexoffset);
 }

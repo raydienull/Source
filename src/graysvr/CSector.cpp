@@ -450,22 +450,28 @@ int CSector::GetLocalTime() const
 
 	if ( !g_Cfg.m_bAllowLightOverride )
 	{
-		iLocalTime += ( pt.m_x * 24*60 ) / g_MapList.GetX(pt.m_map);
+		int iWidth = g_MapList.GetX(pt.m_map);
+		if ( iWidth > 0 )
+			iLocalTime += ( pt.m_x * 24*60 ) / iWidth;
 	}
 	else
 	{
-		// Time difference between adjacent sectors in minutes
-		int iSectorTimeDiff = (24*60) / g_MapList.GetSectorCols(pt.m_map);
+		int iSectorCols = g_MapList.GetSectorCols(pt.m_map);
+		int iSectorSize = g_MapList.GetSectorSize(pt.m_map);
+		if ( iSectorCols > 0 && iSectorSize > 0 )	// map has a sector size configured
+		{
+			// Time difference between adjacent sectors in minutes
+			int iSectorTimeDiff = (24*60) / iSectorCols;
 
-		// Calculate the # of columns between here and Castle Britannia ( x = 1400 )
-		//int iSectorOffset = ( pt.m_x / g_MapList.GetX(pt.m_map) ) - ( (24*60) / g_MapList.GetSectorSize(pt.m_map));
-		int iSectorOffset = ( pt.m_x / g_MapList.GetSectorSize(pt.m_map));
+			// Calculate the # of columns between here and Castle Britannia ( x = 1400 )
+			int iSectorOffset = ( pt.m_x / iSectorSize );
 
-		// Calculate the time offset from global time
-		int iTimeOffset = iSectorOffset * iSectorTimeDiff;
+			// Calculate the time offset from global time
+			int iTimeOffset = iSectorOffset * iSectorTimeDiff;
 
-		// Calculate the local time
-		iLocalTime += iTimeOffset;
+			// Calculate the local time
+			iLocalTime += iTimeOffset;
+		}
 	}
 	return (iLocalTime % (24*60));
 }

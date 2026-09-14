@@ -138,6 +138,10 @@ void Packet::skip(long count)
 		m_position = 0;
 	else
 		m_position += count;
+
+	// ...nor past the end, which would make getRemainingLength() underflow
+	if (m_position > m_length)
+		m_position = m_length;
 }
 
 BYTE &Packet::operator[](size_t index)

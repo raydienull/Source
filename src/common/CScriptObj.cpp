@@ -3055,7 +3055,7 @@ LPCTSTR const CFileObjContainer::sm_szVerbKeys[CFOV_QTY+1] =
 CFileObj * CFileObjContainer::GetObjectAt( size_t iWhere )
 {
 	ADDTOCALLSTACK("CFileObjContainer::GetObjectAt");
-	if ( iWhere > sFileList.size() )
+	if ( iWhere >= sFileList.size() )
 		return NULL;
 
 	return sFileList.at(iWhere);

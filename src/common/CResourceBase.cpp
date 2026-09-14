@@ -945,7 +945,7 @@ void CResourceLink::SetTrigger(int i)
 		{
 			if ( i < 32 )
 			{
-				DWORD flag = 1 << i;
+				DWORD flag = 1UL << i;
 				m_dwOnTriggers[j] |= flag;
 				return;
 			}
@@ -965,7 +965,7 @@ bool CResourceLink::HasTrigger(int i) const
 	{
 		if ( i < 32 )
 		{
-			DWORD flag = 1 << i;
+			DWORD flag = 1UL << i;
 			return ((m_dwOnTriggers[j] & flag) != 0);
 		}
 		i -= 32;

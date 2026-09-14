@@ -177,7 +177,7 @@ bool CGrayInstall::OpenFile( VERFILE_TYPE i )
 	return OpenFile(m_File[i], pszTitle, OF_READ|OF_SHARE_DENY_WRITE);
 }
 
-VERFILE_TYPE CGrayInstall::OpenFiles( DWORD dwMask )
+VERFILE_TYPE CGrayInstall::OpenFiles( unsigned long long dwMask )
 {
 	ADDTOCALLSTACK("CGrayInstall::OpenFiles");
 	// Now open all the required files.
@@ -186,7 +186,7 @@ VERFILE_TYPE CGrayInstall::OpenFiles( DWORD dwMask )
 
 	for ( i = 0; i < VERFILE_QTY; i++ )
 	{
-		if ( ! ( dwMask & ( 1 << i )) ) continue;
+		if ( ! ( dwMask & ( 1ULL << i )) ) continue;
 		if ( GetBaseFileName(static_cast<VERFILE_TYPE>(i)) == NULL ) continue;
 
 		bool bFileLoaded = true;
