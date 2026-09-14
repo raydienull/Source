@@ -2360,16 +2360,26 @@ int NetworkOut::sendBytesNow(CClient* client, const BYTE* data, DWORD length)
  *
  *
  ***************************************************************************/
-inline void AddSocketToSet(fd_set& fds, SOCKET socket, int& count)
+inline bool AddSocketToSet(fd_set& fds, SOCKET socket, int& count)
 {
+	// returns false when the socket does not fit in the set, which must never
+	// be ignored: FD_SET would write outside it
 #ifdef _WIN32
 	UNREFERENCED_PARAMETER(count);
+	if (fds.fd_count >= FD_SETSIZE)
+		return false;
+
 	FD_SET(socket, &fds);
 #else
+	// fd_set is a fixed FD_SETSIZE bitmap and FD_SET does not bounds check
+	if (socket < 0 || socket >= FD_SETSIZE)
+		return false;
+
 	FD_SET(socket, &fds);
 	if (socket > count)
 		count = socket;
 #endif
+	return true;
 }
 
 /***************************************************************************
@@ -2523,7 +2533,17 @@ bool NetworkManager::checkNewConnection(void)
 	int count = 0;
 
 	FD_ZERO(&fds);
-	AddSocketToSet(fds, mainSocket, count);
+	if (AddSocketToSet(fds, mainSocket, count) == false)
+	{
+		static bool fReported = false;
+		if (fReported == false)
+		{
+			fReported = true;
+			g_Log.Event(LOGM_CLIENTS_LOG|LOGL_CRIT, "Listen socket %d is out of select() range (FD_SETSIZE=%d). No new connections can be accepted.\n",
+				static_cast<int>(mainSocket), static_cast<int>(FD_SETSIZE));
+		}
+		return false;
+	}
 
 	timeval Timeout;		// time to wait for data.
 	Timeout.tv_sec=0;
@@ -3187,7 +3207,15 @@ bool NetworkInput::checkForData(fd_set& fds)
 		if (state->isClosing() || state->m_socket.IsOpen() == false)
 			continue;
 
-		AddSocketToSet(fds, state->m_socket.GetSocket(), count);
+		EXC_SET("add socket to set");
+		if (AddSocketToSet(fds, state->m_socket.GetSocket(), count) == false)
+		{
+			// the server holds more descriptors than select() can watch, so this
+			// client can never be read from again
+			g_Log.Event(LOGM_CLIENTS_LOG|LOGL_ERROR, "%lx:Socket %d is out of select() range (FD_SETSIZE=%d). Disconnecting client.\n",
+				state->id(), static_cast<int>(state->m_socket.GetSocket()), static_cast<int>(FD_SETSIZE));
+			state->markReadClosed();
+		}
 	}
 		
 	EXC_SET("prepare timeout");
@@ -3233,23 +3261,42 @@ bool NetworkInput::processGameClientData(NetState* state, Packet* buffer)
 	ASSERT(client != NULL);
 
 	EXC_SET("decrypt message");
-	client->m_Crypt.Decrypt(m_decryptBuffer, buffer->getRemainingData(), buffer->getRemainingLength());
+	// the raw buffer holds everything the receive thread queued since the last
+	// pass, which can be several reads, so it may be larger than m_decryptBuffer
+	const BYTE* rawData = buffer->getRemainingData();
+	size_t rawLength = buffer->getRemainingLength();
 
-	if (state->m_incoming.buffer == NULL)
+	while (rawLength > 0)
 	{
-		// create new buffer
-		state->m_incoming.buffer = new Packet(m_decryptBuffer, buffer->getRemainingLength());
-	}
-	else
-	{
-		// append to buffer
-		size_t pos = state->m_incoming.buffer->getPosition();
-		state->m_incoming.buffer->seek(state->m_incoming.buffer->getLength());
-		state->m_incoming.buffer->writeData(m_decryptBuffer, buffer->getRemainingLength());
-		state->m_incoming.buffer->seek(pos);
+		size_t sliceLength = minimum(rawLength, static_cast<size_t>(NETWORK_BUFFERSIZE));
+		client->m_Crypt.Decrypt(m_decryptBuffer, rawData, sliceLength);
+
+		if (state->m_incoming.buffer == NULL)
+		{
+			// create new buffer
+			state->m_incoming.buffer = new Packet(m_decryptBuffer, sliceLength);
+		}
+		else
+		{
+			// append to buffer
+			size_t pos = state->m_incoming.buffer->getPosition();
+			state->m_incoming.buffer->seek(state->m_incoming.buffer->getLength());
+			state->m_incoming.buffer->writeData(m_decryptBuffer, sliceLength);
+			state->m_incoming.buffer->seek(pos);
+		}
+
+		rawData += sliceLength;
+		rawLength -= sliceLength;
 	}
 
 	Packet* packet = state->m_incoming.buffer;
+	if (packet == NULL)
+	{
+		// nothing to parse
+		buffer->seek(buffer->getLength());
+		return true;
+	}
+
 	size_t remainingLength = packet->getRemainingLength();
 
 	EXC_SET("record message");
@@ -3374,7 +3421,13 @@ bool NetworkInput::processOtherClientData(NetState* state, Packet* buffer)
 
 			// first real data from client which we can use to log in
 			EXC_SET("encryption setup");
-			ASSERT(buffer->getRemainingLength() <= sizeof(CEvent));
+			if (buffer->getRemainingLength() > sizeof(CEvent))
+			{
+				// more setup data than any real client sends, and more than evt can hold
+				g_Log.Event(LOGM_CLIENTS_LOG|LOGL_WARN, "%lx:Client sent %" FMTSIZE_T " bytes of setup data (maximum is %" FMTSIZE_T ")\n",
+					state->id(), buffer->getRemainingLength(), sizeof(CEvent));
+				return false;
+			}
 
 			CEvent evt;
 			memcpy(&evt, buffer->getRemainingData(), buffer->getRemainingLength());
