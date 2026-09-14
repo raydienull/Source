@@ -1,0 +1,148 @@
+name: Build
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '**.md'
+  pull_request:
+  workflow_dispatch:
+
+# Cancel superseded runs on feature branches, but build every commit pushed to main
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    # 64-bit builds are experimental: a failure is reported but does not block the release
+    continue-on-error: ${{ matrix.experimental }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Linux x86
+            os: ubuntu-24.04
+            arch: '32'
+            output: build/linux32-nightly
+            package: SphereSvr-linux-x86
+            experimental: false
+          - name: Linux x64 (experimental)
+            os: ubuntu-24.04
+            arch: '64'
+            output: build/linux64-nightly
+            package: SphereSvr-linux-x64-experimental
+            experimental: true
+          - name: Windows x86
+            os: windows-2022
+            arch: Win32
+            output: build/Win32-Nightly
+            package: SphereSvr-windows-x86
+            experimental: false
+          - name: Windows x64 (experimental)
+            os: windows-2022
+            arch: x64
+            output: build/x64-Nightly
+            package: SphereSvr-windows-x64-experimental
+            experimental: true
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
+        with:
+          fetch-depth: 0    # full history is needed to compute the build number
+
+      - name: Build (Linux)
+        if: runner.os == 'Linux'
+        run: tools/docker-build.sh ${{ matrix.arch }} NIGHTLY=1
+
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          vcpkg integrate install
+          $VSPath = vswhere -products * -requires Microsoft.Component.MSBuild -property installationPath -latest
+          $MSBuild = Join-Path $VSPath "MSBuild\Current\Bin\MSBuild.exe"
+          & $MSBuild SphereSvr.vcxproj -m -v:minimal -p:Configuration=Nightly -p:Platform=${{ matrix.arch }}
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Package
+        shell: bash
+        run: |
+          STAGE="stage/${{ matrix.package }}"
+          mkdir -p "${STAGE}/accounts" "${STAGE}/logs" "${STAGE}/save" dist
+          cp config/sphere.ini config/sphereCrypt.ini config/sphere.dic LICENSE "${STAGE}/"
+          cp -r scripts "${STAGE}/scripts"
+
+          if [[ "${RUNNER_OS}" == "Linux" ]]; then
+            cp "${{ matrix.output }}/spheresvr" "${STAGE}/"
+            tar -C stage -czf "dist/${{ matrix.package }}.tar.gz" "${{ matrix.package }}"
+          else
+            cp "${{ matrix.output }}/SphereSvr.exe" "${{ matrix.output }}"/*.dll "${STAGE}/"
+            (cd stage && 7z a -bso0 "../dist/${{ matrix.package }}.zip" "${{ matrix.package }}")
+          fi
+          ls -la dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a    # v7.0.1
+        with:
+          name: ${{ matrix.package }}
+          path: dist/*
+          if-no-files-found: error
+
+  publish:
+    name: Publish release
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Download artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c    # v8.0.1
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          BUILD_NUMBER=$(git rev-list --count HEAD)
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          TAG="v0.56b-${BUILD_NUMBER}"
+          TITLE="SphereServer 0.56b build ${BUILD_NUMBER}"
+
+          (cd dist && sha256sum * > SHA256SUMS.txt)
+
+          NOTES_FILE=$(mktemp)
+          {
+            printf 'Automated build of commit [%s](%s/%s/commit/%s).\n\n' "${SHORT_SHA}" "${GITHUB_SERVER_URL}" "${GITHUB_REPOSITORY}" "${GITHUB_SHA}"
+            printf '```\n%s\n```\n\n' "${COMMIT_MSG}"
+            printf '64-bit packages are experimental and may be missing if their build failed.\n'
+          } > "${NOTES_FILE}"
+
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            echo "Updating release ${TAG}"
+            gh release edit "${TAG}" --title "${TITLE}" --notes-file "${NOTES_FILE}"
+            gh release upload "${TAG}" dist/* --clobber
+          else
+            echo "Creating release ${TAG}"
+            gh release create "${TAG}" dist/* --target "${GITHUB_SHA}" --title "${TITLE}" --notes-file "${NOTES_FILE}" --prerelease
+          fi
