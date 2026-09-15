@@ -1111,6 +1111,13 @@ void CSector::OnTick(int iPulseCount)
 		g_Log.EventDebug("char 0%lx '%s'\n", static_cast<DWORD>(pChar->GetUID()), pChar->GetName());
 		g_Log.EventDebug("sector #%d [%d,%d,%d,%d]\n", GetIndex(),  pt.m_x, pt.m_y, pt.m_z, pt.m_map);
 		EXC_DEBUGSUB_END;
+
+		// The tick can move or delete other chars, and the one we lined up is
+		// unlinked from this list when that happens - its links then point into
+		// another sector or into the delete list. Stop here and let the next
+		// pass pick up the rest rather than walk into a list we are not ticking.
+		if ( pCharNext != NULL && pCharNext->GetParent() != &m_Chars_Active )
+			break;
 	}
 
 	// decay items on ground = time out spells / gates etc.. etc..
@@ -1180,6 +1187,11 @@ void CSector::OnTick(int iPulseCount)
 		}
 #endif
 #endif
+
+		// same as above: an item tick can delete or move the next item out of
+		// this list, and following its links would leave the sector.
+		if ( pItemNext != NULL && pItemNext->GetParent() != &m_Items_Timer )
+			break;
 	}
 
 	ProfileTask overheadTask(PROFILE_OVERHEAD);

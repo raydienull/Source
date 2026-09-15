@@ -1164,7 +1164,7 @@ bool CObjBase::r_LoadVal( CScript & s )
 		case OC_P:	// Must set the point via the CItem or CChar methods.
 			return( false );
 		case OC_TIMER:
-			SetTimeout( s.GetArgVal() * TICK_PER_SEC );
+			SetTimeout( Calc_TicksFromSeconds(s.GetArgVal()) );
 			break;
 		case OC_TIMERD:
 			SetTimeout( s.GetArgVal());

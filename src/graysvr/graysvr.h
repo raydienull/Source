@@ -8,6 +8,8 @@
 #define _INC_GRAYSVR_H_
 #pragma once
 
+#include <limits.h>	// INT_MAX / INT_MIN / LONG_MAX, used below before graycom.h is pulled in
+
 //	Enable advanced exceptions catching. Consumes some more resources, but is very useful
 //	for debug on a running environment. Also it makes sphere more stable since exceptions
 //	are local
@@ -30,10 +32,34 @@
 	#define WARNWALK(_x_)		if ( g_Cfg.m_wDebugFlags & DEBUGF_WALK ) { g_pLog->EventWarn _x_; }
 #endif
 
-class CServTime
-{
 #undef GetCurrentTime
 #define TICK_PER_SEC 10
+
+// Saturating conversions to a tick count. A plain "value * TICK_PER_SEC" turns
+// a delay above INT_MAX/TICK_PER_SEC into a small or negative one, so a timer
+// meant to be years away fires at once.
+inline int Calc_TicksClamp( long long iTicks )
+{
+	if ( iTicks > INT_MAX )
+		return INT_MAX;
+	if ( iTicks < INT_MIN )
+		return INT_MIN;
+
+	return static_cast<int>(iTicks);
+}
+
+inline int Calc_TicksFromSeconds( long lSeconds )
+{
+	return Calc_TicksClamp( static_cast<long long>(lSeconds) * TICK_PER_SEC );
+}
+
+inline int Calc_TicksFromMinutes( long lMinutes )
+{
+	return Calc_TicksClamp( static_cast<long long>(lMinutes) * 60 * TICK_PER_SEC );
+}
+
+class CServTime
+{
 	// A time stamp in the server/game world.
 public:
 	static const char *m_sClassName;
@@ -46,9 +72,12 @@ public:
 
 		return m_lPrivateTime;
 	}
+	// Clamped: the result is an int, so on a build where long is wider a
+	// far-future stamp would truncate and could come back negative, which
+	// every caller reads as "already expired".
 	int GetTimeDiff( const CServTime & time ) const
 	{
-		return( m_lPrivateTime - time.m_lPrivateTime );
+		return Calc_TicksClamp( static_cast<long long>(m_lPrivateTime) - time.m_lPrivateTime );
 	}
 	void Init()
 	{
@@ -65,27 +94,36 @@ public:
 	{
 		return( m_lPrivateTime > 0 ? true : false );
 	}
+private:
+	// Clamp a stamp into range. A stamp is never negative, and it saturates
+	// instead of wrapping: on a build where long is 32 bits, a far-future stamp
+	// used to wrap to a negative value and get clamped to 0, which reads as
+	// "no timer set" and therefore as already expired.
+	static long ClampTime( long long iTime )
+	{
+		if ( iTime < 0 )
+			return 0;
+		if ( iTime > LONG_MAX )
+			return LONG_MAX;
+
+		return static_cast<long>(iTime);
+	}
+public:
 	CServTime operator+( int iTimeDiff ) const
 	{
 		CServTime time;
-		time.m_lPrivateTime = m_lPrivateTime + iTimeDiff;
-		if ( time.m_lPrivateTime < 0 )
-			time.m_lPrivateTime = 0;
-
+		time.m_lPrivateTime = ClampTime( static_cast<long long>(m_lPrivateTime) + iTimeDiff );
 		return( time );
 	}
 	CServTime operator-( int iTimeDiff ) const
 	{
 		CServTime time;
-		time.m_lPrivateTime = m_lPrivateTime - iTimeDiff;
-		if ( time.m_lPrivateTime < 0 )
-			time.m_lPrivateTime = 0;
-
+		time.m_lPrivateTime = ClampTime( static_cast<long long>(m_lPrivateTime) - iTimeDiff );
 		return( time );
 	}
 	int operator-( CServTime time ) const
 	{
-		return(m_lPrivateTime-time.m_lPrivateTime);
+		return GetTimeDiff( time );
 	}
 	bool operator==(CServTime time) const
 	{

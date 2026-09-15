@@ -273,7 +273,7 @@ bool CServerDef::r_LoadVal( CScript & s )
 			// m_ClientVersion.SetClientVer( s.GetArgRaw());
 			break;
 		case SC_CREATE:
-			m_timeCreate = CServTime::GetCurrentTime() + ( s.GetArgVal() * TICK_PER_SEC );
+			m_timeCreate = CServTime::GetCurrentTime() + Calc_TicksFromSeconds(s.GetArgVal());
 			break;
 		case SC_ADMINEMAIL:
 			if ( this != &g_Serv && !g_Serv.m_sEMail.IsEmpty() && strstr(s.GetArgStr(), g_Serv.m_sEMail) )
@@ -298,7 +298,7 @@ bool CServerDef::r_LoadVal( CScript & s )
 			break;
 		case SC_LASTVALIDTIME:
 			{
-				int iVal = s.GetArgVal() * TICK_PER_SEC;
+				int iVal = Calc_TicksFromSeconds(s.GetArgVal());
 				if ( iVal < 0 )
 					m_timeLastValid = CServTime::GetCurrentTime() + iVal;
 				else

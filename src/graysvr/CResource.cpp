@@ -779,7 +779,7 @@ bool CResource::r_LoadVal( CScript &s )
 			int index = ATOI(s.GetKey()+5);
 			if (index < 0 || index >= STAT_QTY)
 				return false;
-			g_Cfg.m_iRegenRate[index] = (s.GetArgVal() * TICK_PER_SEC);
+			g_Cfg.m_iRegenRate[index] = Calc_TicksFromSeconds(s.GetArgVal());
 			return true;
 		}
 		else if ( s.IsKeyHead("MAP", 3) )		//	MAPx=settings
@@ -893,7 +893,7 @@ bool CResource::r_LoadVal( CScript &s )
 			m_iBankWMax = s.GetArgVal() * WEIGHT_UNITS;
 			break;
 		case RC_CLIENTLINGER:
-			m_iClientLingerTime = s.GetArgVal() * TICK_PER_SEC;
+			m_iClientLingerTime = Calc_TicksFromSeconds(s.GetArgVal());
 			break;
 		case RC_CLIENTMAX:
 		case RC_CLIENTS:
@@ -904,31 +904,31 @@ bool CResource::r_LoadVal( CScript &s )
 			}
 			break;
 		case RC_CORPSENPCDECAY:
-			m_iDecay_CorpseNPC = s.GetArgVal()*60*TICK_PER_SEC;
+			m_iDecay_CorpseNPC = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_CORPSEPLAYERDECAY:
-			m_iDecay_CorpsePlayer = s.GetArgVal()*60*TICK_PER_SEC ;
+			m_iDecay_CorpsePlayer = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_CRIMINALTIMER:
-			m_iCriminalTimer = s.GetArgVal() * 60 * TICK_PER_SEC;
+			m_iCriminalTimer = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_STRIPPATH:	// Put TNG stripped files here.
 			m_sStripPath = CGFile::GetMergedFileName( s.GetArgStr(), "" );
 			break;
 		case RC_DEADSOCKETTIME:
-			m_iDeadSocketTime = s.GetArgVal()*60*TICK_PER_SEC;
+			m_iDeadSocketTime = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_DECAYTIMER:
-			m_iDecay_Item = s.GetArgVal() *60*TICK_PER_SEC;
+			m_iDecay_Item = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_GUARDLINGER:
-			m_iGuardLingerTime = s.GetArgVal() * 60 * TICK_PER_SEC;
+			m_iGuardLingerTime = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_HEARALL:
 			g_Log.SetLogMask( s.GetArgFlag( g_Log.GetLogMask(), LOGM_PLAYER_SPEAK ));
 			break;
 		case RC_HITSUPDATERATE:
-			m_iHitsUpdateRate = s.GetArgVal() * TICK_PER_SEC;
+			m_iHitsUpdateRate = Calc_TicksFromSeconds(s.GetArgVal());
 			break;
 		case RC_LOG:
 			g_Log.OpenLog( s.GetArgStr());
@@ -940,7 +940,7 @@ bool CResource::r_LoadVal( CScript &s )
 			g_Install.SetPreferPath( CGFile::GetMergedFileName( s.GetArgStr(), "" ));
 			break;
 		case RC_MAPCACHETIME:
-			m_iMapCacheTime = s.GetArgVal() * TICK_PER_SEC;
+			m_iMapCacheTime = Calc_TicksFromSeconds(s.GetArgVal());
 			break;
 		case RC_MAXACCOUNTLOGINTRIES:
 			{
@@ -964,7 +964,7 @@ bool CResource::r_LoadVal( CScript &s )
 				m_iMinKarma = m_iMaxKarma - 1;
 			break;
 		case RC_MINCHARDELETETIME:
-			m_iMinCharDeleteTime = s.GetArgVal()*60*TICK_PER_SEC;
+			m_iMinCharDeleteTime = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_MINKARMA:
 			m_iMinKarma = s.GetArgVal();
@@ -972,10 +972,10 @@ bool CResource::r_LoadVal( CScript &s )
 				m_iMaxKarma = m_iMinKarma + 1;
 			break;
 		case RC_MURDERDECAYTIME:
-			m_iMurderDecayTime = s.GetArgVal() * TICK_PER_SEC;
+			m_iMurderDecayTime = Calc_TicksFromSeconds(s.GetArgVal());
 			break;
 		case RC_WOOLGROWTHTIME:
-			m_iWoolGrowthTime = s.GetArgVal() * 60 * TICK_PER_SEC;
+			m_iWoolGrowthTime = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_PROFILE:
 			{
@@ -1011,7 +1011,7 @@ bool CResource::r_LoadVal( CScript &s )
 			m_iSkillPracticeMax = s.GetArgVal();
 			break;
 		case RC_SAVEPERIOD:
-			m_iSavePeriod = s.GetArgVal()*60*TICK_PER_SEC;
+			m_iSavePeriod = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 		case RC_SECTORSLEEP:
 			{
@@ -1020,7 +1020,7 @@ bool CResource::r_LoadVal( CScript &s )
 			}
 			break;
 		case RC_SAVEBACKGROUND:
-			m_iSaveBackgroundTime = s.GetArgVal() * 60 * TICK_PER_SEC;
+			m_iSaveBackgroundTime = Calc_TicksFromMinutes(s.GetArgVal());
 			break;
 
 		case RC_WORLDSAVE: // Put save files here.
@@ -1042,7 +1042,7 @@ bool CResource::r_LoadVal( CScript &s )
 			break;
 
 		case RC_TOOLTIPCACHE:
-			g_Cfg.m_iTooltipCache = s.GetArgVal() * TICK_PER_SEC;
+			g_Cfg.m_iTooltipCache = Calc_TicksFromSeconds(s.GetArgVal());
 			break;
 			
 #ifdef _MTNETWORK
