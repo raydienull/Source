@@ -1070,6 +1070,32 @@ CWorld::~CWorld()
 ///////////////////////////////////////////////
 // Loading and Saving.
 
+// Any world save file, or any backup of one, in pszBaseDir ?
+static bool WorldSaveExists( LPCTSTR pszBaseDir )
+{
+	static LPCTSTR const sm_szSaveNames[] = { "world", "chars", "multis", "data", "statics" };
+
+	CGString sPath;
+	for ( size_t i = 0; i < sizeof(sm_szSaveNames) / sizeof(sm_szSaveNames[0]); i++ )
+	{
+		sPath.Format( "%s" GRAY_FILE "%s" GRAY_SCRIPT, pszBaseDir, sm_szSaveNames[i] );
+		if ( CGFile::FileExists( sPath ))
+			return true;
+
+		// Backups are named <group><count><type>, see GetBackupName()
+		for ( int iGroup = 0; iGroup <= g_Cfg.m_iSaveBackupLevels; iGroup++ )
+		{
+			for ( int iCount = 0; iCount < 8; iCount++ )
+			{
+				sPath.Format( "%s" GRAY_FILE "b%d%d%c" GRAY_SCRIPT, pszBaseDir, iGroup, iCount, sm_szSaveNames[i][0] );
+				if ( CGFile::FileExists( sPath ))
+					return true;
+			}
+		}
+	}
+	return false;
+}
+
 void CWorld::GetBackupName( CGString & sArchive, LPCTSTR pszBaseDir, TCHAR chType, int iSaveCount ) // static
 {
 	ADDTOCALLSTACK("CWorld::GetBackupName");
@@ -1103,9 +1129,9 @@ bool CWorld::OpenScriptBackup( CScript & s, LPCTSTR pszBaseDir, LPCTSTR pszBaseN
 	CGString sSaveName;
 	sSaveName.Format( "%s" GRAY_FILE "%s%s", pszBaseDir, pszBaseName, GRAY_SCRIPT );
 
-	if ( rename( sSaveName, sArchive ))
+	// There is nothing to archive on the first save of a new world
+	if ( CGFile::FileExists( sSaveName ) && rename( sSaveName, sArchive ))
 	{
-		// May not exist if this is the first time.
 		g_Log.Event(LOGM_SAVE|LOGL_WARN, "Rename %s to '%s' FAILED code %d?\n", static_cast<LPCTSTR>(sSaveName), static_cast<LPCTSTR>(sArchive), CGFile::GetLastError() );
 	}
 
@@ -1653,7 +1679,9 @@ bool CWorld::LoadWorld() // Load world from script
 		sDataName = sArchive;
 	}
 
-	g_Log.Event(LOGL_FATAL|LOGM_INIT, "No previous backup available ?\n");
+	g_Log.Event(LOGL_FATAL|LOGM_INIT, "Can't load the world save in '%s' and no usable backup was found. "
+		"Restore the save files, or move them out of the way to start with an empty world.\n",
+		static_cast<LPCTSTR>(g_Cfg.m_sWorldBaseDir));
 	EXC_CATCH;
 
 	EXC_DEBUG_START;
@@ -1668,12 +1696,22 @@ bool CWorld::LoadAll() // Load world from script
 	m_UIDs.SetCount(8 * 1024);
 	m_Clock.Init();		// will be loaded from the world file.
 
+	// A new server has nowhere to save to yet
+	if ( !CGFile::MakeDirs(g_Cfg.m_sWorldBaseDir) )
+		g_Log.Event(LOGM_INIT|LOGL_WARN, "Can't create the save directory '%s'\n", static_cast<LPCTSTR>(g_Cfg.m_sWorldBaseDir));
+	if ( !g_Cfg.m_sAcctBaseDir.IsEmpty() && !CGFile::MakeDirs(g_Cfg.m_sAcctBaseDir) )
+		g_Log.Event(LOGM_INIT|LOGL_WARN, "Can't create the accounts directory '%s'\n", static_cast<LPCTSTR>(g_Cfg.m_sAcctBaseDir));
+
 	// Load all the accounts.
 	if ( !g_Accounts.Account_LoadAll(false) )
 		return false;
 
-	// Try to load the world and chars files .
-	if ( !LoadWorld() )
+	// With no save at all, start an empty world and write it out below. Only then: a save
+	// or a backup that exists but fails to load must stop the server, not be replaced.
+	bool fNewWorld = !WorldSaveExists(g_Cfg.m_sWorldBaseDir);
+	if ( fNewWorld )
+		g_Log.Event(LOGM_INIT|LOGL_WARN, "No world save found in '%s', starting with an empty world.\n", static_cast<LPCTSTR>(g_Cfg.m_sWorldBaseDir));
+	else if ( !LoadWorld() )	// Try to load the world and chars files.
 		return false;
 
 	m_timeStartup = GetCurrentTime();
@@ -1710,6 +1748,14 @@ bool CWorld::LoadAll() // Load world from script
 
 	// Set the current version now.
 	r_SetVal("VERSION", GRAY_VERSION);	// Set m_iLoadVersion
+
+	if ( fNewWorld )
+	{
+		g_Log.Event(LOGM_INIT, "Creating the world save files in '%s'...\n", static_cast<LPCTSTR>(g_Cfg.m_sWorldBaseDir));
+		if ( !Save(true) )
+			g_Log.Event(LOGM_INIT|LOGL_ERROR, "Could not write the new world save, it will be retried at the next save.\n");
+		SaveStatics();	// the regular save does not write it, and loading warns when it is missing
+	}
 
 	return true;
 }

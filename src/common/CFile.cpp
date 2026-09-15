@@ -5,7 +5,11 @@
 
 #include "graycom.h"
 
-#ifndef _WIN32
+#include <sys/types.h>
+#include <sys/stat.h>
+#ifdef _WIN32
+#include <direct.h>	// _mkdir
+#else
 #include <errno.h>	// errno
 #endif
 
@@ -72,6 +76,47 @@ CGString CGFile::GetMergedFileName( LPCTSTR pszBase, LPCTSTR pszName ) // static
 		strcat( szFilePath, pszName );
 	}
 	return static_cast<CGString>(szFilePath);
+}
+
+// No ADDTOCALLSTACK in these two: CLog uses them while opening the log.
+bool CGFile::FileExists( LPCTSTR pszPath ) // static
+{
+	struct stat fileStat;
+	return ( pszPath != NULL && stat( pszPath, &fileStat ) == 0 );
+}
+
+bool CGFile::MakeDirs( LPCTSTR pszDir ) // static
+{
+	if ( pszDir == NULL || pszDir[0] == '\0' )
+		return true;	// the current directory
+
+	TCHAR szPath[ _MAX_PATH ];
+	strncpy( szPath, pszDir, sizeof(szPath) - 1 );
+	szPath[ sizeof(szPath) - 1 ] = '\0';
+
+	size_t len = strlen( szPath );
+	while ( len > 1 && ( szPath[len-1] == '/' || szPath[len-1] == '\\' ))
+		szPath[--len] = '\0';
+
+	// Walk the path one component at a time, creating what is missing
+	for ( size_t i = 1; i <= len; i++ )
+	{
+		if ( i < len && szPath[i] != '/' && szPath[i] != '\\' )
+			continue;
+
+		TCHAR ch = szPath[i];
+		szPath[i] = '\0';
+		if ( ! FileExists( szPath ))
+		{
+#ifdef _WIN32
+			_mkdir( szPath );
+#else
+			mkdir( szPath, 0777 );
+#endif
+		}
+		szPath[i] = ch;
+	}
+	return FileExists( szPath );
 }
 
 LPCTSTR CGFile::GetFilesTitle( LPCTSTR pszPath )	// static

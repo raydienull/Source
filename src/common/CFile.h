@@ -244,6 +244,8 @@ public:
 	static LPCTSTR GetFilesTitle( LPCTSTR pszPath );
 	static LPCTSTR GetFilesExt( LPCTSTR pszName );
 	static CGString GetMergedFileName( LPCTSTR pszBase, LPCTSTR pszName );
+	static bool FileExists( LPCTSTR pszPath );	// file or directory
+	static bool MakeDirs( LPCTSTR pszDir );		// like mkdir -p, true = it exists now
 
 	static int GetLastError();
 

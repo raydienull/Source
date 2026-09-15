@@ -39,6 +39,9 @@ bool CLog::OpenLog( LPCTSTR pszBaseDirName )	// name set previously.
 		m_dateStamp.GetYear(), m_dateStamp.GetMonth(), m_dateStamp.GetDay());
 	CGString sFileName = GetMergedFileName(m_sBaseDir, pszTemp);
 
+	// A new server has no log directory yet
+	MakeDirs(m_sBaseDir);
+
 	// Use the OF_READWRITE to append to an existing file.
 	if ( CFileText::Open( sFileName, OF_SHARE_DENY_NONE|OF_READWRITE|OF_TEXT ) )
 	{

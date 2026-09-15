@@ -1,11 +1,17 @@
 # SphereServer makefile (Linux)
 #
 # Usage:
-#   make [ARCH=32|64] [NIGHTLY=1] [DEBUG=1]
+#   make [ARCH=64|32] [MYSQL=0] [DEBUG=1] [NIGHTLY=1]
+#   make help
 #
-# ARCH=32 is the reference build. ARCH=64 is experimental until the codebase is fully 64-bit safe.
+# ARCH=64 is the default. ARCH=32 builds the x86 binary and needs a 32-bit
+# toolchain (g++-multilib on Debian/Ubuntu) or tools/docker-build.sh 32.
 
-ARCH		?= 32
+ARCH		?= 64
+ifeq ($(filter $(ARCH),32 64),)
+    $(error ARCH must be 32 or 64, not '$(ARCH)')
+endif
+
 TARGET_NAME	:= spheresvr
 
 ifdef DEBUG
@@ -25,6 +31,29 @@ MAKEFLAGS	+= -j$(shell nproc)
 CXX		?= g++
 CC		?= gcc
 
+# Goals that only print or delete, and so must not require a working toolchain
+INFO_GOALS	:= clean flags help
+ifneq ($(MAKECMDGOALS),)
+    ifeq ($(filter-out $(INFO_GOALS),$(MAKECMDGOALS)),)
+        SKIP_PROBES := 1
+    endif
+endif
+
+# A 64-bit host usually lacks the 32-bit C runtime. Say so up front instead of
+# failing with "cannot find crti.o" after compiling everything.
+# (spaces, not tabs: make reads a tab indented $(info) as a recipe line)
+ifndef SKIP_PROBES
+    ifeq ($(ARCH),32)
+        CXX32_OK := $(shell printf 'int main(){return 0;}\n' | $(CXX) -m32 -xc++ - -o /dev/null 2>/dev/null && echo yes)
+        ifneq ($(CXX32_OK),yes)
+            $(info $(CXX) cannot build 32-bit binaries on this host.)
+            $(info Install the toolchain:   sudo apt-get install g++-multilib)
+            $(info or build in a container: tools/docker-build.sh 32)
+            $(error missing 32-bit toolchain)
+        endif
+    endif
+endif
+
 # MySQL client library (MariaDB Connector/C or MySQL client).
 # MYSQL=0 builds without it: the server then has no DB.* script object and no
 # async query thread, and needs nothing installed beyond a compiler.
@@ -40,14 +69,17 @@ else
 
     # Check the client library really works for this architecture, rather than
     # letting it fail as a bare "cannot find -lmariadb" after compiling everything.
-    # The 32-bit package is often missing on a 64-bit host.
-    # (spaces, not tabs: make reads a tab indented $(info) as a recipe line)
     DB_PROBE := \#include <mysql.h>\nint main(void){mysql_library_end();return 0;}
-    ifeq ($(filter clean flags,$(MAKECMDGOALS)),)
+    ifndef SKIP_PROBES
         DB_OK := $(shell printf '$(DB_PROBE)\n' | $(CC) -m$(ARCH) -xc - $(DB_CFLAGS) $(DB_LIBS) -o /dev/null 2>/dev/null && echo yes)
         ifneq ($(DB_OK),yes)
             $(info No usable MariaDB/MySQL client library for $(ARCH)-bit.)
-            $(info Install it:              sudo apt-get install libmariadb-dev$(if $(filter 32,$(ARCH)),:i386))
+            ifeq ($(ARCH),32)
+                # libmariadb-dev:i386 is not packaged on current Debian and Ubuntu
+                $(info Build in a container:    tools/docker-build.sh 32)
+            else
+                $(info Install it:              sudo apt-get install libmariadb-dev)
+            endif
             $(info or build without it:     make ARCH=$(ARCH) MYSQL=0)
             $(error missing dependency)
         endif
@@ -205,9 +237,26 @@ DEPS := $(OBJS:.o=.d)
 
 # BUILD RULES
 
-.PHONY: all clean flags version
+.PHONY: all clean flags help version
 
 all: $(TARGET)
+
+help:
+	@echo 'Usage: make [target] [option=value...]'
+	@echo
+	@echo 'Targets:'
+	@echo '  all (default)  Build $(TARGET)'
+	@echo '  clean          Remove build/ (every architecture and configuration)'
+	@echo '  flags          Print the compiler and linker command lines'
+	@echo '  help           Show this text'
+	@echo
+	@echo 'Options:'
+	@echo '  ARCH=64|32     Target architecture (default 64)'
+	@echo '  MYSQL=0        Build without the MariaDB/MySQL database layer'
+	@echo '  DEBUG=1        Unoptimized build with debug checks'
+	@echo '  NIGHTLY=1      Flag the build as nightly'
+	@echo
+	@echo 'Output: build/linux<arch>-<release|debug|nightly>/$(TARGET_NAME)'
 
 clean:
 	@rm -rf build/

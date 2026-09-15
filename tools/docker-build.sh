@@ -1,22 +1,27 @@
 #!/usr/bin/env bash
 # Builds the Linux server inside a Debian container, so the result does not depend on the host toolchain.
-# The same script is used by the CI workflow.
+# This is also the way to get a 32-bit build with the database layer on a modern 64-bit distribution,
+# and it is what the CI workflow uses.
 #
-# Usage: tools/docker-build.sh <32|64> [make options...]
-# Example: tools/docker-build.sh 32 NIGHTLY=1
+# Usage:   tools/docker-build.sh [64|32] [make options...]
+# Example: tools/docker-build.sh                 # 64-bit release build
+#          tools/docker-build.sh 32 NIGHTLY=1    # 32-bit nightly build
 
 set -euo pipefail
 
-ARCH="${1:-}"
+ARCH=64
+case "${1:-}" in
+	32|64) ARCH="$1"; shift ;;
+	-h|--help)
+		echo "Usage: $0 [64|32] [make options...]"
+		exit 0
+		;;
+esac
+
 case "${ARCH}" in
 	32) PLATFORM="linux/386" ;;
 	64) PLATFORM="linux/amd64" ;;
-	*)
-		echo "Usage: $0 <32|64> [make options...]" >&2
-		exit 1
-		;;
 esac
-shift
 
 IMAGE="${SPHERE_BUILD_IMAGE:-debian:bookworm-slim}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

@@ -16,9 +16,9 @@
 	#ifndef EV_WIN32_CLOSE_FD
 	# define EV_WIN32_CLOSE_FD(fd) close (fd)
 	#endif
-#else
-	#define EV_CONFIG "ev_config.h"
 #endif
+// No configure step: libev picks its backends from its own defaults (epoll, poll
+// and select on Linux)
 #define EV_STANDALONE 1
 
 #endif
