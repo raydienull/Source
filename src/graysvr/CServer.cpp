@@ -1889,7 +1889,9 @@ void CServer::OnTick()
 
 	EXC_SET("generic");
 	g_Cfg.OnTick(false);
+#ifndef _NOMYSQL
 	m_hdb.OnTick();
+#endif
 	if ( IsSetSpecific )
 	{
 		EXC_SET("time profile");

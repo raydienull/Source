@@ -6,7 +6,9 @@
 #include "../common/grayver.h"	// sphere version
 #include "PingServer.h"	// ping server
 #include "../network/network.h" // network thread
+#ifndef _NOMYSQL
 #include "../sphere/asyncdb.h"
+#endif
 #if !defined(_WIN32) || defined(_LIBEV)
 	#include "../sphere/linuxev.h"
 	#include "UnixTerminal.h"
@@ -483,7 +485,9 @@ bool Main::shouldExit()
 
 Main g_Main;
 extern PingServer g_PingServer;
+#ifndef _NOMYSQL
 extern CDataBaseAsyncHelper g_asyncHdb;
+#endif
 #if !defined(_WIN32) || defined(_LIBEV)
 	extern LinuxEv g_NetworkEvent;
 #endif
@@ -604,7 +608,9 @@ void Sphere_ExitServer()
 #endif
 	g_Main.waitForClose();
 	g_PingServer.waitForClose();
+#ifndef _NOMYSQL
 	g_asyncHdb.waitForClose();
+#endif
 #if !defined(_WIN32) || defined(_LIBEV)
 	if ( g_Cfg.m_fUseAsyncNetwork != 0 )
 		g_NetworkEvent.waitForClose();

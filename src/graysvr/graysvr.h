@@ -183,7 +183,9 @@ enum RESDISPLAY_VERSION
 #endif
 #include "../common/CQueue.h"
 #include "../common/CSectorTemplate.h"
+#ifndef _NOMYSQL
 #include "../common/CDataBase.h"
+#endif
 
 #include "CResource.h"
 #include "CServRef.h"
@@ -202,7 +204,6 @@ class CItemContainer;
 class CItemMessage;
 class CItemMap;
 class CItemMultiCustom;
-class CDataBase;
 
 ///////////////////////////////////////////////
 
@@ -1521,7 +1522,9 @@ public:
 #ifdef _NEW_FILE_COLLECTION
 	CFileObjContainer fcFileContainer;
 #endif
+#ifndef _NOMYSQL
 	CDataBase	m_hdb;			//	SQL data base
+#endif
 
 private:
 	void ProfileDump( CTextConsole * pSrc, bool bDump = false );

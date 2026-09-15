@@ -441,12 +441,14 @@ bool CScriptObj::r_GetRef( LPCTSTR & pszKey, CScriptObj * & pRef )
 		return true;
 	}
 #endif
+#ifndef _NOMYSQL
 	else if ( !strnicmp(pszKey, "DB.", 3) )
 	{
 		pszKey += 3;
 		pRef = &(g_Serv.m_hdb);
 		return true;
 	}
+#endif
 	return false;
 }
 
@@ -688,8 +690,10 @@ bool CScriptObj::r_WriteVal( LPCTSTR pszKey, CGString &sVal, CTextConsole * pSrc
 		else if ( pTmpRef == &(g_Serv.fcFileContainer) )
 			sVal.FormatHex( 0x04 );
 #endif
+#ifndef _NOMYSQL
 		else if (( pTmpRef == &(g_Serv.m_hdb) ) || dynamic_cast<CDataBase*>(pTmpRef) )
 			sVal.FormatHex( 0x00008 );
+#endif
 		else if ( dynamic_cast<CResourceDef*>(pTmpRef) )
 			sVal.FormatHex( 0x00010 );
 		else if ( dynamic_cast<CResourceBase*>(pTmpRef) )
