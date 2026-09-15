@@ -698,8 +698,8 @@ void CCrypt::LoginCryptStart( DWORD dwIP, BYTE * pEvent, size_t iLen )
 			if ( isValid == true )
 			{
 				LPCTSTR sRawAccountName = reinterpret_cast<LPCTSTR>( m_Raw + 1 );
+				// Str_GetBare terminates the output itself and stops short of its size
 				iAccountNameLen = Str_GetBare(pszAccountNameCheck, sRawAccountName, MAX_ACCOUNT_NAME_SIZE, ACCOUNT_NAME_VALID_CHAR);
-				pszAccountNameCheck[iLen] = '\0';
 				if (sRawAccountName && (iAccountNameLen != strlen(sRawAccountName)))
 				{
 					iAccountNameLen = 0;
