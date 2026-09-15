@@ -134,10 +134,14 @@ static		fullSbox _sBox_;		/* permuted MDStab based on keys */
    Note that we "interleave" 0,1, and 2,3 to avoid cache bank collisions
    in optimized assembly language.
 */
-#define	Fe32_(x,R) (_sBox_[0][2*_b(x,R  )] ^ _sBox_[0][2*_b(x,R+1)+1] ^	\
-					_sBox_[2][2*_b(x,R+2)] ^ _sBox_[2][2*_b(x,R+3)+1])
+/* The interleaved index runs to 511, across two rows of the [4][256] table.
+   Indexing a row with it is undefined, and GCC at -O2 uses the row bound to
+   break the S-box loops and read past the table, so go through a flat pointer. */
+#define	_sBoxFlat_(N)	(((tfDWORD *) _sBox_) + (N)*256)
+#define	Fe32_(x,R) (_sBoxFlat_(0)[2*_b(x,R  )] ^ _sBoxFlat_(0)[2*_b(x,R+1)+1] ^	\
+					_sBoxFlat_(2)[2*_b(x,R+2)] ^ _sBoxFlat_(2)[2*_b(x,R+3)+1])
 /* set a single S-box value, given the input byte */
-#define sbSet(N,i,J,v) { _sBox_[N&2][2*i+(N&1)+2*J]=MDStab[N][v]; }
+#define sbSet(N,i,J,v) { _sBoxFlat_(N&2)[2*i+(N&1)+2*J]=MDStab[N][v]; }
 #define	GetSboxKey	
 #endif
 
