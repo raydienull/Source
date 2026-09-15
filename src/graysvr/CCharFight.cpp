@@ -194,7 +194,7 @@ NOTO_TYPE CChar::Noto_GetFlag( const CChar * pCharViewer, bool fAllowIncog, bool
 		return iNotoFlag;
 
 	TCHAR * getNoto = Str_GetTemp(); // get the override tag for this viewer
-	sprintf(getNoto, "OVERRIDE.NOTO.0%lx", (DWORD) pCharViewer->GetUID() );
+	sprintf(getNoto, "OVERRIDE.NOTO.0%x", (DWORD) pCharViewer->GetUID() );
 	iNotoFlag = static_cast<NOTO_TYPE>(m_TagDefs.GetKeyNum(getNoto));
 	
 	if ( iNotoFlag != NOTO_INVALID )
@@ -240,7 +240,7 @@ NOTO_TYPE CChar::Noto_GetFlag( const CChar * pCharViewer, bool fAllowIncog, bool
 				}
 				else
 				{
-					DEBUG_ERR(("Too many owners (circular ownership?) to continue acquiring notoriety towards %s uid=0%lx\n", pMaster->GetName(), pMaster->GetUID().GetPrivateUID()));
+					DEBUG_ERR(("Too many owners (circular ownership?) to continue acquiring notoriety towards %s uid=0%x\n", pMaster->GetName(), pMaster->GetUID().GetPrivateUID()));
 					// too many owners, return the notoriety for however far we got down the chain
 				}
 			}

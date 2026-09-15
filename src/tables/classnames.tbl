@@ -53,7 +53,9 @@ ADD(CItemMessage, "CItemMessage");
 ADD(CItemVendable, "CItemVendable");
 ADD(CItemShip, "CItemShip");
 ADD(CItemStone, "CItemStone");
+#ifndef _NOMYSQL
 ADD(CDataBase, "CDataBase");
+#endif
 ADD(CItemBaseMulti, "CItemBaseMulti");
 ADD(CPathFinder, "CPathFinder");
 ADD(CPartyDef, "CPartyDef");

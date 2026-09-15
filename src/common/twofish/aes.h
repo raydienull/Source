@@ -76,37 +76,42 @@ INCLUDE IMPLEMENTATION SPECIFIC INFORMATION.
 	parameters at the bottom of the structs as appropriate.
 */
 
-#define BYTE unsigned char
-#define DWORD unsigned long
-typedef DWORD fullSbox[4][256];
+/* Twofish is defined over exactly 32 bit words. This used to "#define DWORD
+   unsigned long", which is 8 bytes on a 64 bit build - the whole key schedule
+   was silently the wrong width there. Private names, because that #define also
+   leaked over the DWORD of every file that included this one. */
+#include <stdint.h>
+typedef uint8_t  tfBYTE;
+typedef uint32_t tfDWORD;
+typedef tfDWORD fullSbox[4][256];
 
 /* The structure for key information */
 typedef struct
 {
-	BYTE direction;					/* Key used for encrypting or decrypting? */
+	tfBYTE direction;					/* Key used for encrypting or decrypting? */
 #if ALIGN32
-	BYTE dummyAlign[3];				/* keep 32-bit alignment */
+	tfBYTE dummyAlign[3];				/* keep 32-bit alignment */
 #endif
 	int keyLen;					/* Length of the key */
 	char keyMaterial[MAX_KEY_SIZE + 4];/* Raw key data in ASCII */
 
 	/* Twofish-specific parameters: */
-	DWORD keySig;					/* set to VALID_SIG by makeKey() */
+	tfDWORD keySig;					/* set to VALID_SIG by makeKey() */
 	int numRounds;				/* number of rounds in cipher */
-	DWORD key32[MAX_KEY_BITS / 32];	/* actual key bits, in dwords */
-	DWORD sboxKeys[MAX_KEY_BITS / 64];/* key bits used for S-boxes */
-	DWORD subKeys[TOTAL_SUBKEYS];	/* round subkeys, input/output whitening bits */
+	tfDWORD key32[MAX_KEY_BITS / 32];	/* actual key bits, in dwords */
+	tfDWORD sboxKeys[MAX_KEY_BITS / 64];/* key bits used for S-boxes */
+	tfDWORD subKeys[TOTAL_SUBKEYS];	/* round subkeys, input/output whitening bits */
 #if REENTRANT
 	fullSbox sBox8x32;				/* fully expanded S-box */
 #if defined(COMPILE_KEY) && defined(USE_ASM)
 #undef	VALID_SIG
 #define	VALID_SIG	 0x504D4F43		/* 'COMP':  C is compiled with -DCOMPILE_KEY */
-	DWORD cSig1;					/* set after first "compile" (zero at "init") */
+	tfDWORD cSig1;					/* set after first "compile" (zero at "init") */
 	void* encryptFuncPtr;			/* ptr to asm encrypt function */
 	void* decryptFuncPtr;			/* ptr to asm decrypt function */
-	DWORD codeSize;					/* size of compiledCode */
-	DWORD cSig2;					/* set after first "compile" */
-	BYTE compiledCode[5000];		/* make room for the code itself */
+	tfDWORD codeSize;					/* size of compiledCode */
+	tfDWORD cSig2;					/* set after first "compile" */
+	tfBYTE compiledCode[5000];		/* make room for the code itself */
 #endif
 #endif
 } keyInstance;
@@ -114,25 +119,25 @@ typedef struct
 /* The structure for cipher information */
 typedef struct
 {
-	BYTE mode;						/* MODE_ECB, MODE_CBC, or MODE_CFB1 */
+	tfBYTE mode;						/* MODE_ECB, MODE_CBC, or MODE_CFB1 */
 #if ALIGN32
-	BYTE dummyAlign[3];				/* keep 32-bit alignment */
+	tfBYTE dummyAlign[3];				/* keep 32-bit alignment */
 #endif
-	BYTE IV[MAX_IV_SIZE];			/* CFB1 iv bytes  (CBC uses iv32) */
+	tfBYTE IV[MAX_IV_SIZE];			/* CFB1 iv bytes  (CBC uses iv32) */
 
 	/* Twofish-specific parameters: */
-	DWORD cipherSig;				/* set to VALID_SIG by cipherInit() */
-	DWORD iv32[BLOCK_SIZE / 32];		/* CBC IV bytes arranged as dwords */
+	tfDWORD cipherSig;				/* set to VALID_SIG by cipherInit() */
+	tfDWORD iv32[BLOCK_SIZE / 32];		/* CBC IV bytes arranged as dwords */
 } cipherInstance;
 
 /* Function protoypes */
-int makeKey( keyInstance* key, BYTE direction, int keyLen, char* keyMaterial );
+int makeKey( keyInstance* key, tfBYTE direction, int keyLen, char* keyMaterial );
 
-int cipherInit( cipherInstance* cipher, BYTE mode, char* IV );
+int cipherInit( cipherInstance* cipher, tfBYTE mode, char* IV );
 
-int blockEncrypt( cipherInstance* cipher, keyInstance* key, BYTE* input, int inputLen, BYTE* outBuffer );
+int blockEncrypt( cipherInstance* cipher, keyInstance* key, tfBYTE* input, int inputLen, tfBYTE* outBuffer );
 
-int blockDecrypt( cipherInstance* cipher, keyInstance* key, BYTE* input, int inputLen, BYTE* outBuffer );
+int blockDecrypt( cipherInstance* cipher, keyInstance* key, tfBYTE* input, int inputLen, tfBYTE* outBuffer );
 
 int reKey( keyInstance* key );	/* do key schedule using modified key.keyDwords */
 
@@ -149,7 +154,7 @@ int TableOp( int op );
 #endif
 
 #if BLOCK_SIZE == 128			/* optimize block copies */
-#define		Copy1(d,s,N)	((DWORD *)(d))[N] = ((DWORD *)(s))[N]
+#define		Copy1(d,s,N)	((tfDWORD *)(d))[N] = ((tfDWORD *)(s))[N]
 #define		BlockCopy(d,s)	{ Copy1(d,s,0);Copy1(d,s,1);Copy1(d,s,2);Copy1(d,s,3); }
 #else
 #define		BlockCopy(d,s)	{ memcpy(d,s,BLOCK_SIZE/8); }

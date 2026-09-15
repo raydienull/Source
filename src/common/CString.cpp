@@ -246,7 +246,7 @@ void CGString::FormatUVal( unsigned long iVal )
 
 void CGString::FormatHex( DWORD dwVal )
 {
-	Format("0%lx", dwVal);
+	Format("0%x", dwVal);
 }
 int CGString::Compare( LPCTSTR pStr ) const
 {

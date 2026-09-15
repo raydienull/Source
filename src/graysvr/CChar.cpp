@@ -1763,7 +1763,7 @@ do_default:
 				ptDst.Move( GetDirStr( pszKey ) );
 				CRegionBase * pArea = ptDst.GetRegion( REGION_TYPE_MULTI | REGION_TYPE_AREA );
 				if ( !pArea )
-					sVal.FormatHex( ULONG_MAX );
+					sVal.FormatHex( UINT_MAX );	// DWORD is 32 bits, ULONG_MAX is not
 				else
 				{
 					WORD		wBlockFlags	= 0;
@@ -2562,7 +2562,7 @@ bool CChar::r_Load( CScript & s ) // Load a character from script
 	int iResultCode = CObjBase::IsWeird();
 	if ( iResultCode )
 	{
-		DEBUG_ERR(( "Char 0%lx Invalid, id='%s', code=0%x\n", static_cast<DWORD>(GetUID()), static_cast<LPCTSTR>(GetResourceName()), iResultCode ));
+		DEBUG_ERR(( "Char 0%x Invalid, id='%s', code=0%x\n", static_cast<DWORD>(GetUID()), static_cast<LPCTSTR>(GetResourceName()), iResultCode ));
 		Delete();
 	}
 

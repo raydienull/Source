@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <aio.h>
 #include <cctype>
+#include <stdint.h>	// fixed width types, used just below
 
 #ifndef _MAX_PATH			// stdlib.h ?
 	#define _MAX_PATH   260 	// max. length of full pathname
@@ -48,12 +49,15 @@
 		#undef LONG
 	#endif
 
-	#define BYTE 		unsigned char	// 8 bits
-	#define WORD 		unsigned short	// 16 bits
-	#define DWORD		unsigned long	// 32 bits
+	// Fixed widths. These were spelled "unsigned long", which is 8 bytes on a
+	// 64 bit build, so every DWORD field of every packet and save structure
+	// silently doubled in size there.
+	#define BYTE		uint8_t		// 8 bits
+	#define WORD		uint16_t	// 16 bits
+	#define DWORD		uint32_t	// 32 bits
 	#define UINT		unsigned int
-	#define LONGLONG	unsigned long
-	#define LONG		unsigned long
+	#define LONGLONG	int64_t		// 64 bits
+	#define LONG		int32_t		// 32 bits
 #endif	// BYTE
 
 #define MAKEWORD(low,high) ((WORD)(((BYTE)(low))|(((WORD)((BYTE)(high)))<<8)))

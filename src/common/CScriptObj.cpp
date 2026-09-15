@@ -441,12 +441,14 @@ bool CScriptObj::r_GetRef( LPCTSTR & pszKey, CScriptObj * & pRef )
 		return true;
 	}
 #endif
+#ifndef _NOMYSQL
 	else if ( !strnicmp(pszKey, "DB.", 3) )
 	{
 		pszKey += 3;
 		pRef = &(g_Serv.m_hdb);
 		return true;
 	}
+#endif
 	return false;
 }
 
@@ -688,8 +690,10 @@ bool CScriptObj::r_WriteVal( LPCTSTR pszKey, CGString &sVal, CTextConsole * pSrc
 		else if ( pTmpRef == &(g_Serv.fcFileContainer) )
 			sVal.FormatHex( 0x04 );
 #endif
+#ifndef _NOMYSQL
 		else if (( pTmpRef == &(g_Serv.m_hdb) ) || dynamic_cast<CDataBase*>(pTmpRef) )
 			sVal.FormatHex( 0x00008 );
+#endif
 		else if ( dynamic_cast<CResourceDef*>(pTmpRef) )
 			sVal.FormatHex( 0x00010 );
 		else if ( dynamic_cast<CResourceBase*>(pTmpRef) )
@@ -2169,7 +2173,7 @@ jump_in:
 						}
 						else
 						{
-							DEBUG_ERR(( "FORCHAR[layer/memorytype] called on char 0%lx (%s) without arguments.\n", static_cast<DWORD>(pCharThis->GetUID()), pCharThis->GetName() ));
+							DEBUG_ERR(( "FORCHAR[layer/memorytype] called on char 0%x (%s) without arguments.\n", static_cast<DWORD>(pCharThis->GetUID()), pCharThis->GetName() ));
 							iRet = OnTriggerRun( s, TRIGRUN_SECTION_FALSE, pSrc, pArgs, pResult );
 						}
 					}
@@ -2210,13 +2214,13 @@ jump_in:
 								}
 								else
 								{
-									DEBUG_ERR(( "FORCONT called on invalid uid/invalid container (UID: 0%lx).\n", pCurUid.GetObjUID() ));
+									DEBUG_ERR(( "FORCONT called on invalid uid/invalid container (UID: 0%x).\n", pCurUid.GetObjUID() ));
 									iRet = OnTriggerRun( s, TRIGRUN_SECTION_FALSE, pSrc, pArgs, pResult );
 								}
 							}
 							else
 							{
-								DEBUG_ERR(( "FORCONT called with invalid arguments (UID: 0%lx, LEVEL: %s).\n", pCurUid.GetObjUID(), (ppArgs[1] && *ppArgs[1]) ? ppArgs[1] : "255" ));
+								DEBUG_ERR(( "FORCONT called with invalid arguments (UID: 0%x, LEVEL: %s).\n", pCurUid.GetObjUID(), (ppArgs[1] && *ppArgs[1]) ? ppArgs[1] : "255" ));
 								iRet = OnTriggerRun( s, TRIGRUN_SECTION_FALSE, pSrc, pArgs, pResult );
 							}
 						}
@@ -2259,19 +2263,19 @@ jump_in:
 								}
 								else
 								{
-									DEBUG_ERR(( "FORCONT[id/type] called on container 0%lx with incorrect arguments.\n", (DWORD)pObjCont->GetUID() ));
+									DEBUG_ERR(( "FORCONT[id/type] called on container 0%x with incorrect arguments.\n", (DWORD)pObjCont->GetUID() ));
 									iRet = OnTriggerRun( s, TRIGRUN_SECTION_FALSE, pSrc, pArgs, pResult );
 								}
 							}
 							else
 							{
-								DEBUG_ERR(( "FORCONT[id/type] called on container 0%lx with incorrect arguments.\n", (DWORD)pObjCont->GetUID() ));
+								DEBUG_ERR(( "FORCONT[id/type] called on container 0%x with incorrect arguments.\n", (DWORD)pObjCont->GetUID() ));
 								iRet = OnTriggerRun( s, TRIGRUN_SECTION_FALSE, pSrc, pArgs, pResult );
 							}
 						}
 						else
 						{
-							DEBUG_ERR(( "FORCONT[id/type] called on container 0%lx without arguments.\n", (DWORD)pObjCont->GetUID() ));
+							DEBUG_ERR(( "FORCONT[id/type] called on container 0%x without arguments.\n", (DWORD)pObjCont->GetUID() ));
 							iRet = OnTriggerRun( s, TRIGRUN_SECTION_FALSE, pSrc, pArgs, pResult );
 						}
 					}

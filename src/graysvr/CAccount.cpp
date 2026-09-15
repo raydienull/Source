@@ -732,7 +732,7 @@ void CAccount::OnLogin( CClient * pClient )
 		// link the admin client.
 		g_Serv.m_iAdminClients++;
 	}
-	g_Log.Event( LOGM_CLIENTS_LOG, "%lx:Login '%s'\n", pClient->GetSocketID(), static_cast<LPCTSTR>(GetName()));
+	g_Log.Event( LOGM_CLIENTS_LOG, "%x:Login '%s'\n", pClient->GetSocketID(), static_cast<LPCTSTR>(GetName()));
 }
 
 void CAccount::OnLogout(CClient *pClient, bool bWasChar)
@@ -1221,12 +1221,12 @@ bool CAccount::r_LoadVal( CScript & s )
 				CChar * pChar = uid.CharFind();
 				if (pChar == NULL)
 				{
-					DEBUG_ERR(( "Invalid CHARUID 0%lx for account '%s'\n", static_cast<DWORD>(uid), static_cast<LPCTSTR>(GetName())));
+					DEBUG_ERR(( "Invalid CHARUID 0%x for account '%s'\n", static_cast<DWORD>(uid), static_cast<LPCTSTR>(GetName())));
 					return( false );
 				}
 				if ( ! IsMyAccountChar( pChar ))
 				{
-					DEBUG_ERR(( "CHARUID 0%lx (%s) not attached to account '%s'\n", static_cast<DWORD>(uid), static_cast<LPCTSTR>(pChar->GetName()), static_cast<LPCTSTR>(GetName())));
+					DEBUG_ERR(( "CHARUID 0%x (%s) not attached to account '%s'\n", static_cast<DWORD>(uid), static_cast<LPCTSTR>(pChar->GetName()), static_cast<LPCTSTR>(GetName())));
 					return( false );
 				}
 				AttachChar(pChar);

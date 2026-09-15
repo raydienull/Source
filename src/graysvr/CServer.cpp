@@ -363,7 +363,7 @@ LPCTSTR CServer::GetStatusString( BYTE iIndex ) const
 		case 0x22: // '"'
 			{
 			// shown in the INFO page in game.
-			sprintf(pTemp, GRAY_TITLE ", Name=%s, Age=%i, Clients=%lu, Items=%lu, Chars=%lu, Mem=%luK\n",
+			sprintf(pTemp, GRAY_TITLE ", Name=%s, Age=%i, Clients=%u, Items=%u, Chars=%u, Mem=%uK\n",
 				GetName(), iHours, iClients, StatGet(SERV_STAT_ITEMS), StatGet(SERV_STAT_CHARS), StatGet(SERV_STAT_MEM));
 			}
 			break;
@@ -373,7 +373,7 @@ LPCTSTR CServer::GetStatusString( BYTE iIndex ) const
 			break;
 		case 0x25: // '%'
 			// ConnectUO Status string
-			sprintf(pTemp, GRAY_TITLE " Items=%lu, Mobiles=%lu, Clients=%lu, Mem=%lu", StatGet(SERV_STAT_ITEMS), StatGet(SERV_STAT_CHARS), iClients, StatGet(SERV_STAT_MEM));
+			sprintf(pTemp, GRAY_TITLE " Items=%u, Mobiles=%u, Clients=%u, Mem=%u", StatGet(SERV_STAT_ITEMS), StatGet(SERV_STAT_CHARS), iClients, StatGet(SERV_STAT_MEM));
 			break;
 	}
 
@@ -409,7 +409,7 @@ void CServer::ListClients( CTextConsole * pConsole ) const
 			if ( pClient->IsPriv(PRIV_GM) || pClient->GetPrivLevel() >= PLEVEL_Counsel )
 				chRank = pChar->IsStatFlag(STATF_Insubstantial) ? '*' : '+';
 
-			sprintf(tmpMsg, "%lx:Acc%c'%s', (%s) Char='%s',(%s)\n",
+			sprintf(tmpMsg, "%x:Acc%c'%s', (%s) Char='%s',(%s)\n",
 				pClient->GetSocketID(),
 				chRank,
 				static_cast<LPCTSTR>(pClient->GetAccount()->GetName()),
@@ -436,7 +436,7 @@ void CServer::ListClients( CTextConsole * pConsole ) const
 					break;
 			}
 
-			sprintf(tmpMsg, "%lx:Acc='%s', (%s) %s\n",
+			sprintf(tmpMsg, "%x:Acc='%s', (%s) %s\n",
 				pClient->GetSocketID(),
 				pClient->GetAccount() != NULL ? static_cast<LPCTSTR>(pClient->GetAccount()->GetName()) : "<NA>",
 				pClient->GetPeerStr(),
@@ -483,7 +483,7 @@ bool CServer::OnConsoleCmd( CGString & sText, CTextConsole * pSrc )
 				"# = Immediate Save world (## to save both world and statics)\n"
 				"A = Accounts file update\n"
 				"B message = Broadcast a message\n"
-				"C = Clients List (%lu)\n"
+				"C = Clients List (%u)\n"
 				"D = Dump data to external file (DA to dump areas)\n"
 				"E = Clear internal variables (like script profile)\n"
 				"G = Garbage collection\n"
@@ -972,7 +972,7 @@ void CServer::ProfileDump( CTextConsole * pSrc, bool bDump )
 
 			divby = llTimeProfileFrequency / 1000;
 
-			pSrc->SysMessagef( "Scripts: called %lu times and took %i.%04i msec (%i.%04i msec average). Reporting with highest average.\n",
+			pSrc->SysMessagef( "Scripts: called %u times and took %i.%04i msec (%i.%04i msec average). Reporting with highest average.\n",
 					g_profiler.called,
 					static_cast<int>(g_profiler.total / divby),
 					static_cast<int>(((g_profiler.total * 10000) / (divby)) % 10000),
@@ -980,7 +980,7 @@ void CServer::ProfileDump( CTextConsole * pSrc, bool bDump )
 					static_cast<int>(((average * 10000) / (divby)) % 10000)
 			);
 			if (ftDump != NULL)
-				ftDump->Printf("Scripts: called %lu times and took %i.%04i msec (%i.%04i msec average). Reporting with highest average.\n",
+				ftDump->Printf("Scripts: called %u times and took %i.%04i msec (%i.%04i msec average). Reporting with highest average.\n",
 					g_profiler.called,
 					static_cast<int>(g_profiler.total / divby),
 					static_cast<int>(((g_profiler.total * 10000) / (divby)) % 10000),
@@ -992,7 +992,7 @@ void CServer::ProfileDump( CTextConsole * pSrc, bool bDump )
 			{
 				if ( pFun->average > average )
 				{
-					pSrc->SysMessagef( "FUNCTION '%s' called %lu times, took %i.%04i msec average (%i.%04i min, %i.%04i max), total: %i.%04i msec\n",
+					pSrc->SysMessagef( "FUNCTION '%s' called %u times, took %i.%04i msec average (%i.%04i min, %i.%04i max), total: %i.%04i msec\n",
 						pFun->name,
 						pFun->called,
 						static_cast<int>(pFun->average / divby),
@@ -1005,7 +1005,7 @@ void CServer::ProfileDump( CTextConsole * pSrc, bool bDump )
 						static_cast<int>(((pFun->total * 10000) / (divby)) % 10000)
 					);
 					if (ftDump != NULL)
-						ftDump->Printf("FUNCTION '%s' called %lu times, took %i.%04i msec average (%i.%04i min, %i.%04i max), total: %i.%04i msec\n",
+						ftDump->Printf("FUNCTION '%s' called %u times, took %i.%04i msec average (%i.%04i min, %i.%04i max), total: %i.%04i msec\n",
 							pFun->name,
 							pFun->called,
 							static_cast<int>(pFun->average / divby),
@@ -1023,7 +1023,7 @@ void CServer::ProfileDump( CTextConsole * pSrc, bool bDump )
 			{
 				if ( pTrig->average > average )
 				{
-					pSrc->SysMessagef( "TRIGGER '%s' called %lu times, took %i.%04i msec average (%i.%04i min, %i.%04i max), total: %i.%04i msec\n",
+					pSrc->SysMessagef( "TRIGGER '%s' called %u times, took %i.%04i msec average (%i.%04i min, %i.%04i max), total: %i.%04i msec\n",
 						pTrig->name,
 						pTrig->called,
 						static_cast<int>(pTrig->average / divby),
@@ -1036,7 +1036,7 @@ void CServer::ProfileDump( CTextConsole * pSrc, bool bDump )
 						static_cast<int>(((pTrig->total * 10000) / (divby)) % 10000)
 					);
 					if (ftDump != NULL)
-						ftDump->Printf("TRIGGER '%s' called %lu times, took %i.%04i msec average (%i.%04i min, %i.%04i max), total: %i.%04i msec\n",
+						ftDump->Printf("TRIGGER '%s' called %u times, took %i.%04i msec average (%i.%04i min, %i.%04i max), total: %i.%04i msec\n",
 							pTrig->name,
 							pTrig->called,
 							static_cast<int>(pTrig->average / divby),
@@ -1572,7 +1572,7 @@ bool CServer::r_Verb( CScript &s, CTextConsole * pSrc )
 
 	EXC_DEBUG_START;
 	EXC_ADD_SCRIPTSRC;
-	g_Log.EventDebug("source '%s' char '%s' uid '0%lx'\n", (pSrc && pSrc->GetName()) ? pSrc->GetName() : "",
+	g_Log.EventDebug("source '%s' char '%s' uid '0%x'\n", (pSrc && pSrc->GetName()) ? pSrc->GetName() : "",
 		(pSrc && pSrc->GetChar()) ? pSrc->GetChar()->GetName() : "",
 		(pSrc && pSrc->GetChar()) ? (DWORD)pSrc->GetChar()->GetUID() : 0 );
 	EXC_DEBUG_END;
@@ -1889,7 +1889,9 @@ void CServer::OnTick()
 
 	EXC_SET("generic");
 	g_Cfg.OnTick(false);
+#ifndef _NOMYSQL
 	m_hdb.OnTick();
+#endif
 	if ( IsSetSpecific )
 	{
 		EXC_SET("time profile");

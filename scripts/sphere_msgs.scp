@@ -533,7 +533,7 @@ IMSG_DEF_FONT	3
 //msg_gmpage_notified		"Available Game Masters have been notified of your request."
 //msg_gmpage_qnum		"There are %d messages queued ahead of you"
 //msg_gmpage_qued		"There is no Game Master available to take your call. Your message has been queued."
-//msg_gmpage_rec		"GM Page from %s [0%lx] @ %d,%d,%d,%d : %s"
+//msg_gmpage_rec		"GM Page from %s [0%x] @ %d,%d,%d,%d : %s"
 //msg_gmpage_update		"You have an existing page. It has been updated."
 //msg_gmpages		"There are %d GM pages pending. Use %cPAGE command."
 //msg_guards		"Guards can now be called on you."

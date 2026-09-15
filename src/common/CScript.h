@@ -223,7 +223,7 @@ public:
 	}
 	void WriteKeyHex( LPCTSTR pszKey, DWORD dwVal )
 	{
-		WriteKeyFormat( pszKey, "0%lx", dwVal );
+		WriteKeyFormat( pszKey, "0%x", dwVal );
 	}
 
 	CScript();

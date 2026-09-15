@@ -25,16 +25,40 @@ MAKEFLAGS	+= -j$(shell nproc)
 CXX		?= g++
 CC		?= gcc
 
-# MySQL client library (MariaDB Connector/C or MySQL client)
-DB_CONFIG	:= $(shell command -v mariadb_config 2>/dev/null || command -v mysql_config 2>/dev/null)
-DB_CFLAGS	:= $(shell $(DB_CONFIG) --include 2>/dev/null)
-DB_LIBS		:= $(shell $(DB_CONFIG) --libs 2>/dev/null)
+# MySQL client library (MariaDB Connector/C or MySQL client).
+# MYSQL=0 builds without it: the server then has no DB.* script object and no
+# async query thread, and needs nothing installed beyond a compiler.
+MYSQL		?= 1
+
+ifeq ($(MYSQL),0)
+    DEFINES_DB := -D_NOMYSQL
+else
+    DB_CONFIG := $(shell command -v mariadb_config 2>/dev/null || command -v mysql_config 2>/dev/null)
+    DB_CFLAGS := $(shell $(DB_CONFIG) --include 2>/dev/null)
+    DB_LIBS   := $(shell $(DB_CONFIG) --libs 2>/dev/null)
+    SRC_DB    := src/common/CDataBase.cpp src/sphere/asyncdb.cpp
+
+    # Check the client library really works for this architecture, rather than
+    # letting it fail as a bare "cannot find -lmariadb" after compiling everything.
+    # The 32-bit package is often missing on a 64-bit host.
+    # (spaces, not tabs: make reads a tab indented $(info) as a recipe line)
+    DB_PROBE := \#include <mysql.h>\nint main(void){mysql_library_end();return 0;}
+    ifeq ($(filter clean flags,$(MAKECMDGOALS)),)
+        DB_OK := $(shell printf '$(DB_PROBE)\n' | $(CC) -m$(ARCH) -xc - $(DB_CFLAGS) $(DB_LIBS) -o /dev/null 2>/dev/null && echo yes)
+        ifneq ($(DB_OK),yes)
+            $(info No usable MariaDB/MySQL client library for $(ARCH)-bit.)
+            $(info Install it:              sudo apt-get install libmariadb-dev$(if $(filter 32,$(ARCH)),:i386))
+            $(info or build without it:     make ARCH=$(ARCH) MYSQL=0)
+            $(error missing dependency)
+        endif
+    endif
+endif
 
 
 # COMPILER FLAGS
 
 ARCH_FLAGS	:= -m$(ARCH)
-DEFINES		:= -DGRAY_SVR -D_CONSOLE -D_REENTRANT -D_LINUX -D_MTNETWORK -D_NEWGUILDSYSTEM -DTHREAD_TRACK_CALLSTACK
+DEFINES		:= -DGRAY_SVR -D_CONSOLE -D_REENTRANT -D_LINUX -D_MTNETWORK -D_NEWGUILDSYSTEM -DTHREAD_TRACK_CALLSTACK $(DEFINES_DB)
 COMMON_FLAGS	:= $(ARCH_FLAGS) -pipe -fexceptions -fnon-call-exceptions -fno-omit-frame-pointer -fno-strict-aliasing -ffast-math
 
 ifdef DEBUG
@@ -72,7 +96,6 @@ SRC := \
 	src/common/CArray.cpp \
 	src/common/CAssoc.cpp \
 	src/common/CAtom.cpp \
-	src/common/CDataBase.cpp \
 	src/common/CEncrypt.cpp \
 	src/common/CException.cpp \
 	src/common/CExpression.cpp \
@@ -168,12 +191,13 @@ SRC := \
 	src/network/packet.cpp \
 	src/network/receive.cpp \
 	src/network/send.cpp \
-	src/sphere/asyncdb.cpp \
 	src/sphere/linuxev.cpp \
 	src/sphere/mutex.cpp \
 	src/sphere/ProfileData.cpp \
 	src/sphere/strings.cpp \
 	src/sphere/threads.cpp
+
+SRC += $(SRC_DB)
 
 OBJS := $(patsubst %,$(BUILD_DIR)/%.o,$(SRC))
 DEPS := $(OBJS:.o=.d)
