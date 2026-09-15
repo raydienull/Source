@@ -9,6 +9,7 @@
 
 #include "CTime.h"
 #include <limits>
+#include <stdint.h>	// uintptr_t, used by MAKEINTRESOURCE below
 #include <vector>
 
 enum RES_TYPE	// all the script resource blocks we know how to deal with !

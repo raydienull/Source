@@ -37,13 +37,13 @@
 #ifdef USE_ASM
 extern	int useAsm;				/* ok to use ASM code? */
 
-typedef	int cdecl CipherProc( cipherInstance* cipher, keyInstance* key, BYTE* input, int inputLen, BYTE* outBuffer );
+typedef	int cdecl CipherProc( cipherInstance* cipher, keyInstance* key, tfBYTE* input, int inputLen, tfBYTE* outBuffer );
 typedef int	cdecl KeySetupProc( keyInstance* key );
 
 extern CipherProc* blockEncrypt_86;	/* ptr to ASM functions */
 extern CipherProc* blockDecrypt_86;
 extern KeySetupProc* reKey_86;
-extern DWORD		cdecl TwofishAsmCodeSize();
+extern tfDWORD		cdecl TwofishAsmCodeSize();
 #endif
 
 /*
@@ -59,7 +59,7 @@ int needToBuildMDS = 1;		/* is MDStab initialized yet? */
 #define		BIG_TAB		0
 
 #if BIG_TAB
-BYTE bigTab[4][256][256];	/* pre-computed S-box */
+tfBYTE bigTab[4][256][256];	/* pre-computed S-box */
 #endif
 
 /* number of rounds for various key sizes:  128, 192, 256 */
@@ -74,7 +74,7 @@ CONST int numRounds[4] =
 #else
 static		fullSbox _sBox_;		/* permuted MDStab based on keys */
 #endif
-#define _sBox8_(N) (((BYTE *) _sBox_) + (N)*256)
+#define _sBox8_(N) (((tfBYTE *) _sBox_) + (N)*256)
 
 /*------- see what level of S-box precomputation we need to do -----*/
 #if   defined(ZERO_KEY)
@@ -95,7 +95,7 @@ static		fullSbox _sBox_;		/* permuted MDStab based on keys */
 		MDStab[2][p8(21)[p8(22)[p8(23)[p8(24)[_b(x,R+2)]^b2(SKEY[3])]^b2(SKEY[2])]^b2(SKEY[1])]^b2(SKEY[0])] ^ \
 		MDStab[3][p8(31)[p8(32)[p8(33)[p8(34)[_b(x,R+3)]^b3(SKEY[3])]^b3(SKEY[2])]^b3(SKEY[1])]^b3(SKEY[0])] )
 
-#define	GetSboxKey	DWORD SKEY[4];	/* local copy */ \
+#define	GetSboxKey	tfDWORD SKEY[4];	/* local copy */ \
 					memcpy(SKEY,key->sboxKeys,sizeof(SKEY));
 /*----------------------------------------------------------------*/
 #elif defined(MIN_KEY)
@@ -105,7 +105,7 @@ static		fullSbox _sBox_;		/* permuted MDStab based on keys */
 				   MDStab[2][p8(21)[_sBox8_(2)[_b(x,R+2)]] ^ b2(SKEY0)] ^ \
 				   MDStab[3][p8(31)[_sBox8_(3)[_b(x,R+3)]] ^ b3(SKEY0)])
 #define sbSet(N,i,J,v) { _sBox8_(N)[i+J] = v; }
-#define	GetSboxKey	DWORD SKEY0	= key->sboxKeys[0]		/* local copy */
+#define	GetSboxKey	tfDWORD SKEY0	= key->sboxKeys[0]		/* local copy */
 /*----------------------------------------------------------------*/
 #elif defined(PART_KEY)	
 #define	MOD_STRING	"(Partial keying)"
@@ -154,8 +154,8 @@ const char* modeString = MOD_STRING;
 /* end of debug macros */
 
 #ifdef GetCodeSize
-extern DWORD Here( DWORD x );			/* return caller's address! */
-DWORD TwofishCodeStart()
+extern tfDWORD Here( tfDWORD x );			/* return caller's address! */
+tfDWORD TwofishCodeStart()
 {
 	return Here( 0 );
 }
@@ -222,16 +222,16 @@ int TableOp( int op )
 *	happens automatically below. 
 *
 -****************************************************************************/
-int ParseHexDword( int bits, CONST char* srcTxt, DWORD* d, char* dstTxt )
+int ParseHexDword( int bits, CONST char* srcTxt, tfDWORD* d, char* dstTxt )
 {
 	int i;
 	char c;
-	DWORD b;
+	tfDWORD b;
 
 	union	/* make sure LittleEndian is defined correctly */
 	{
-		BYTE b[4];
-		DWORD d[1];
+		tfBYTE b[4];
+		tfDWORD d[1];
 	} v;
 	v.d[0] = 1;
 	if ( v.b[0 ^ ADDR_XOR] != 1 )
@@ -299,14 +299,14 @@ int ParseHexDword( int bits, CONST char* srcTxt, DWORD* d, char* dstTxt )
 *	macro Mij(x).
 *
 -****************************************************************************/
-DWORD f32( DWORD x, CONST DWORD* k32, int keyLen )
+tfDWORD f32( tfDWORD x, CONST tfDWORD* k32, int keyLen )
 {
-	BYTE b[4];
+	tfBYTE b[4];
 
 	/* Run each byte thru 8x8 S-boxes, xoring with key byte at each stage. */
 	/* Note that each byte goes through a different combination of S-boxes.*/
 
-	*( ( DWORD * ) b ) = Bswap( x );	/* make b[0] = LSB, b[3] = MSB */
+	*( ( tfDWORD * ) b ) = Bswap( x );	/* make b[0] = LSB, b[3] = MSB */
 	switch ( ( ( keyLen + 63 ) / 64 ) & 3 )
 	{
 	case 0:
@@ -357,10 +357,10 @@ DWORD f32( DWORD x, CONST DWORD* k32, int keyLen )
 *	without lookup tables.
 *
 -****************************************************************************/
-DWORD RS_MDS_Encode( DWORD k0, DWORD k1 )
+tfDWORD RS_MDS_Encode( tfDWORD k0, tfDWORD k1 )
 {
 	int i, j;
-	DWORD r;
+	tfDWORD r;
 
 	for ( i = r = 0; i < 2; i++ )
 	{
@@ -391,18 +391,18 @@ DWORD RS_MDS_Encode( DWORD k0, DWORD k1 )
 void BuildMDS()
 {
 	int i;
-	DWORD d;
-	BYTE m1[2], mX[2], mY[4];
+	tfDWORD d;
+	tfBYTE m1[2], mX[2], mY[4];
 
 	for ( i = 0; i < 256; i++ )
 	{
 		m1[0] = P8x8[0][i];		/* compute all the matrix elements */
-		mX[0] = ( BYTE ) Mul_X( m1[0] );
-		mY[0] = ( BYTE ) Mul_Y( m1[0] );
+		mX[0] = ( tfBYTE ) Mul_X( m1[0] );
+		mY[0] = ( tfBYTE ) Mul_Y( m1[0] );
 
 		m1[1] = P8x8[1][i];
-		mX[1] = ( BYTE ) Mul_X( m1[1] );
-		mY[1] = ( BYTE ) Mul_Y( m1[1] );
+		mX[1] = ( tfBYTE ) Mul_X( m1[1] );
+		mY[1] = ( tfBYTE ) Mul_Y( m1[1] );
 
 #undef	Mul_1					/* change what the pre-processor does with Mij */
 #undef	Mul_X
@@ -433,7 +433,7 @@ void BuildMDS()
 #if BIG_TAB
 	{
 		int j, k;
-		BYTE* q0,* q1;
+		tfBYTE* q0,* q1;
 
 		for ( i = 0; i < 4; i++ )
 		{
@@ -476,11 +476,11 @@ void BuildMDS()
 *	Note that key->numRounds must be even and >= 2 here.
 *
 -****************************************************************************/
-void ReverseRoundSubkeys( keyInstance* key, BYTE newDir )
+void ReverseRoundSubkeys( keyInstance* key, tfBYTE newDir )
 {
-	DWORD t0, t1;
-	register DWORD * r0 = key->subKeys + ROUND_SUBKEYS;
-	register DWORD * r1 = r0 + 2 * key->numRounds - 2;
+	tfDWORD t0, t1;
+	register tfDWORD * r0 = key->subKeys + ROUND_SUBKEYS;
+	register tfDWORD * r1 = r0 + 2 * key->numRounds - 2;
 
 	for ( ; r0 < r1; r0 += 2,r1 -= 2 )
 	{
@@ -517,19 +517,19 @@ void ReverseRoundSubkeys( keyInstance* key, BYTE newDir )
 *
 -****************************************************************************/
 #if defined(__BORLANDC__)	/* do it inline */
-#define Xor32(dst,src,i) { ((DWORD *)dst)[i] = ((DWORD *)src)[i] ^ tmpX; } 
+#define Xor32(dst,src,i) { ((tfDWORD *)dst)[i] = ((tfDWORD *)src)[i] ^ tmpX; } 
 #define	Xor256(dst,src,b)				\
 	{									\
-	register DWORD tmpX=0x01010101u * b;\
+	register tfDWORD tmpX=0x01010101u * b;\
 	for (i=0;i<64;i+=4)					\
 		{ Xor32(dst,src,i  ); Xor32(dst,src,i+1); Xor32(dst,src,i+2); Xor32(dst,src,i+3); }	\
 	}
 #else						/* do it as a function call */
-void Xor256( void* dst, void* src, BYTE b )
+void Xor256( void* dst, void* src, tfBYTE b )
 {
-	register DWORD	x = b * 0x01010101u;	/* replicate byte to all four bytes */
-	register DWORD * d = ( DWORD * ) dst;
-	register DWORD * s = ( DWORD * ) src;
+	register tfDWORD	x = b * 0x01010101u;	/* replicate byte to all four bytes */
+	register tfDWORD * d = ( tfDWORD * ) dst;
+	register tfDWORD * s = ( tfDWORD * ) src;
 #define X_8(N)	{ d[N]=s[N] ^ x; d[N+1]=s[N+1] ^ x; }
 #define X_32(N)	{ X_8(N); X_8(N+2); X_8(N+4); X_8(N+6); }
 	X_32( 0 ); X_32( 8 ); X_32( 16 ); X_32( 24 );	/* all inline */
@@ -560,9 +560,9 @@ int reKey( keyInstance* key )
 {
 	int i, j, k64Cnt, keyLen;
 	int subkeyCnt;
-	DWORD A = 0, B = 0, q;
-	DWORD sKey[MAX_KEY_BITS / 64], k32e[MAX_KEY_BITS / 64], k32o[MAX_KEY_BITS / 64];
-	BYTE L0[256], L1[256];	/* small local 8-bit permutations */
+	tfDWORD A = 0, B = 0, q;
+	tfDWORD sKey[MAX_KEY_BITS / 64], k32e[MAX_KEY_BITS / 64], k32o[MAX_KEY_BITS / 64];
+	tfBYTE L0[256], L1[256];	/* small local 8-bit permutations */
 
 #if VALIDATE_PARMS
 #if ALIGN32
@@ -578,7 +578,7 @@ int reKey( keyInstance* key )
 
 #define	F32(res,x,k32)	\
 	{															\
-	DWORD t=x;													\
+	tfDWORD t=x;													\
 	switch (k64Cnt & 3)											\
 		{														\
 		case 0:  /* same as 4 */								\
@@ -650,14 +650,14 @@ int reKey( keyInstance* key )
 #if BIG_TAB
 #define	one128(N,J)	sbSet(N,i,J,L0[i+J])
 #define	sb128(N) {						\
-			BYTE *qq=bigTab[N][b##N(sKey[1])];	\
+			tfBYTE *qq=bigTab[N][b##N(sKey[1])];	\
 			Xor256(L0,qq,b##N(sKey[0]));		\
 			for (i=0;i<256;i+=2) { one128(N,0); one128(N,1); } }
 #else
 #define	one128(N,J)	sbSet(N,i,J,p8(N##1)[L0[i+J]]^k0)
 #define	sb128(N) {					\
 			Xor256(L0,p8(N##2),b##N(sKey[1]));	\
-			{ register DWORD k0=b##N(sKey[0]);	\
+			{ register tfDWORD k0=b##N(sKey[0]);	\
 			for (i=0;i<256;i+=2) { one128(N,0); one128(N,1); } } }
 #endif
 #elif defined(MIN_KEY)
@@ -670,14 +670,14 @@ int reKey( keyInstance* key )
 #define one192(N,J) sbSet(N,i,J,p8(N##1)[p8(N##2)[L0[i+J]]^k1]^k0)
 #define	sb192(N) {						\
 			Xor256(L0,p8(N##3),b##N(sKey[2]));	\
-			{ register DWORD k0=b##N(sKey[0]);	\
-			  register DWORD k1=b##N(sKey[1]);	\
+			{ register tfDWORD k0=b##N(sKey[0]);	\
+			  register tfDWORD k1=b##N(sKey[1]);	\
 			  for (i=0;i<256;i+=2) { one192(N,0); one192(N,1); } } }
 #elif defined(MIN_KEY)
 #define one192(N,J) sbSet(N,i,J,p8(N##2)[L0[i+J]]^k1)
 #define	sb192(N) {						\
 			Xor256(L0,p8(N##3),b##N(sKey[2]));	\
-			{ register DWORD k1=b##N(sKey[1]);	\
+			{ register tfDWORD k1=b##N(sKey[1]);	\
 			  for (i=0;i<256;i+=2) { one192(N,0); one192(N,1); } } }
 #endif
 			sb192( 0 ); sb192( 1 ); sb192( 2 ); sb192( 3 );
@@ -690,8 +690,8 @@ int reKey( keyInstance* key )
 			for (i=0;i<256;i+=2) {L0[i  ]=p8(N##3)[L1[i]];		\
 								  L0[i+1]=p8(N##3)[L1[i+1]]; }	\
 			Xor256(L0,L0,b##N(sKey[2]));						\
-			{ register DWORD k0=b##N(sKey[0]);					\
-			  register DWORD k1=b##N(sKey[1]);					\
+			{ register tfDWORD k0=b##N(sKey[0]);					\
+			  register tfDWORD k1=b##N(sKey[1]);					\
 			  for (i=0;i<256;i+=2) { one256(N,0); one256(N,1); } } }
 #elif defined(MIN_KEY)
 #define one256(N,J) sbSet(N,i,J,p8(N##2)[L0[i+J]]^k1)
@@ -700,7 +700,7 @@ int reKey( keyInstance* key )
 			for (i=0;i<256;i+=2) {L0[i  ]=p8(N##3)[L1[i]];		\
 								  L0[i+1]=p8(N##3)[L1[i+1]]; }	\
 			Xor256(L0,L0,b##N(sKey[2]));						\
-			{ register DWORD k1=b##N(sKey[1]);					\
+			{ register tfDWORD k1=b##N(sKey[1]);					\
 			  for (i=0;i<256;i+=2) { one256(N,0); one256(N,1); } } }
 #endif
 			sb256( 0 ); sb256( 1 );	sb256( 2 ); sb256( 3 );
@@ -752,7 +752,7 @@ int reKey( keyInstance* key )
 * Notes:	This parses the key bits from keyMaterial.  Zeroes out unused key bits
 *
 -****************************************************************************/
-int makeKey( keyInstance* key, BYTE direction, int keyLen, CONST char* keyMaterial )
+int makeKey( keyInstance* key, tfBYTE direction, int keyLen, CONST char* keyMaterial )
 {
 #if VALIDATE_PARMS				/* first, sanity check on parameters */
 	if ( key == NULL )
@@ -799,7 +799,7 @@ int makeKey( keyInstance* key, BYTE direction, int keyLen, CONST char* keyMateri
 *					else error code (e.g., BAD_CIPHER_MODE)
 *
 -****************************************************************************/
-int cipherInit( cipherInstance* cipher, BYTE mode, CONST char* IV )
+int cipherInit( cipherInstance* cipher, tfBYTE mode, CONST char* IV )
 {
 	int i;
 #if VALIDATE_PARMS				/* first, sanity check on parameters */
@@ -819,7 +819,7 @@ int cipherInit( cipherInstance* cipher, BYTE mode, CONST char* IV )
 		if ( ParseHexDword( BLOCK_SIZE, IV, cipher->iv32, NULL ) )
 			return BAD_IV_MAT;
 		for ( i = 0; i < BLOCK_SIZE / 32; i++ )	/* make byte-oriented copy for CFB1 */
-			( ( DWORD * ) cipher->IV )[i] = Bswap( cipher->iv32[i] );
+			( ( tfDWORD * ) cipher->IV )[i] = Bswap( cipher->iv32[i] );
 	}
 
 	cipher->mode = mode;
@@ -849,18 +849,18 @@ int cipherInit( cipherInstance* cipher, BYTE mode, CONST char* IV )
 *		 sizes can be supported.
 *
 -****************************************************************************/
-int blockEncrypt( cipherInstance* cipher, keyInstance* key, CONST BYTE* input, int inputLen, BYTE* outBuffer )
+int blockEncrypt( cipherInstance* cipher, keyInstance* key, CONST tfBYTE* input, int inputLen, tfBYTE* outBuffer )
 {
 	int i, n;						/* loop counters */
-	DWORD x[BLOCK_SIZE / 32];			/* block being encrypted */
-	DWORD t0, t1;					/* temp variables */
+	tfDWORD x[BLOCK_SIZE / 32];			/* block being encrypted */
+	tfDWORD t0, t1;					/* temp variables */
 	int rounds = key->numRounds;	/* number of rounds */
-	BYTE bit, bit0, ctBit, carry;		/* temps for CFB */
+	tfBYTE bit, bit0, ctBit, carry;		/* temps for CFB */
 
 	/* make local copies of things for faster access */
 	int mode = cipher->mode;
-	DWORD sk[TOTAL_SUBKEYS];
-	DWORD IV[BLOCK_SIZE / 32];
+	tfDWORD sk[TOTAL_SUBKEYS];
+	tfDWORD IV[BLOCK_SIZE / 32];
 
 	GetSboxKey;
 
@@ -885,9 +885,9 @@ int blockEncrypt( cipherInstance* cipher, keyInstance* key, CONST BYTE* input, i
 		cipher->mode = MODE_ECB;	/* do encryption in ECB */
 		for ( n = 0; n < inputLen; n++ )
 		{
-			blockEncrypt( cipher, key, cipher->IV, BLOCK_SIZE, ( BYTE * ) x );
+			blockEncrypt( cipher, key, cipher->IV, BLOCK_SIZE, ( tfBYTE * ) x );
 			bit0 = 0x80 >> ( n & 7 );/* which bit position in byte */
-			ctBit = ( input[n / 8] & bit0 ) ^ ( ( ( ( BYTE * ) x )[0] & 0x80 ) >> ( n & 7 ) );
+			ctBit = ( input[n / 8] & bit0 ) ^ ( ( ( ( tfBYTE * ) x )[0] & 0x80 ) >> ( n & 7 ) );
 			outBuffer[n / 8] = ( outBuffer[n / 8] & ~bit0 ) | ctBit;
 			carry = ctBit >> ( 7 - ( n & 7 ) );
 			for ( i = BLOCK_SIZE / 8 - 1; i >= 0; i-- )
@@ -915,7 +915,7 @@ int blockEncrypt( cipherInstance* cipher, keyInstance* key, CONST BYTE* input, i
 #endif
 #endif
 	/* make local copy of subkeys for speed */
-	memcpy( sk, key->subKeys, sizeof( DWORD ) * ( ROUND_SUBKEYS + 2 * rounds ) );
+	memcpy( sk, key->subKeys, sizeof( tfDWORD ) * ( ROUND_SUBKEYS + 2 * rounds ) );
 	if ( mode == MODE_CBC )
 		BlockCopy( IV, cipher->iv32 )
 	else
@@ -928,7 +928,7 @@ int blockEncrypt( cipherInstance* cipher, keyInstance* key, CONST BYTE* input, i
 		if ( cipher->mode == MODE_CBC )
 			DebugDump( cipher->iv32, "", IV_ROUND, 0, 0, 0, 0 );
 #endif
-#define	LoadBlockE(N)  x[N]=Bswap(((DWORD *)input)[N]) ^ sk[INPUT_WHITEN+N] ^ IV[N]
+#define	LoadBlockE(N)  x[N]=Bswap(((tfDWORD *)input)[N]) ^ sk[INPUT_WHITEN+N] ^ IV[N]
 		LoadBlockE( 0 );	LoadBlockE( 1 );	LoadBlockE( 2 );	LoadBlockE( 3 );
 		DebugDump( x, "", 0, 0, 0, 0, 0 );
 #define	EncryptRound(K,R,id)	\
@@ -970,17 +970,17 @@ int blockEncrypt( cipherInstance* cipher, keyInstance* key, CONST BYTE* input, i
 
 		/* need to do (or undo, depending on your point of view) final swap */
 #if LittleEndian
-#define	StoreBlockE(N)	((DWORD *)outBuffer)[N]=x[N^2] ^ sk[OUTPUT_WHITEN+N]
+#define	StoreBlockE(N)	((tfDWORD *)outBuffer)[N]=x[N^2] ^ sk[OUTPUT_WHITEN+N]
 #else
-#define	StoreBlockE(N)	{ t0=x[N^2] ^ sk[OUTPUT_WHITEN+N]; ((DWORD *)outBuffer)[N]=Bswap(t0); }
+#define	StoreBlockE(N)	{ t0=x[N^2] ^ sk[OUTPUT_WHITEN+N]; ((tfDWORD *)outBuffer)[N]=Bswap(t0); }
 #endif
 		StoreBlockE( 0 );	StoreBlockE( 1 );	StoreBlockE( 2 );	StoreBlockE( 3 );
 		if ( mode == MODE_CBC )
 		{
-			IV[0] = Bswap( ( ( DWORD * ) outBuffer )[0] );
-			IV[1] = Bswap( ( ( DWORD * ) outBuffer )[1] );
-			IV[2] = Bswap( ( ( DWORD * ) outBuffer )[2] );
-			IV[3] = Bswap( ( ( DWORD * ) outBuffer )[3] );
+			IV[0] = Bswap( ( ( tfDWORD * ) outBuffer )[0] );
+			IV[1] = Bswap( ( ( tfDWORD * ) outBuffer )[1] );
+			IV[2] = Bswap( ( ( tfDWORD * ) outBuffer )[2] );
+			IV[3] = Bswap( ( ( tfDWORD * ) outBuffer )[3] );
 		}
 #ifdef DEBUG
 		DebugDump( outBuffer, "", rounds + 1, 0, 0, 0, 1 );
@@ -1017,18 +1017,18 @@ int blockEncrypt( cipherInstance* cipher, keyInstance* key, CONST BYTE* input, i
 *		 sizes can be supported.
 *
 -****************************************************************************/
-int blockDecrypt( cipherInstance* cipher, keyInstance* key, CONST BYTE* input, int inputLen, BYTE* outBuffer )
+int blockDecrypt( cipherInstance* cipher, keyInstance* key, CONST tfBYTE* input, int inputLen, tfBYTE* outBuffer )
 {
 	int i, n;						/* loop counters */
-	DWORD x[BLOCK_SIZE / 32];			/* block being encrypted */
-	DWORD t0, t1;					/* temp variables */
+	tfDWORD x[BLOCK_SIZE / 32];			/* block being encrypted */
+	tfDWORD t0, t1;					/* temp variables */
 	int rounds = key->numRounds;	/* number of rounds */
-	BYTE bit, bit0, ctBit, carry;		/* temps for CFB */
+	tfBYTE bit, bit0, ctBit, carry;		/* temps for CFB */
 
 	/* make local copies of things for faster access */
 	int mode = cipher->mode;
-	DWORD sk[TOTAL_SUBKEYS];
-	DWORD IV[BLOCK_SIZE / 32];
+	tfDWORD sk[TOTAL_SUBKEYS];
+	tfDWORD IV[BLOCK_SIZE / 32];
 
 	GetSboxKey;
 
@@ -1053,10 +1053,10 @@ int blockDecrypt( cipherInstance* cipher, keyInstance* key, CONST BYTE* input, i
 		cipher->mode = MODE_ECB;	/* do encryption in ECB */
 		for ( n = 0; n < inputLen; n++ )
 		{
-			blockEncrypt( cipher, key, cipher->IV, BLOCK_SIZE, ( BYTE * ) x );
+			blockEncrypt( cipher, key, cipher->IV, BLOCK_SIZE, ( tfBYTE * ) x );
 			bit0 = 0x80 >> ( n & 7 );
 			ctBit = input[n / 8] & bit0;
-			outBuffer[n / 8] = ( outBuffer[n / 8] & ~bit0 ) | ( ctBit ^ ( ( ( ( BYTE * ) x )[0] & 0x80 ) >> ( n & 7 ) ) );
+			outBuffer[n / 8] = ( outBuffer[n / 8] & ~bit0 ) | ( ctBit ^ ( ( ( ( tfBYTE * ) x )[0] & 0x80 ) >> ( n & 7 ) ) );
 			carry = ctBit >> ( 7 - ( n & 7 ) );
 			for ( i = BLOCK_SIZE / 8 - 1; i >= 0; i-- )
 			{
@@ -1082,7 +1082,7 @@ int blockDecrypt( cipherInstance* cipher, keyInstance* key, CONST BYTE* input, i
 #endif
 #endif
 	/* make local copy of subkeys for speed */
-	memcpy( sk, key->subKeys, sizeof( DWORD ) * ( ROUND_SUBKEYS + 2 * rounds ) );
+	memcpy( sk, key->subKeys, sizeof( tfDWORD ) * ( ROUND_SUBKEYS + 2 * rounds ) );
 	if ( mode == MODE_CBC )
 		BlockCopy( IV, cipher->iv32 )
 	else
@@ -1091,7 +1091,7 @@ int blockDecrypt( cipherInstance* cipher, keyInstance* key, CONST BYTE* input, i
 	for ( n = 0; n < inputLen; n += BLOCK_SIZE,input += BLOCK_SIZE / 8,outBuffer += BLOCK_SIZE / 8 )
 	{
 		DebugDump( input, "\n", rounds + 1, 0, 0, 0, 1 );
-#define LoadBlockD(N) x[N^2]=Bswap(((DWORD *)input)[N]) ^ sk[OUTPUT_WHITEN+N]
+#define LoadBlockD(N) x[N^2]=Bswap(((tfDWORD *)input)[N]) ^ sk[OUTPUT_WHITEN+N]
 		LoadBlockD( 0 );	LoadBlockD( 1 );	LoadBlockD( 2 );	LoadBlockD( 3 );
 
 #define	DecryptRound(K,R,id)								\
@@ -1137,9 +1137,9 @@ int blockDecrypt( cipherInstance* cipher, keyInstance* key, CONST BYTE* input, i
 		if ( cipher->mode == MODE_ECB )
 		{
 #if LittleEndian
-#define	StoreBlockD(N)	((DWORD *)outBuffer)[N] = x[N] ^ sk[INPUT_WHITEN+N]
+#define	StoreBlockD(N)	((tfDWORD *)outBuffer)[N] = x[N] ^ sk[INPUT_WHITEN+N]
 #else
-#define	StoreBlockD(N)	{ t0=x[N]^sk[INPUT_WHITEN+N]; ((DWORD *)outBuffer)[N] = Bswap(t0); }
+#define	StoreBlockD(N)	{ t0=x[N]^sk[INPUT_WHITEN+N]; ((tfDWORD *)outBuffer)[N] = Bswap(t0); }
 #endif
 			StoreBlockD( 0 );	StoreBlockD( 1 );	StoreBlockD( 2 );	StoreBlockD( 3 );
 #undef  StoreBlockD
@@ -1149,8 +1149,8 @@ int blockDecrypt( cipherInstance* cipher, keyInstance* key, CONST BYTE* input, i
 		else
 		{
 #define	StoreBlockD(N)	x[N]   ^= sk[INPUT_WHITEN+N] ^ IV[N];	\
-						IV[N]   = Bswap(((DWORD *)input)[N]);	\
-						((DWORD *)outBuffer)[N] = Bswap(x[N]);
+						IV[N]   = Bswap(((tfDWORD *)input)[N]);	\
+						((tfDWORD *)outBuffer)[N] = Bswap(x[N]);
 			StoreBlockD( 0 );	StoreBlockD( 1 );	StoreBlockD( 2 );	StoreBlockD( 3 );
 #undef  StoreBlockD
 			DebugDump( outBuffer, "", -1, 0, 0, 0, 1 );
@@ -1163,9 +1163,9 @@ int blockDecrypt( cipherInstance* cipher, keyInstance* key, CONST BYTE* input, i
 }
 
 #ifdef GetCodeSize
-DWORD TwofishCodeSize()
+tfDWORD TwofishCodeSize()
 {
-	DWORD x = Here( 0 );
+	tfDWORD x = Here( 0 );
 #ifdef USE_ASM
 	if ( useAsm & 3 )
 		return TwofishAsmCodeSize();
