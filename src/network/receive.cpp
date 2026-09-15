@@ -2175,12 +2175,21 @@ bool PacketGumpDialogRet::onReceive(NetState* net)
 	// package up the gump response info.
 	CDialogResponseArgs resp;
 
+	// the counts come straight from the client, so cap them at what the packet
+	// can actually hold (4 bytes per checked id) before looping - otherwise a
+	// bogus count spins us into a multi-billion iteration, multi-GB array.
+	if (checkCount > getRemainingLength() / sizeof(DWORD))
+		checkCount = getRemainingLength() / sizeof(DWORD);
+
 	// store the returned checked boxes' ids for possible later use
 	for (size_t i = 0; i < checkCount; i++)
 		resp.m_CheckArray.Add(readInt32());
 
 
 	DWORD textCount = readInt32();
+	// same cap: each text entry is at least 4 bytes (id + length) before its data
+	if (textCount > getRemainingLength() / (2 * sizeof(WORD)))
+		textCount = getRemainingLength() / (2 * sizeof(WORD));
 	TCHAR* text = Str_GetTemp();
 	for (size_t i = 0; i < textCount; i++)
 	{

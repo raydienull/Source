@@ -1516,7 +1516,7 @@ public:
 	CServTime m_timeShutdown;	// When to perform the shutdowm (g_World.clock)
 	CChat m_Chats;	// keep all the active chats
 
-	char	m_PacketFilter[255][32];	// list of packet filtering functions
+	char	m_PacketFilter[256][32];	// list of packet filtering functions (indexed by a full BYTE packet id, 0..255)
 
 	CFileObj	fhFile;			//	file script object
 #ifdef _NEW_FILE_COLLECTION

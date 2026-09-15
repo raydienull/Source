@@ -174,7 +174,9 @@ bool CClient::addDeleteErr(BYTE code, unsigned int iSlot)
 	// code
 	if (code == PacketDeleteError::Success)
 		return true;
-	CChar * pChar = m_tmSetupCharList[iSlot].CharFind();
+	// iSlot comes straight from the client and may be out of range (Setup_Delete
+	// rejects that, but we still index the list here for the log line) - guard it.
+	CChar * pChar = (iSlot < COUNTOF(m_tmSetupCharList)) ? m_tmSetupCharList[iSlot].CharFind() : NULL;
 	g_Log.EventWarn("%x:Bad Char Delete Attempted %d (acct='%s', char='%s', ip='%s')\n", GetSocketID(), code, GetAccount()->GetName(), ((pChar != NULL) ? pChar->GetName() : ""), GetPeerStr());
 	new PacketDeleteError(this, static_cast<PacketDeleteError::Reason>(code));
 	return( false );

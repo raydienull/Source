@@ -859,7 +859,7 @@ bool CResource::r_LoadVal( CScript &s )
 		else if ( s.IsKeyHead("PACKET", 6) )	//	PACKETx=<function name to execute upon packet>
 		{
 			int index = ATOI(s.GetKey() + 6);
-			if (( index >= 0 ) && ( index < 255 )) // why XCMD_QTY? let's them hook every possible custom packet
+			if (( index >= 0 ) && ( index <= 255 )) // a packet id is a full BYTE, so allow every one including 0xFF
 			{
 				char *args = s.GetArgRaw();
 				if ( !args || ( strlen(args) >= 31 ))
@@ -872,7 +872,7 @@ bool CResource::r_LoadVal( CScript &s )
 				}
 			}
 			else
-				g_Log.EventError("Packet filtering index %d out of range [0..254]\n", index);
+				g_Log.EventError("Packet filtering index %d out of range [0..255]\n", index);
 		}
 
 		return(false);
