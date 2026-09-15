@@ -21,8 +21,6 @@ jobs:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
-    # 64-bit builds are experimental: a failure is reported but does not block the release
-    continue-on-error: ${{ matrix.experimental }}
 
     strategy:
       fail-fast: false
@@ -33,25 +31,21 @@ jobs:
             arch: '32'
             output: build/linux32-nightly
             package: SphereSvr-linux-x86
-            experimental: false
-          - name: Linux x64 (experimental)
+          - name: Linux x64
             os: ubuntu-24.04
             arch: '64'
             output: build/linux64-nightly
-            package: SphereSvr-linux-x64-experimental
-            experimental: true
+            package: SphereSvr-linux-x64
           - name: Windows x86
             os: windows-2022
             arch: Win32
             output: build/Win32-Nightly
             package: SphereSvr-windows-x86
-            experimental: false
-          - name: Windows x64 (experimental)
+          - name: Windows x64
             os: windows-2022
             arch: x64
             output: build/x64-Nightly
-            package: SphereSvr-windows-x64-experimental
-            experimental: true
+            package: SphereSvr-windows-x64
 
     steps:
       - name: Checkout repository
@@ -135,7 +129,6 @@ jobs:
           {
             printf 'Automated build of commit [%s](%s/%s/commit/%s).\n\n' "${SHORT_SHA}" "${GITHUB_SERVER_URL}" "${GITHUB_REPOSITORY}" "${GITHUB_SHA}"
             printf '```\n%s\n```\n\n' "${COMMIT_MSG}"
-            printf '64-bit packages are experimental and may be missing if their build failed.\n'
           } > "${NOTES_FILE}"
 
           if gh release view "${TAG}" >/dev/null 2>&1; then
