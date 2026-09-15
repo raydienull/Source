@@ -2507,7 +2507,7 @@ bool PacketScreenSize::onReceive(NetState* net)
 	DWORD x = readInt32();
 	DWORD y = readInt32();
 	
-	DEBUG_MSG(("0x%x - 0x%x (%ld-%ld)\n", x, y, x, y));
+	DEBUG_MSG(("0x%x - 0x%x (%u-%u)\n", x, y, x, y));
 
 	client->SetScreenSize(x, y);
 	return true;
