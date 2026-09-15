@@ -351,7 +351,7 @@ CItem * CItem::CreateHeader( TCHAR * pArg, CObjBase * pCont, bool fDupeCheck, CC
 		// Is the item movable ?
 		if ( ! pItem->IsMovableType() && pCont && pCont->IsItem())
 		{
-			DEBUG_ERR(( "Script Error: 0%x item is not movable type, cont=0%lx\n", id, (DWORD)(pCont->GetUID()) ));
+			DEBUG_ERR(( "Script Error: 0%x item is not movable type, cont=0%x\n", id, (DWORD)(pCont->GetUID()) ));
 			pItem->Delete();
 			return( NULL );
 		}
@@ -653,7 +653,7 @@ int CItem::FixWeirdness()
 			}
 			else
 			{
-				DEBUG_ERR(( "'%s' Bad Link to 0%lx\n", static_cast<LPCTSTR>(GetName()), static_cast<DWORD>(m_uidLink)));
+				DEBUG_ERR(( "'%s' Bad Link to 0%x\n", static_cast<LPCTSTR>(GetName()), static_cast<DWORD>(m_uidLink)));
 				m_uidLink.InitUID();
 				iResultCode = 0x2205;
 				return( iResultCode );	// get rid of it.
@@ -863,7 +863,7 @@ int CItem::FixWeirdness()
 			// blank unlinked keys.
 			if ( m_itKey.m_lockUID && ! IsValidUID())
 			{
-				DEBUG_ERR(( "Key '%s' has bad link to 0%lx, ´blanked out\n", static_cast<LPCTSTR>(GetName()), static_cast<DWORD>(m_itKey.m_lockUID)));
+				DEBUG_ERR(( "Key '%s' has bad link to 0%x, ´blanked out\n", static_cast<LPCTSTR>(GetName()), static_cast<DWORD>(m_itKey.m_lockUID)));
 				m_itKey.m_lockUID.ClearUID();
 			}
 			break;
@@ -1803,7 +1803,7 @@ bool CItem::SetBaseID( ITEMID_TYPE id )
 	CItemBase * pItemDef = CItemBase::FindItemBase( id );
 	if ( pItemDef == NULL )
 	{
-		DEBUG_ERR(( "SetBaseID 0%x invalid item uid=0%lx\n",
+		DEBUG_ERR(( "SetBaseID 0%x invalid item uid=0%x\n",
 		id, (DWORD) GetUID()));
 		return false;
 	}
@@ -1901,7 +1901,7 @@ void CItem::WriteUOX( CScript & s, int index )
 	ADDTOCALLSTACK("CItem::WriteUOX");
 	s.Printf( "SECTION WORLDITEM %d\n", index );
 	s.Printf( "{\n" );
-	s.Printf( "SERIAL %lu\n", (DWORD) GetUID());
+	s.Printf( "SERIAL %u\n", (DWORD) GetUID());
 	s.Printf( "NAME %s\n", GetName());
 	s.Printf( "ID %d\n", GetDispID());
 	s.Printf( "X %d\n", GetTopPoint().m_x );
@@ -2087,7 +2087,7 @@ bool CItem::LoadSetContainer( CGrayUID uid, LAYER_TYPE layer )
 	CObjBase * pObjCont = uid.ObjFind();
 	if ( pObjCont == NULL )
 	{
-		DEBUG_ERR(( "Invalid container 0%lx\n", (DWORD) uid ));
+		DEBUG_ERR(( "Invalid container 0%x\n", (DWORD) uid ));
 		return( false );	// not valid object.
 	}
 
@@ -2117,7 +2117,7 @@ bool CItem::LoadSetContainer( CGrayUID uid, LAYER_TYPE layer )
 		}
 	}
 
-	DEBUG_ERR(( "Non container uid=0%lx,id=0%x\n", (DWORD) uid, pObjCont->GetBaseID() ));
+	DEBUG_ERR(( "Non container uid=0%x,id=0%x\n", (DWORD) uid, pObjCont->GetBaseID() ));
 	return( false );	// not a container.
 }
 
@@ -2650,7 +2650,7 @@ bool CItem::r_Load( CScript & s ) // Load an item from script
 	int iResultCode = CObjBase::IsWeird();
 	if ( iResultCode )
 	{
-		DEBUG_ERR(( "Item 0%lx Invalid, id=%s, code=0%x\n",
+		DEBUG_ERR(( "Item 0%x Invalid, id=%s, code=0%x\n",
 		(DWORD) GetUID(), GetResourceName(), iResultCode ));
 		Delete();
 		return( true );
@@ -2857,11 +2857,11 @@ TRIGRET_TYPE CItem::OnTrigger( LPCTSTR pszTrigName, CTextConsole * pSrc, CScript
 		{
 			if ( pChar )
 			{
-				DEBUG_ERR(( "0%lx '%s' has unhandled [TYPEDEF %d] for 0%lx '%s'\n", (DWORD) GetUID(), GetName(), GetType(), (DWORD) pChar->GetUID(), pChar->GetName()));
+				DEBUG_ERR(( "0%x '%s' has unhandled [TYPEDEF %d] for 0%x '%s'\n", (DWORD) GetUID(), GetName(), GetType(), (DWORD) pChar->GetUID(), pChar->GetName()));
 			}
 			else
 			{
-				DEBUG_ERR(( "0%lx '%s' has unhandled [TYPEDEF %d]\n", (DWORD) GetUID(), GetName(), GetType() ));
+				DEBUG_ERR(( "0%x '%s' has unhandled [TYPEDEF %d]\n", (DWORD) GetUID(), GetName(), GetType() ));
 			}
 			m_type = Item_GetDef()->GetType();
 			return( TRIGRET_RET_DEFAULT );
@@ -2897,7 +2897,7 @@ TRIGRET_TYPE CItem::OnTrigger( LPCTSTR pszTrigName, CTextConsole * pSrc, CScript
 	EXC_CATCH;
 
 	EXC_DEBUG_START;
-	g_Log.EventDebug("trigger '%s' action '%d' char '0%lx' [0%lx]\n", pszTrigName, iAction, (pSrc && pSrc->GetChar()) ? (DWORD)pSrc->GetChar()->GetUID() : 0, (DWORD)GetUID());
+	g_Log.EventDebug("trigger '%s' action '%d' char '0%x' [0%x]\n", pszTrigName, iAction, (pSrc && pSrc->GetChar()) ? (DWORD)pSrc->GetChar()->GetUID() : 0, (DWORD)GetUID());
 	EXC_DEBUG_END;
 	return iRet;
 }
@@ -4839,7 +4839,7 @@ bool CItem::OnTick()
 		return false;
 
 	EXC_SET("default behaviour4");
-	DEBUG_ERR(( "Timer expired without DECAY flag '%s' (UID=0%lx)?\n", GetName(), (DWORD)GetUID()));
+	DEBUG_ERR(( "Timer expired without DECAY flag '%s' (UID=0%x)?\n", GetName(), (DWORD)GetUID()));
 	
 #ifndef _WIN32
 	}
@@ -4847,13 +4847,13 @@ bool CItem::OnTick()
 	catch ( const CGrayError& e )
 	{
 		EXC_CATCH_EXCEPTION(&e);
-		g_Log.EventError("'%s' item [0%lx] - CGrayError\n", GetName(), (DWORD)GetUID());
+		g_Log.EventError("'%s' item [0%x] - CGrayError\n", GetName(), (DWORD)GetUID());
 		CurrentProfileData.Count(PROFILE_STAT_FAULTS, 1);
 	}
 	catch (...)
 	{
 		EXC_CATCH_EXCEPTION(NULL);
-		g_Log.EventError("'%s' item [0%lx] - ...\n", GetName(), (DWORD)GetUID());
+		g_Log.EventError("'%s' item [0%x] - ...\n", GetName(), (DWORD)GetUID());
 		CurrentProfileData.Count(PROFILE_STAT_FAULTS, 1);
 	}
 #endif
@@ -4861,8 +4861,8 @@ bool CItem::OnTick()
 	EXC_CATCH;
 	
 	EXC_DEBUG_START;
-	g_Log.EventDebug("'%s' item [0%lx]\n", GetName(), (DWORD)GetUID());
-	//g_Log.EventError("'%s' item [0%lx]\n", GetName(), GetUID());
+	g_Log.EventDebug("'%s' item [0%x]\n", GetName(), (DWORD)GetUID());
+	//g_Log.EventError("'%s' item [0%x]\n", GetName(), GetUID());
 	EXC_DEBUG_END;
 #endif
 

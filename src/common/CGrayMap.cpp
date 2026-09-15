@@ -288,7 +288,7 @@ bool CGrayMapBlockState::CheckTile_Terrain( DWORD wItemBlockFlags, signed char z
 					return true;
 				}
 			}
-			//DEBUG_ERR(("wItemBlockFlags 0x%lx\n",wItemBlockFlags));
+			//DEBUG_ERR(("wItemBlockFlags 0x%x\n",wItemBlockFlags));
 			m_Bottom.m_dwBlockFlags = wItemBlockFlags;
 			m_Bottom.m_dwTile = dwID;
 			m_Bottom.m_z = z;
@@ -320,7 +320,7 @@ void CGrayStaticsBlock::LoadStatics( DWORD ulBlockIndex, int map )
 		if ((index.GetBlockLength() % sizeof(CUOStaticItemRec)) != 0)
 		{
 			TCHAR *pszTemp = Str_GetTemp();
-			sprintf(pszTemp, "CGrapMapBlock: Read Statics - Block Length of %lu", index.GetBlockLength());
+			sprintf(pszTemp, "CGrapMapBlock: Read Statics - Block Length of %u", index.GetBlockLength());
 			throw CGrayError(LOGL_CRIT, CGFile::GetLastError(), pszTemp);
 		}
 		m_iStatics = index.GetBlockLength()/sizeof(CUOStaticItemRec);
@@ -552,7 +552,7 @@ void CMapDiffCollection::LoadMapDiffs()
 					}
 					else if ( pFileMapdif->Read( pTerrain, sizeof(CUOMapBlock) ) != sizeof(CUOMapBlock) )
 					{
-						g_Log.EventError("Reading mapdif%d.mul FAILED. [index=%lu offset=%lu]\n", map, dwBlockId, dwOffset);
+						g_Log.EventError("Reading mapdif%d.mul FAILED. [index=%u offset=%u]\n", map, dwBlockId, dwOffset);
 						delete pTerrain;
 						break;
 					}
@@ -600,7 +600,7 @@ void CMapDiffCollection::LoadMapDiffs()
 				CUOIndexRec index;
 				if ( pFileStadifi->Read( &index, sizeof(CUOIndexRec)) != sizeof(CUOIndexRec) )
 				{
-					g_Log.EventError("Reading stadifi%d.mul FAILED. [index=%lu offset=%lu]\n", map, dwBlockId, dwOffset);
+					g_Log.EventError("Reading stadifi%d.mul FAILED. [index=%u offset=%u]\n", map, dwBlockId, dwOffset);
 					break;
 				}
 				else if ( !index.HasData() ) // This happens if the block has been intentionally patched to remove statics
@@ -609,7 +609,7 @@ void CMapDiffCollection::LoadMapDiffs()
 				}
 				else if ((index.GetBlockLength() % sizeof(CUOStaticItemRec)) != 0) // Make sure that the statics block length is valid
 				{
-					g_Log.EventError("Reading stadifi%d.mul FAILED. [index=%lu offset=%lu length=%lu]\n", map, dwBlockId, dwOffset, index.GetBlockLength());
+					g_Log.EventError("Reading stadifi%d.mul FAILED. [index=%u offset=%u length=%u]\n", map, dwBlockId, dwOffset, index.GetBlockLength());
 					break;
 				}
 
@@ -622,7 +622,7 @@ void CMapDiffCollection::LoadMapDiffs()
 					pMapDiffBlock->m_iStaticsCount = 0;
 					delete[] pMapDiffBlock->m_pStaticsBlock;
 					pMapDiffBlock->m_pStaticsBlock = NULL;
-					g_Log.EventError("Reading stadif%d.mul FAILED. [index=%lu offset=%lu]\n", map, dwBlockId, dwOffset);
+					g_Log.EventError("Reading stadif%d.mul FAILED. [index=%u offset=%u]\n", map, dwBlockId, dwOffset);
 					break;
 				}
 			}

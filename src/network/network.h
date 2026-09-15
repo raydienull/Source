@@ -66,7 +66,7 @@ typedef std::deque<HistoryIP> IPHistoryList;
 class NetState
 {
 protected:
-	long m_id; // net id
+	int m_id; // net id (index into the client state array)
 	CGSocket m_socket; // socket
 	CClient* m_client; // client
 	CSocketAddress m_peerAddress; // client address
@@ -126,7 +126,7 @@ public:
 	short m_sequence; // movement sequence
 
 public:
-	explicit NetState(long id);
+	explicit NetState(int id);
 	~NetState(void);
 
 private:
@@ -134,8 +134,8 @@ private:
 	NetState& operator=(const NetState& other);
 
 public:
-	long id(void) const { return m_id; }; // returns ID of the client
-	void setId(long id) { m_id = id; }; // changes ID of the client
+	int id(void) const { return m_id; }; // returns ID of the client
+	void setId(int id) { m_id = id; }; // changes ID of the client
 	void clear(void); // clears state
 	void clearQueues(void); // clears outgoing data queues
 

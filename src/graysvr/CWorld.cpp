@@ -191,7 +191,7 @@ void ReportGarbageCollection(CObjBase * pObj, int iResultCode)
 {
 	ASSERT(pObj != NULL);
 
-	DEBUG_ERR(("UID=0%lx, id=0%x '%s', Invalid code=%0x (%s)\n",
+	DEBUG_ERR(("UID=0%x, id=0%x '%s', Invalid code=%0x (%s)\n",
 		(DWORD)pObj->GetUID(), pObj->GetBaseID(), pObj->GetName(), iResultCode, GetReasonForGarbageCode(iResultCode)));
 }
 
@@ -415,7 +415,7 @@ void CTimedFunctionHandler::r_Write( CScript & s )
 			if ( tf->uid.IsValidUID() )
 			{
 				s.WriteKeyFormat( "TimerFCall", "%s", tf->funcname );
-				s.WriteKeyFormat( "TimerFNumbers", "%i,%lu,%i", tick, tf->uid.GetObjUID(), tf->elapsed );
+				s.WriteKeyFormat( "TimerFNumbers", "%i,%u,%i", tick, tf->uid.GetObjUID(), tf->elapsed );
 			}
 		}
 	}
@@ -699,7 +699,7 @@ successalloc:
 	{
 		//NOTE: We cannot use Delete() in here because the UID will
 		//	still be assigned til the async cleanup time. Delete() will not work here!
-		DEBUG_ERR(( "UID conflict delete 0%lx, '%s'\n", dwIndex, static_cast<LPCTSTR>(pObjPrv->GetName())));
+		DEBUG_ERR(( "UID conflict delete 0%x, '%s'\n", dwIndex, static_cast<LPCTSTR>(pObjPrv->GetName())));
 		delete pObjPrv;
 	}
 	m_UIDs[dwIndex] = pObj;
@@ -734,7 +734,7 @@ int CWorldThread::FixObjTry( CObjBase * pObj, DWORD dwUID )
 		{
 			// Miss linked in the UID table !!! BAD
 			// Hopefully it was just not linked at all. else How the hell should i clean this up ???
-			DEBUG_ERR(( "UID 0%lx, '%s', Mislinked\n", dwUID, static_cast<LPCTSTR>(pObj->GetName())));
+			DEBUG_ERR(( "UID 0%x, '%s', Mislinked\n", dwUID, static_cast<LPCTSTR>(pObj->GetName())));
 			return 0x7101;
 		}
 	}
@@ -800,12 +800,12 @@ int CWorldThread::FixObj( CObjBase * pObj, DWORD dwUID )
 	}
 	catch ( const CGrayError& e )	// catch all
 	{
-		g_Log.CatchEvent( &e, "UID=0%lx, Asserted cleanup", dwUID );
+		g_Log.CatchEvent( &e, "UID=0%x, Asserted cleanup", dwUID );
 		CurrentProfileData.Count(PROFILE_STAT_FAULTS, 1);
 	}
 	catch (...)	// catch all
 	{
-		g_Log.CatchEvent( NULL, "UID=0%lx, Asserted cleanup", dwUID );
+		g_Log.CatchEvent( NULL, "UID=0%x, Asserted cleanup", dwUID );
 		CurrentProfileData.Count(PROFILE_STAT_FAULTS, 1);
 	}
 	return( iResultCode );
@@ -975,7 +975,7 @@ bool CWorldClock::Advance()
 	{
 		// This is normal. for daylight savings etc.
 
-		DEBUG_ERR(("WARNING:system clock 0%lxh overflow - recycle\n", Clock_Sys));
+		DEBUG_ERR(("WARNING:system clock 0%xh overflow - recycle\n", Clock_Sys));
 		m_Clock_PrevSys = Clock_Sys;
 		// just wait til next cycle and we should be ok
 		return false;
@@ -2052,10 +2052,10 @@ void CWorld::Speak( const CObjBaseTemplate * pSrc, LPCTSTR pszText, HUE_TYPE wHu
 		{
 			//if ( sTextUID.IsEmpty())
 			//{
-			//	sTextUID.Format( "<%s [%lx]>", (LPCTSTR) pSrc->GetName(), (DWORD) pSrc->GetUID());
+			//	sTextUID.Format( "<%s [%x]>", (LPCTSTR) pSrc->GetName(), (DWORD) pSrc->GetUID());
 			//}
 			//myName = sTextUID;
-			if(!*myName) sprintf(myName, "<%s [%lx]>",pSrc->GetName(), (DWORD)pSrc->GetUID());
+			if(!*myName) sprintf(myName, "<%s [%x]>",pSrc->GetName(), (DWORD)pSrc->GetUID());
 		}
 		if (*myName)
 			pClient->addBarkParse( pszSpeak, pSrc, wHue, mode, font, myName );
@@ -2157,7 +2157,7 @@ void CWorld::SpeakUNICODE( const CObjBaseTemplate * pSrc, const NCHAR * pwText, 
 			if ( wTextUID[0] == '\0' )
 			{
 				TCHAR * pszMsg = Str_GetTemp();
-				sprintf(pszMsg, "<%s [%lx]>", static_cast<LPCTSTR>(pSrc->GetName()), static_cast<DWORD>(pSrc->GetUID()));
+				sprintf(pszMsg, "<%s [%x]>", static_cast<LPCTSTR>(pSrc->GetName()), static_cast<DWORD>(pSrc->GetUID()));
 				int iLen = CvtSystemToNUNICODE( wTextUID, COUNTOF(wTextUID), pszMsg, -1 );
 				for ( size_t i = 0; pwText[i] && iLen < MAX_TALK_BUFFER; i++, iLen++ )
 				{

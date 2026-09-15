@@ -62,6 +62,16 @@ struct NDWORD
 
 #define	NCHAR	NWORD			// a UNICODE text char on the network.
 
+// Every packet below is laid out byte by byte, so the wire types must have
+// exactly these widths on every build. DWORD used to be "unsigned long", which
+// is 8 bytes on a 64 bit build - 29 of the 47 packet structures below had a
+// different size there.
+static_assert( sizeof(BYTE)   == 1, "BYTE must be 8 bits" );
+static_assert( sizeof(WORD)   == 2, "WORD must be 16 bits" );
+static_assert( sizeof(DWORD)  == 4, "DWORD must be 32 bits" );
+static_assert( sizeof(NWORD)  == 2, "NWORD must be 16 bits" );
+static_assert( sizeof(NDWORD) == 4, "NDWORD must be 32 bits" );
+
 extern int CvtSystemToNUNICODE( NCHAR * pOut, int iSizeOutChars, LPCTSTR pInp, int iSizeInBytes );
 extern int CvtNUNICODEToSystem( TCHAR * pOut, int iSizeOutBytes, const NCHAR * pInp, int iSizeInChars );
 

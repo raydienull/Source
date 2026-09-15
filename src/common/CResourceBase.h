@@ -147,12 +147,14 @@ struct RESOURCE_ID : public RESOURCE_ID_BASE
 	}
 };
 
-// Desguise an id as a pointer.
+// Disguise an id as a pointer. The round trip has to go through a pointer sized
+// integer: truncating to 32 bits on a 64 bit build would let a real string
+// pointer whose low half happens to be small be mistaken for an id.
 #ifndef MAKEINTRESOURCE
-#define MAKEINTRESOURCE(id) ((LPCTSTR)((DWORD)((WORD)(id))))
+#define MAKEINTRESOURCE(id)	((LPCTSTR)(uintptr_t)((WORD)(id)))
 #endif
-#define ISINTRESOURCE(p)	(!(((DWORD)p)&0xFFFFF000))
-#define GETINTRESOURCE(p)	(((DWORD)p)&0x0FFF)
+#define ISINTRESOURCE(p)	(!(((uintptr_t)(p)) & ~(uintptr_t)0x0FFF))
+#define GETINTRESOURCE(p)	((DWORD)(((uintptr_t)(p)) & 0x0FFF))
 
 //*********************************************************
 

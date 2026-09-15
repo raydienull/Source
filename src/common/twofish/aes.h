@@ -76,8 +76,16 @@ INCLUDE IMPLEMENTATION SPECIFIC INFORMATION.
 	parameters at the bottom of the structs as appropriate.
 */
 
-#define BYTE unsigned char
-#define DWORD unsigned long
+/* Twofish is defined over exactly 32 bit words. "unsigned long" is 8 bytes on
+   a 64 bit build, which silently changed the whole key schedule, so take the
+   fixed width types - or whatever the platform already defined. */
+#include <stdint.h>
+#ifndef BYTE
+#define BYTE uint8_t
+#endif
+#ifndef DWORD
+#define DWORD uint32_t
+#endif
 typedef DWORD fullSbox[4][256];
 
 /* The structure for key information */

@@ -623,7 +623,7 @@ int CWebPageDef::ServPageRequest( CClient * pClient, LPCTSTR pszURLArgs, CGTime 
 		iLen += sprintf(szTmp + iLen, "Last-Modified: %s\r\n",  CGTime(dateChange).FormatGmt(NULL));
 
 	iLen += sprintf( szTmp + iLen,
-		"Content-Length: %lu\r\n"
+		"Content-Length: %u\r\n"
 		"\r\n",
 		dwSize
 		);
@@ -719,7 +719,7 @@ bool CWebPageDef::ServPagePost( CClient * pClient, LPCTSTR pszURLArgs, TCHAR * p
 	// C or CHK or CHECK = the check boxes
 
 	CDialogResponseArgs resp;
-	DWORD dwButtonID = ULONG_MAX;
+	DWORD dwButtonID = UINT_MAX;	// DWORD is 32 bits, ULONG_MAX is not
 	for ( size_t i = 0; i < iArgs; i++ )
 	{
 		TCHAR * pszNum = ppArgs[i];
