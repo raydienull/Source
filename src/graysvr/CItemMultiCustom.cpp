@@ -47,43 +47,28 @@ CItemMultiCustom::~CItemMultiCustom()
 		m_pGrayMulti = NULL;
 	}
 
-	ComponentsContainer::iterator it;
-	for (it = m_designMain.m_vectorComponents.begin(); it != m_designMain.m_vectorComponents.end(); it = m_designMain.m_vectorComponents.erase(it))				delete *it;
-	for (it = m_designWorking.m_vectorComponents.begin(); it != m_designWorking.m_vectorComponents.end(); it = m_designWorking.m_vectorComponents.erase(it))	delete *it;
-	for (it = m_designBackup.m_vectorComponents.begin(); it != m_designBackup.m_vectorComponents.end(); it = m_designBackup.m_vectorComponents.erase(it))		delete *it;
-	for (it = m_designRevert.m_vectorComponents.begin(); it != m_designRevert.m_vectorComponents.end(); it = m_designRevert.m_vectorComponents.erase(it))		delete *it;
+	ClearDesign(&m_designMain);
+	ClearDesign(&m_designWorking);
+	ClearDesign(&m_designBackup);
+	ClearDesign(&m_designRevert);
+}
 
-	m_designMain.m_vectorComponents.clear();
-	if ( m_designMain.m_pData != NULL )
-	{
-		delete[] m_designMain.m_pData;
-		m_designMain.m_pData = NULL;
-		m_designMain.m_iDataRevision = 0;
-	}
+void CItemMultiCustom::ClearDesign(DesignDetails * pDesign)
+{
+	ADDTOCALLSTACK("CItemMultiCustom::ClearDesign");
+	// Drop every component and the cached packet of one design.
+	for ( ComponentsContainer::iterator it = pDesign->m_vectorComponents.begin(); it != pDesign->m_vectorComponents.end(); ++it )
+		delete *it;
 
-	m_designWorking.m_vectorComponents.clear();
-	if ( m_designWorking.m_pData != NULL )
-	{
-		delete[] m_designWorking.m_pData;
-		m_designWorking.m_pData = NULL;
-		m_designWorking.m_iDataRevision = 0;
-	}
+	pDesign->m_vectorComponents.clear();
 
-	m_designBackup.m_vectorComponents.clear();
-	if ( m_designBackup.m_pData != NULL )
+	// m_pData is a single object, so it takes delete and not delete[]
+	if ( pDesign->m_pData != NULL )
 	{
-		delete[] m_designBackup.m_pData;
-		m_designBackup.m_pData = NULL;
-		m_designBackup.m_iDataRevision = 0;
+		delete pDesign->m_pData;
+		pDesign->m_pData = NULL;
 	}
-
-	m_designRevert.m_vectorComponents.clear();
-	if ( m_designRevert.m_pData != NULL )
-	{
-		delete[] m_designRevert.m_pData;
-		m_designRevert.m_pData = NULL;
-		m_designRevert.m_iDataRevision = 0;
-	}
+	pDesign->m_iDataRevision = 0;
 }
 
 void CItemMultiCustom::BeginCustomize(CClient * pClientSrc)
@@ -194,7 +179,7 @@ void CItemMultiCustom::EndCustomize(bool bForced)
 		pChar->StatFlag_Clear( STATF_Hidden );
 
 		// move character to signpost (unless they're already outside of the building)
-		if ( Multi_GetSign() && m_pRegion->IsInside2d(pChar->GetTopPoint()) )
+		if ( m_pRegion != NULL && Multi_GetSign() && m_pRegion->IsInside2d(pChar->GetTopPoint()) )
 		{
 			CPointMap ptOld = pChar->GetTopPoint();
 			CPointMap ptDest = Multi_GetSign()->GetTopPoint();
@@ -266,8 +251,11 @@ void CItemMultiCustom::CommitChanges(CClient * pClientSrc)
 	if ( g_Serv.IsLoading() || !GetTopPoint().IsValidPoint() )
 		return;
 
-	// remove all existing dynamic item fixtures
-	CWorldSearch Area(GetTopPoint(), GetDesignArea().GetWidth());
+	// remove all existing dynamic item fixtures. The search takes a radius, so a
+	// building taller than it is wide needs the larger of the two sides, and the
+	// region may have been stretched past the design area already.
+	const CGRect rectArea = GetDesignArea();
+	CWorldSearch Area(GetTopPoint(), maximum( Multi_GetSearchDist(), maximum( rectArea.GetWidth(), rectArea.GetHeight() )));
 	Area.SetSearchSquare(true);
 	CItem * pItem;
 	for (;;)
@@ -423,19 +411,30 @@ void CItemMultiCustom::AddItem(CClient * pClientSrc, ITEMID_TYPE id, short x, sh
 				z = 0;
 		}
 
-		Component * pPrevComponents[128];
+		Component * pPrevComponents[COMPONENTS_AT_MAX];
 		size_t iCount = GetComponentsAt(x, y, z, pPrevComponents, &m_designWorking);
-		if ( iCount > 0 )
-		{
-			// remove previous item(s) in this location
-			for (size_t i = 0; i < iCount; i++)
-			{
-				if ( bFloor != pPrevComponents[i]->m_isFloor )
-					continue;
 
-				RemoveItem( NULL, pPrevComponents[i]->m_item.GetDispID(), pPrevComponents[i]->m_item.m_dx, pPrevComponents[i]->m_item.m_dy, pPrevComponents[i]->m_item.m_dz);
-			}
+		// Read what we need before removing anything: RemoveItem() frees the
+		// component it takes out, so these pointers only survive the first pass.
+		ITEMID_TYPE idPrev[COMPONENTS_AT_MAX];
+		short dxPrev[COMPONENTS_AT_MAX], dyPrev[COMPONENTS_AT_MAX];
+		signed char dzPrev[COMPONENTS_AT_MAX];
+		size_t iRemove = 0;
+		for ( size_t i = 0; i < iCount; i++ )
+		{
+			if ( bFloor != pPrevComponents[i]->m_isFloor )
+				continue;
+
+			idPrev[iRemove] = pPrevComponents[i]->m_item.GetDispID();
+			dxPrev[iRemove] = pPrevComponents[i]->m_item.m_dx;
+			dyPrev[iRemove] = pPrevComponents[i]->m_item.m_dy;
+			dzPrev[iRemove] = pPrevComponents[i]->m_item.m_dz;
+			iRemove++;
 		}
+
+		// remove previous item(s) in this location
+		for ( size_t i = 0; i < iRemove; i++ )
+			RemoveItem( NULL, idPrev[i], dxPrev[i], dyPrev[i], dzPrev[i] );
 	}
 
 	Component * pComponent = new Component;
@@ -579,35 +578,39 @@ void CItemMultiCustom::RemoveItem(CClient * pClientSrc, ITEMID_TYPE id, short x,
 		}
 	}
 
-	Component * pComponents[128];
-	size_t iCount = GetComponentsAt(x, y, z, pComponents, &m_designWorking);
-	if ( iCount <= 0 )
-		return;
-
+	// Walk the design itself rather than a cached list of pointers: removing a
+	// staircase takes out its whole group, so any pointer collected up front
+	// can be dangling by the time we reach it.
 	bool bReplaceDirt = false;
-	for ( size_t i = 0; i < iCount; i++ )
+	for ( size_t j = 0; j < m_designWorking.m_vectorComponents.size(); )
 	{
-		for ( ComponentsContainer::iterator j = m_designWorking.m_vectorComponents.begin(); j != m_designWorking.m_vectorComponents.end(); ++j )
+		Component * pComponent = m_designWorking.m_vectorComponents[j];
+
+		if ( pComponent->m_item.m_dx != x || pComponent->m_item.m_dy != y ||
+			( z != -128 && pComponent->m_item.m_dz != z ) ||
+			( id != ITEMID_NOTHING && pComponent->m_item.GetDispID() != id ) )
 		{
-			if ( *j != pComponents[i] )
-				continue;
-
-			if ( id != ITEMID_NOTHING && ((*j)->m_item.GetDispID() != id) )
-				break;
-
-			if ( pClientSrc != NULL && RemoveStairs(*j) )
-				break;
-
-			// floor tiles the ground floor are replaced with dirt tiles
-			if ( ((*j)->m_item.m_wTileID != ITEMID_DIRT_TILE) && (*j)->m_isFloor && (GetPlane(*j) == 1) && (GetPlaneZ(GetPlane(*j)) == (*j)->m_item.m_dz) )
-				bReplaceDirt = true;
-
-			m_designWorking.m_vectorComponents.erase(j);
-			m_designWorking.m_iRevision++;
-			break;
+			++j;
+			continue;
 		}
+
+		if ( pClientSrc != NULL && RemoveStairs(pComponent) )
+		{
+			// the group is gone, and with it this component
+			SendStructureTo(pClientSrc);
+			return;
+		}
+
+		// floor tiles the ground floor are replaced with dirt tiles
+		if ( ( pComponent->m_item.m_wTileID != ITEMID_DIRT_TILE ) && pComponent->m_isFloor &&
+			( GetPlane(pComponent) == 1 ) && ( GetPlaneZ(GetPlane(pComponent)) == pComponent->m_item.m_dz ) )
+			bReplaceDirt = true;
+
+		delete pComponent;
+		m_designWorking.m_vectorComponents.erase( m_designWorking.m_vectorComponents.begin() + j );
+		m_designWorking.m_iRevision++;
 	}
-	
+
 	if ( pClientSrc != NULL && bReplaceDirt )
 	{
 		// make sure that the location is within the proper boundaries
@@ -632,29 +635,36 @@ bool CItemMultiCustom::RemoveStairs(Component * pStairComponent)
 
 	int iStairID = pStairComponent->m_isStair;
 
+	// Take the whole staircase out first, and only then put the dirt back.
+	// AddItem() appends to the same vector, so calling it inside the walk below
+	// could reallocate it and leave the iterator pointing at freed memory.
+	std::vector<CPointBase> ptDirt;
+
 	for ( ComponentsContainer::iterator i = m_designWorking.m_vectorComponents.begin(); i != m_designWorking.m_vectorComponents.end(); )
 	{
 		if ( (*i)->m_isStair == iStairID )
 		{
-			bool bReplaceDirt = false;
 			if ( (*i)->m_isFloor && (GetPlane(*i) == 1) && (GetPlaneZ(GetPlane(*i)) == (*i)->m_item.m_dz) )
-				bReplaceDirt = true;
+			{
+				CPointBase pt;
+				pt.m_x = (*i)->m_item.m_dx;
+				pt.m_y = (*i)->m_item.m_dy;
+				pt.m_z = (*i)->m_item.m_dz;
+				ptDirt.push_back( pt );
+			}
 
-			int x=(*i)->m_item.m_dx;
-			int y=(*i)->m_item.m_dy;
-			int z=(*i)->m_item.m_dz;
-
+			delete *i;
 			i = m_designWorking.m_vectorComponents.erase(i);
 			m_designWorking.m_iRevision++;
-
-			if (bReplaceDirt)
-				AddItem(NULL, ITEMID_DIRT_TILE, x, y, z);
 		}
 		else
 		{
 			++i;
 		}
 	}
+
+	for ( size_t j = 0; j < ptDirt.size(); ++j )
+		AddItem(NULL, ITEMID_DIRT_TILE, ptDirt[j].m_x, ptDirt[j].m_y, ptDirt[j].m_z);
 
 	return true;
 }
@@ -871,7 +881,7 @@ void CItemMultiCustom::ResetStructure( CClient * pClientSrc )
 	// return the building design to it's original state, which
 	// is simply the 'foundation' design from the multi.mul file
 
-	m_designWorking.m_vectorComponents.clear();
+	ClearDesign(&m_designWorking);
 	m_designWorking.m_iRevision = 1;
 	const CGrayMulti * pMulti =  g_Cfg.GetMultiItemDefs(GetID());
 	if ( pMulti != NULL )
@@ -961,9 +971,11 @@ size_t CItemMultiCustom::GetComponentsAt(short x, short y, signed char z, Compon
 	if ( pDesign == NULL )
 		pDesign = &m_designMain;
 
+	// The callers hand us a fixed size array, and a design can hold any number
+	// of components on one tile, so stop at its size instead of running off it.
 	size_t count = 0;
 	Component * pComponent;
-	for ( size_t i = 0; i < pDesign->m_vectorComponents.size(); i++ )
+	for ( size_t i = 0; i < pDesign->m_vectorComponents.size() && count < COMPONENTS_AT_MAX; i++ )
 	{
 		pComponent = pDesign->m_vectorComponents.at(i);
 
@@ -1039,12 +1051,12 @@ const CGRect CItemMultiCustom::GetDesignArea()
 				m_rectDesignArea.UnionPoint( pMultiItem->m_dx, pMultiItem->m_dy );
 			}
 		}
-		else
+		else if ( m_pRegion != NULL )
 		{
 			// multi data is not available, so assume the region boundaries
 			// are correct
 			CGRect rectRegion = m_pRegion->GetRegionRect(0);
-			m_rectDesignArea.SetRect(rectRegion.m_left, rectRegion.m_top, rectRegion.m_right, rectRegion.m_top, rectRegion.m_map);
+			m_rectDesignArea.SetRect(rectRegion.m_left, rectRegion.m_top, rectRegion.m_right, rectRegion.m_bottom, rectRegion.m_map);
 
 			const CPointMap pt = GetTopPoint();
 			m_rectDesignArea.OffsetRect(-pt.m_x, -pt.m_y);
@@ -1069,7 +1081,10 @@ void CItemMultiCustom::CopyDesign(DesignDetails * designFrom, DesignDetails * de
 	// of another
 	Component * pComponent;
 
-	// copy components
+	// copy components. The old ones are owned by this design, so free them:
+	// clear() on a vector of pointers only drops the pointers.
+	for ( ComponentsContainer::iterator k = designTo->m_vectorComponents.begin(); k != designTo->m_vectorComponents.end(); ++k )
+		delete *k;
 	designTo->m_vectorComponents.clear();
 	for ( ComponentsContainer::iterator i = designFrom->m_vectorComponents.begin(); i != designFrom->m_vectorComponents.end(); ++i)
 	{
@@ -1195,7 +1210,7 @@ bool CItemMultiCustom::r_Verb( CScript & s, CTextConsole * pSrc ) // Execute com
 
 		case IMCV_CLEAR:
 		{
-			m_designWorking.m_vectorComponents.clear();
+			ClearDesign(&m_designWorking);
 			m_designWorking.m_iRevision = 1;
 		} break;
 

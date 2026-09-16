@@ -489,6 +489,12 @@ public:
 
 #define MAX_TRIGGERS_ARRAY	5
 
+// Set once the resource hash starts tearing itself down at exit. The links are
+// freed in array order, and one link can hold references to another in the same
+// array, so decrementing an instance count after that point reads freed memory.
+// The counts only matter while the server is running.
+extern bool g_fResourceTeardown;
+
 class CResourceLink : public CResourceDef
 {
 	// A single resource object that also has part of itself remain in resource file.
@@ -596,7 +602,7 @@ public:
 	}
 	~CResourceRef()
 	{
-		if (m_pLink != NULL)
+		if (m_pLink != NULL && !g_fResourceTeardown)
 			m_pLink->DelRefInstance();
 	}
 	CResourceRef& operator=(const CResourceRef& other)

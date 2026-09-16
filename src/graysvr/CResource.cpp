@@ -240,6 +240,10 @@ CResource::CResource()
 
 CResource::~CResource()
 {
+	// From here on the resource defs are freed in array order, and one can hold
+	// references to another in the same array. See g_fResourceTeardown.
+	g_fResourceTeardown = true;
+
 	for ( size_t i = 0; i < COUNTOF(m_ResHash.m_Array); i++ )
 	{
 		for ( size_t j = 0; j < m_ResHash.m_Array[i].GetCount(); j++ )

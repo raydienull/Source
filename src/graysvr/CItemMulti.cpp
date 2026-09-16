@@ -25,7 +25,7 @@ CItemMulti::~CItemMulti()
 	if ( ! m_pRegion )
 		return;
 
-	CWorldSearch Area( m_pRegion->m_pt, Multi_GetMaxDist() );	// largest area.
+	CWorldSearch Area( m_pRegion->m_pt, Multi_GetSearchDist() );	// largest area.
 	Area.SetSearchSquare( true );
 	for (;;)
 	{
@@ -49,6 +49,28 @@ int CItemMulti::Multi_GetMaxDist() const
 	if ( pMultiDef == NULL )
 		return( 0 );
 	return( pMultiDef->GetMaxDist());
+}
+
+int CItemMulti::Multi_GetSearchDist() const
+{
+	ADDTOCALLSTACK("CItemMulti::Multi_GetSearchDist");
+	// How far out our components can be. A customizable building can be
+	// stretched past its MULTIREGION, and the region is grown to match - so take
+	// whichever is larger, or parts of it are missed when it is taken down.
+	int iDist = Multi_GetMaxDist();
+	if ( m_pRegion == NULL )
+		return( iDist );
+
+	const CPointMap & ptBase = m_pRegion->m_pt;
+	for ( size_t i = 0; i < m_pRegion->GetRegionRectCount(); i++ )
+	{
+		const CGRect & rect = m_pRegion->GetRegionRect(i);
+		iDist = maximum( iDist, abs( rect.m_left - ptBase.m_x ));
+		iDist = maximum( iDist, abs( rect.m_right - ptBase.m_x ));
+		iDist = maximum( iDist, abs( rect.m_top - ptBase.m_y ));
+		iDist = maximum( iDist, abs( rect.m_bottom - ptBase.m_y ));
+	}
+	return( iDist );
 }
 
 const CItemBaseMulti * CItemMulti::Multi_GetDef( ITEMID_TYPE id ) // static
@@ -123,7 +145,7 @@ void CItemMulti::MultiUnRealizeRegion()
 	m_pRegion->UnRealizeRegion();
 
 	// find all creatures in the region and remove this from them.
-	CWorldSearch Area( m_pRegion->m_pt, Multi_GetMaxDist() );
+	CWorldSearch Area( m_pRegion->m_pt, Multi_GetSearchDist() );
 	Area.SetSearchSquare(true);
 	for (;;)
 	{
@@ -317,7 +339,12 @@ void CItemMulti::OnMoveFrom()
 	// Being removed from the top level.
 	// Might just be moving.
 
-	ASSERT( m_pRegion );
+	// A multi whose ID has no MULTIREGION never got a region, and this runs on
+	// the way out of the sector - so on deletion too. Asserting here made every
+	// such multi throw instead of being removed.
+	if ( m_pRegion == NULL )
+		return;
+
 	m_pRegion->UnRealizeRegion();
 }
 
@@ -498,7 +525,9 @@ bool CItemMulti::r_LoadVal( CScript & s  )
 		{
 			MoveTo( GetTopPoint()); // Put item on the ground here.
 		}
-		ASSERT( m_pRegion );
+		if ( m_pRegion == NULL )	// no MULTIREGION on this ID, nothing to load into
+			return false;
+
 		CScript script( s.GetKey()+7, s.GetArgStr());
 		return( m_pRegion->r_LoadVal( script ) );
 	}
