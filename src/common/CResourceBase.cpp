@@ -7,6 +7,8 @@
 #include "CFileList.h"
 #include "CResourceBase.h"
 
+bool g_fResourceTeardown = false;
+
 //***************************************************
 // CResourceBase
 
