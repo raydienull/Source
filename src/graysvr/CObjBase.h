@@ -1478,6 +1478,7 @@ protected:
 
 public:
 	int Multi_GetMaxDist() const;
+	int Multi_GetSearchDist() const;
 
 protected:
 	virtual void OnComponentCreate( const CItem * pComponent )
@@ -1519,6 +1520,10 @@ class CItemMultiCustom : public CItemMulti
 	// IT_MULTI_CUSTOM
 	// A customizable multi
 public:
+	// How many components GetComponentsAt() will report for one tile. The
+	// callers hold an array of this size on the stack.
+	static const size_t COMPONENTS_AT_MAX = 128;
+
 	struct Component
 	{
 		CUOMultiItemRec2 m_item;
@@ -1607,6 +1612,7 @@ public:
 	const CGRect GetDesignArea();
 	size_t GetFixtureCount(DesignDetails * pDesign = NULL);
 	size_t GetComponentsAt(short dx, short dy, signed char dz, Component ** pComponents, DesignDetails * pDesign = NULL);
+	void ClearDesign(DesignDetails * pDesign);
 	int GetRevision(const CClient * pClientSrc = NULL) const;
 	int GetLevelCount();
 	int GetStairCount();
