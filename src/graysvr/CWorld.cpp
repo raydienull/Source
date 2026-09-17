@@ -201,6 +201,7 @@ void ReportGarbageCollection(CObjBase * pObj, int iResultCode)
 CTimedFunctionHandler::CTimedFunctionHandler()
 {
 	m_curTick = 0;
+	m_pRunning = NULL;
 	m_isBeingProcessed = false;
 }
 
@@ -241,17 +242,41 @@ void CTimedFunctionHandler::OnTick()
 		}
 	}
 
+	// Erase() has to be able to reach this batch: it is out of the buckets, but
+	// the calls below can still cancel entries in it - TIMERF CLEAR does, and so
+	// does deleting an object, through CObjBase::Delete. The guard puts the
+	// pointer back even if something throws its way out of here, so it is never
+	// left pointing at this vector once it is gone.
+	struct RunningGuard
+	{
+		std::vector<TimedFunction *> * & m_pSlot;
+		RunningGuard( std::vector<TimedFunction *> * & pSlot, std::vector<TimedFunction *> * pBatch ) : m_pSlot(pSlot)	{	m_pSlot = pBatch;	}
+		~RunningGuard()	{	m_pSlot = NULL;	}
+	private:
+		RunningGuard(const RunningGuard& copy);
+		RunningGuard& operator=(const RunningGuard& other);
+	} runningGuard( m_pRunning, &expired );
+
 	for ( size_t i = 0; i < expired.size(); ++i )
 	{
 		TimedFunction * tf = expired[i];
 
 		EXC_TRYSUB("TimedFunction");
-		CObjBase * obj = tf->uid.ObjFind();
-		if ( obj != NULL )	// it may have been deleted in the meantime
+		CObjBase * obj = tf->cancelled ? NULL : tf->uid.ObjFind();
+
+		// A deleted object keeps its UID until the delete list is emptied on the
+		// next tick, so ObjFind still hands it over. Running script on it walks
+		// a parent chain that has already been taken apart.
+		if ( obj != NULL && !obj->IsDeleted() )
 		{
 			CScript s( tf->funcname );	// takes its own copy of the text
 			CObjBaseTemplate * topobj = obj->GetTopLevelObj();
-			CTextConsole * src = topobj->IsChar() ? dynamic_cast<CTextConsole *>(topobj) : &g_Serv;
+
+			// Only a char can be the source. Anything else talks through the
+			// server console - never a pointer built by casting whatever the
+			// top level object happens to be.
+			CChar * pCharSrc = dynamic_cast<CChar *>( topobj );
+			CTextConsole * src = ( pCharSrc != NULL ) ? static_cast<CTextConsole *>( pCharSrc ) : static_cast<CTextConsole *>( &g_Serv );
 
 			obj->r_Verb( s, src );
 		}
@@ -292,6 +317,34 @@ void CTimedFunctionHandler::Erase( CGrayUID uid )
 			}
 		}
 	}
+
+	// The batch being run this tick is no longer in any bucket, so mark its
+	// entries instead. OnTick skips them and recycles them itself - taking them
+	// away here would leak them, or hand the same entry out twice.
+	if ( m_pRunning != NULL )
+	{
+		for ( size_t i = 0; i < m_pRunning->size(); ++i )
+		{
+			TimedFunction * tf = (*m_pRunning)[i];
+			if ( tf->uid == uid )
+				tf->cancelled = true;
+		}
+	}
+
+	// Anything a running call has just started is not in a bucket either.
+	for ( std::vector<TimedFunction *>::iterator itq = m_tFqueuedToBeAdded.begin(); itq != m_tFqueuedToBeAdded.end(); )
+	{
+		TimedFunction * tf = *itq;
+		if ( tf->uid == uid )
+		{
+			m_tFrecycled.push_back( tf );
+			itq = m_tFqueuedToBeAdded.erase( itq );
+		}
+		else
+		{
+			++itq;
+		}
+	}
 }
 
 void CTimedFunctionHandler::Add( CGrayUID uid, int numSeconds, LPCTSTR funcname )
@@ -313,6 +366,7 @@ void CTimedFunctionHandler::Add( CGrayUID uid, int numSeconds, LPCTSTR funcname 
 	}
 	tf->uid = uid;
 	tf->elapsed = numSeconds;
+	tf->cancelled = false;	// it may come from the recycle list
 	strcpy( tf->funcname, funcname );
 	if ( m_isBeingProcessed )
 	{

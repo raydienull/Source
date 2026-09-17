@@ -197,6 +197,18 @@ void CItemMultiCustom::EndCustomize(bool bForced)
 	}
 }
 
+void CItemMultiCustom::ClearArchitect( const CClient * pClient )
+{
+	ADDTOCALLSTACK("CItemMultiCustom::ClearArchitect");
+	// The architect is going away for good. Drop the link without touching the
+	// network or the character - there is nothing left to send to, and this
+	// building writes through m_pArchitect when it is destroyed.
+	if ( m_pArchitect != pClient )
+		return;
+
+	m_pArchitect = NULL;
+}
+
 void CItemMultiCustom::SwitchToLevel( CClient * pClientSrc, int iLevel )
 {
 	ADDTOCALLSTACK("CItemMultiCustom::SwitchToLevel");

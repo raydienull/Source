@@ -1593,6 +1593,7 @@ private:
 public:
 	void BeginCustomize( CClient * pClientSrc );
 	void EndCustomize(bool bForce = false);
+	void ClearArchitect( const CClient * pClient );
 	void SwitchToLevel( CClient * pClientSrc, int iLevel );
 	void CommitChanges( CClient * pClientSrc = NULL );
 	void AddItem( CClient * pClientSrc, ITEMID_TYPE id, short x, short y, signed char z = -128, int iStairID = 0);

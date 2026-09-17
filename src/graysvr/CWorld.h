@@ -310,6 +310,12 @@ class CTimedFunctionHandler
 			int		elapsed;
 			char	funcname[1024];
 			CGrayUID 	uid;
+			bool	cancelled;	// erased after it was taken out of its bucket to be run
+
+			TimedFunction() : elapsed(0), cancelled(false)
+			{
+				funcname[0] = '\0';
+			}
 		};
 
 	private:
@@ -317,6 +323,9 @@ class CTimedFunctionHandler
 		int m_curTick;
 		std::vector<TimedFunction *> m_tFrecycled;
 		std::vector<TimedFunction *> m_tFqueuedToBeAdded;
+		// The batch OnTick is running right now, so Erase() can reach it. It is
+		// no longer in m_timedFunctions, and NULL whenever nothing is running.
+		std::vector<TimedFunction *> * m_pRunning;
 		bool m_isBeingProcessed;
 
 	public:

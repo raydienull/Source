@@ -224,7 +224,18 @@ void CClient::CharDisconnect()
 	// Disconnect the CChar from the client.
 	// Even tho the CClient might stay active.
 	if ( m_pChar == NULL )
+	{
+		// A building we are designing points back at this client and writes
+		// through that pointer when it is destroyed. We can lose our character
+		// without ever disconnecting - being taken over by a GM does it - so
+		// the link has to be cut here too, or it outlives this client.
+		if ( m_pHouseDesign != NULL )
+		{
+			m_pHouseDesign->ClearArchitect( this );
+			m_pHouseDesign = NULL;
+		}
 		return;
+	}
 	int	iLingerTime = g_Cfg.m_iClientLingerTime;
 
 	Announce(false);
