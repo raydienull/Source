@@ -100,7 +100,7 @@ size_t CItemShip::Ship_ListObjs( CObjBase ** ppObjList )
 	// Move the ship and everything on the deck
 	// If too much stuff. then some will fall overboard. hehe.
 
-	if ( ! IsTopLevel())
+	if ( ! IsTopLevel() || m_pRegion == NULL )
 		return 0;
 
 	int iMaxDist = Multi_GetMaxDist();
@@ -162,7 +162,10 @@ bool CItemShip::Ship_MoveDelta( CPointBase pdelta )
 	ADDTOCALLSTACK("CItemShip::Ship_MoveDelta");
 	// Move the ship one space in some direction.
 
-	ASSERT( m_pRegion->m_iLinkedSectors );
+	// No region means no ship to move. The assert that used to be here read
+	// through the pointer before deciding anything.
+	if ( m_pRegion == NULL )
+		return( false );
 
 	int znew = GetTopZ() + pdelta.m_z;
 	if ( pdelta.m_z > 0 )
@@ -198,7 +201,6 @@ bool CItemShip::Ship_MoveDelta( CPointBase pdelta )
 		pObj->MoveTo( pt );
 		if ( pObj->IsChar() && !pObj->IsDisconnected() )
 		{
-			ASSERT( m_pRegion->m_iLinkedSectors );
 			if (pt.GetDist(ptOld) == 1)
 			{
 				// if they only move one space, they need a full
