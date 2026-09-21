@@ -87,7 +87,11 @@ bool CItemShip::Ship_SetMoveDir( DIR_TYPE dir )
 	m_itShip.m_DirMove = dir;
 	m_itShip.m_fSail = iSpeed;
 	GetTopSector()->SetSectorWakeStatus();	// may get here b4 my client does.
-	SetTimeout(( m_itShip.m_fSail == 1 ) ? GetShipSpeed().period : (GetShipSpeed().period / 5));
+	// maximum(1,...) as in Ship_OnMoveTick: OVERRIDE.SHIPSPEED.PERIOD is a script
+	// TAG narrowed into an unsigned short, so 0 is reachable, and a timeout of 0
+	// makes the ship tick on every world pass until the first move corrects it.
+	const CItemBaseMulti::ShipSpeed shSpeed = GetShipSpeed();
+	SetTimeout(maximum(1, ( m_itShip.m_fSail == 1 ) ? shSpeed.period : (shSpeed.period / 5)));
 	return( true );
 }
 
