@@ -81,6 +81,12 @@ void CItemMultiCustom::BeginCustomize(CClient * pClientSrc)
 	if ( m_pArchitect != NULL )
 		EndCustomize(true);
 
+	// The client may still be designing a different building. Without this the
+	// two end up cross linked: that one keeps pointing at the client while the
+	// client points here, so ending or destroying either clobbers the other.
+	if ( pClientSrc->m_pHouseDesign != NULL && pClientSrc->m_pHouseDesign != this )
+		pClientSrc->m_pHouseDesign->EndCustomize(true);
+
 	if ( PacketHouseBeginCustomise::CanSendTo(pClientSrc->GetNetState()) == false )
 		return;
 
@@ -100,8 +106,10 @@ void CItemMultiCustom::BeginCustomize(CClient * pClientSrc)
 		it->second = 0;
 	}
 
-	// hide dynamic item fixtures
-	CWorldSearch Area(GetTopPoint(), GetDesignArea().GetWidth());
+	// hide dynamic item fixtures. GetWidth() alone is short for a building
+	// taller than it is wide, and the region may be larger than the design area.
+	const CGRect rectArea = GetDesignArea();
+	CWorldSearch Area(GetTopPoint(), maximum( Multi_GetSearchDist(), maximum( rectArea.GetWidth(), rectArea.GetHeight() )));
 	Area.SetSearchSquare(true);
 	for (;;)
 	{
