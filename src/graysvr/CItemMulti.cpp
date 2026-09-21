@@ -417,7 +417,9 @@ bool CItemMulti::r_GetRef( LPCTSTR & pszKey, CScriptObj * & pRef )
 	ADDTOCALLSTACK("CItemMulti::r_GetRef");
 	// COMP(x).
 
-	if ( ! strnicmp( pszKey, "COMP(", 4 ))
+	// "COMP(" is 5 characters, and the skip below is 5. Comparing only 4 let a
+	// bare "COMP" match and then skip past its terminator.
+	if ( ! strnicmp( pszKey, "COMP(", 5 ))
 	{
 		pszKey += 5;
 		int i = Exp_GetVal(pszKey);
@@ -483,6 +485,9 @@ bool CItemMulti::r_WriteVal( LPCTSTR pszKey, CGString & sVal, CTextConsole * pSr
 	if ( !strnicmp(pszKey, "COMP", 4) )
 	{
 		const CItemBaseMulti *pMultiDef = Multi_GetDef();
+		if ( pMultiDef == NULL )	// no MULTIDEF for this ID, so no components
+			return false;
+
 		pszKey += 4;
 
 		// no component uid

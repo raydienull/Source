@@ -1343,7 +1343,9 @@ bool CItemMultiCustom::r_WriteVal( LPCTSTR pszKey, CGString & sVal, CTextConsole
 	int index = FindTableSorted( pszKey, sm_szLoadKeys, COUNTOF(sm_szLoadKeys)-1 );
 	if ( index == -1 )
 	{
-		if ( !strnicmp(pszKey, "DESIGN.", 5) )
+		// "DESIGN." is 7 characters. Comparing only 5 let a bare "DESIG" match,
+		// and the skip of 6 below then walked past its terminator.
+		if ( !strnicmp(pszKey, "DESIGN.", 7) )
 			index = IMCC_DESIGN;
 	}
 
