@@ -173,11 +173,17 @@ bool CItemMulti::Multi_CreateComponent( ITEMID_TYPE id, int dx, int dy, int dz, 
 
 	switch ( pItem->GetType() )
 	{
-		case IT_KEY:	// it will get locked down with the house ?
 		case IT_SIGN_GUMP:
 		case IT_SHIP_TILLER:
 			pItem->m_itKey.m_lockUID.SetPrivateUID( dwKeyCode );	// Set the key id for the key/sign.
+			// m_uidLink is what Multi_GetSign() reads back, so only the sign or
+			// the tiller may claim it - a key component would take its place and
+			// then be the thing a ship speaks through.
 			m_uidLink.SetPrivateUID(pItem->GetUID());
+			fNeedKey = true;
+			break;
+		case IT_KEY:	// it will get locked down with the house ?
+			pItem->m_itKey.m_lockUID.SetPrivateUID( dwKeyCode );
 			fNeedKey = true;
 			break;
 		case IT_DOOR:
