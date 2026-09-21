@@ -173,11 +173,17 @@ bool CItemMulti::Multi_CreateComponent( ITEMID_TYPE id, int dx, int dy, int dz, 
 
 	switch ( pItem->GetType() )
 	{
-		case IT_KEY:	// it will get locked down with the house ?
 		case IT_SIGN_GUMP:
 		case IT_SHIP_TILLER:
 			pItem->m_itKey.m_lockUID.SetPrivateUID( dwKeyCode );	// Set the key id for the key/sign.
+			// m_uidLink is what Multi_GetSign() reads back, so only the sign or
+			// the tiller may claim it - a key component would take its place and
+			// then be the thing a ship speaks through.
 			m_uidLink.SetPrivateUID(pItem->GetUID());
+			fNeedKey = true;
+			break;
+		case IT_KEY:	// it will get locked down with the house ?
+			pItem->m_itKey.m_lockUID.SetPrivateUID( dwKeyCode );
 			fNeedKey = true;
 			break;
 		case IT_DOOR:
@@ -417,7 +423,9 @@ bool CItemMulti::r_GetRef( LPCTSTR & pszKey, CScriptObj * & pRef )
 	ADDTOCALLSTACK("CItemMulti::r_GetRef");
 	// COMP(x).
 
-	if ( ! strnicmp( pszKey, "COMP(", 4 ))
+	// "COMP(" is 5 characters, and the skip below is 5. Comparing only 4 let a
+	// bare "COMP" match and then skip past its terminator.
+	if ( ! strnicmp( pszKey, "COMP(", 5 ))
 	{
 		pszKey += 5;
 		int i = Exp_GetVal(pszKey);
@@ -483,6 +491,9 @@ bool CItemMulti::r_WriteVal( LPCTSTR pszKey, CGString & sVal, CTextConsole * pSr
 	if ( !strnicmp(pszKey, "COMP", 4) )
 	{
 		const CItemBaseMulti *pMultiDef = Multi_GetDef();
+		if ( pMultiDef == NULL )	// no MULTIDEF for this ID, so no components
+			return false;
+
 		pszKey += 4;
 
 		// no component uid
