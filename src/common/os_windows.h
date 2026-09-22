@@ -47,5 +47,6 @@ extern void NTWindow_SetWindowTitle( LPCTSTR pText = NULL );
 // printf format identifiers
 #define FMTSIZE_T "Iu" // windows uses %Iu to format size_t
 #define FMTINT64 "lld" // __int64
+#define FMTPTRX "Ix" // uintptr_t in hex
 
 #endif

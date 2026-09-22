@@ -101,6 +101,7 @@
 #include <inttypes.h>
 #define FMTSIZE_T "zu" // linux uses %zu to format size_t
 #define FMTINT64 PRId64 // int64_t is long on LP64 and long long on ILP32
+#define FMTPTRX PRIxPTR // uintptr_t in hex
 
 inline void _strupr( TCHAR * pszStr )
 {

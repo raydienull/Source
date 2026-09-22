@@ -139,7 +139,8 @@ public:
 	HICON SetIcon( HICON hIcon, BOOL fType = false )
 	{
 		// ICON_BIG vs ICON_SMALL
-		return( (HICON)(DWORD) SendMessage( WM_SETICON, (WPARAM)fType, (LPARAM) hIcon ));
+		// the handle is pointer-wide, so it must not go through DWORD
+		return reinterpret_cast<HICON>( SendMessage( WM_SETICON, (WPARAM)fType, (LPARAM) hIcon ));
 	}
 
 	UINT_PTR SetTimer( UINT_PTR uTimerID, UINT uWaitmSec )

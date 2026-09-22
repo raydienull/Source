@@ -119,8 +119,8 @@ const unsigned CGrayAssert::GetAssertLine()
 
 #ifdef _WIN32
 
-CGrayException::CGrayException(unsigned int uCode, DWORD dwAddress) :
-	m_dwAddress(dwAddress), CGrayError(LOGL_CRIT, uCode, "Exception")
+CGrayException::CGrayException(unsigned int uCode, uintptr_t uAddress) :
+	CGrayError(LOGL_CRIT, uCode, "Exception"), m_uAddress(uAddress)
 {
 }
 
@@ -142,11 +142,11 @@ bool CGrayException::GetErrorMessage(LPTSTR lpszError, UINT nMaxError, UINT * pn
 		case STATUS_INTEGER_DIVIDE_BY_ZERO:	zMsg = "Integer: Divide by Zero";	break;
 		case STATUS_STACK_OVERFLOW:			zMsg = "Stack Overflow";			break;
 		default:
-			sprintf(lpszError, "code=0x%x, (0x%x)", m_hError, m_dwAddress);
+			sprintf(lpszError, "code=0x%x, (0x%" FMTPTRX ")", m_hError, m_uAddress);
 			return true;
 	}
 
-	sprintf(lpszError, "\"%s\" (0x%x)", zMsg, m_dwAddress);
+	sprintf(lpszError, "\"%s\" (0x%" FMTPTRX ")", zMsg, m_uAddress);
 	return true;
 }
 
@@ -182,12 +182,11 @@ bool CGrayException::GetErrorMessage(LPTSTR lpszError, UINT nMaxError, UINT * pn
 			}
 #endif
 			// WIN32 gets an exception.
-			DWORD dwCodeStart = (DWORD)(BYTE *) &globalstartsymbol;	// sync up to my MAP file.
+			// offset from the module start, to match the MAP file
+			uintptr_t uCodeStart = reinterpret_cast<uintptr_t>(&globalstartsymbol);
+			uintptr_t uAddr = reinterpret_cast<uintptr_t>(pData->ExceptionRecord->ExceptionAddress);
 
-			DWORD dwAddr = (DWORD)(pData->ExceptionRecord->ExceptionAddress);
-			dwAddr -= dwCodeStart;
-
-			throw CGrayException(id, dwAddr);
+			throw CGrayException(id, uAddr - uCodeStart);
 		}
 	}
 #endif
