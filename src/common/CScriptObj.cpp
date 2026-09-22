@@ -2430,7 +2430,7 @@ jump_in:
 								int iN3 = pArgs->m_iN3;
 								CScriptObj *pO1 = pArgs->m_pO1;
 								CGString s1 = pArgs->m_s1;
-								CGString s1_raw = pArgs->m_s1;
+								CGString s1_raw = pArgs->m_s1_raw;
 								pArgs->m_v.SetCount(0);
 								pArgs->Init(z);
 

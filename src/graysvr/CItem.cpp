@@ -1561,7 +1561,9 @@ LPCTSTR CItem::GetNameFull( bool fIdentified ) const
 
 					len = strcpylen( pTemp, pszTitle );
 				}
-				len += sprintf( pTemp+len, "%c%d ", ( m_itWeapon.m_spelllevel<0 ) ? '-':'+', abs( g_Cfg.GetSpellEffect( SPELL_Enchant, m_itWeapon.m_spelllevel )));
+				// the level is unsigned, so the sign has to come from the effect
+				int iEffect = g_Cfg.GetSpellEffect( SPELL_Enchant, m_itWeapon.m_spelllevel );
+				len += sprintf( pTemp+len, "%c%d ", ( iEffect < 0 ) ? '-':'+', abs( iEffect ));
 			}
 			else
 			{
