@@ -217,32 +217,34 @@ void _cdecl CLog::CatchEvent( const CGrayError * pErr, LPCTSTR pszCatchContext, 
 	try
 	{
 		TCHAR szMsg[512];
+		// every write stops one byte short of the buffer, leaving room for the newline
+		const size_t iMax = sizeof(szMsg) - 1;
 		LOGL_TYPE eSeverity;
-		int iLen = 0;
 		if ( pErr != NULL )
 		{
 			eSeverity = pErr->m_eSeverity;
 			const CGrayAssert * pAssertErr = dynamic_cast<const CGrayAssert*>(pErr);
 			if ( pAssertErr )
-				pAssertErr->GetErrorMessage(szMsg, sizeof(szMsg), 0);
+				pAssertErr->GetErrorMessage(szMsg, static_cast<UINT>(iMax), 0);
 			else
-				pErr->GetErrorMessage(szMsg, sizeof(szMsg));
-			iLen = strlen(szMsg);
+				pErr->GetErrorMessage(szMsg, static_cast<UINT>(iMax));
+			szMsg[iMax - 1] = '\0';
 		}
 		else
 		{
 			eSeverity = LOGL_CRIT;
 			strcpy(szMsg, "Exception");
-			iLen = strlen(szMsg);
 		}
 
-		iLen += sprintf( szMsg+iLen, ", in " );
+		size_t iLen = strlen(szMsg);
+		snprintf( szMsg+iLen, iMax-iLen, ", in " );
+		iLen = strlen(szMsg);
 
 		va_list vargs;
 		va_start(vargs, pszCatchContext);
 
-		iLen += vsprintf(szMsg+iLen, pszCatchContext, vargs);
-		iLen += sprintf(szMsg+iLen, "\n");
+		vsnprintf(szMsg+iLen, iMax-iLen, pszCatchContext, vargs);
+		strcat(szMsg, "\n");
 
 		EventStr(eSeverity, szMsg);
 		va_end(vargs);

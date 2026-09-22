@@ -965,8 +965,9 @@ dodirmovechange:
 			}
 		}
 
-		TCHAR szText[ MAX_TALK_BUFFER ];
-		strcpy( szText, pszSpeak );
+		// ParseText expands in place and assumes a full script line buffer
+		TCHAR szText[ SCRIPT_MAX_LINE_LEN ];
+		strcpylen( szText, pszSpeak, COUNTOF(szText) );
 		pChar->ParseText( szText, &g_Serv );
 		pTiller->Speak( szText, HUE_TEXT_ITEM, TALKMODE_SAY, FONT_NORMAL );
 	}

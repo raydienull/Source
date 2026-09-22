@@ -2211,7 +2211,7 @@ void CWorld::SpeakUNICODE( const CObjBaseTemplate * pSrc, const NCHAR * pwText, 
 				if ( wTextGhost[0] == '\0' )	// Garble ghost.
 				{
 					size_t i;
-					for ( i = 0; pwText[i] && i < MAX_TALK_BUFFER; i++ )
+					for ( i = 0; pwText[i] && i < MAX_TALK_BUFFER - 1; i++ )
 					{
 						if ( pwText[i] != ' ' && pwText[i] != '\t' )
 							wTextGhost[i] = Calc_GetRandVal(2) ? 'O' : 'o';
@@ -2234,14 +2234,14 @@ void CWorld::SpeakUNICODE( const CObjBaseTemplate * pSrc, const NCHAR * pwText, 
 					int iLen = CvtSystemToNUNICODE( wTextName, COUNTOF(wTextName), sTextName, -1 );
 					if ( wTextGhost[0] != '\0' )
 					{
-						for ( size_t i = 0; wTextGhost[i] != '\0' && iLen < MAX_TALK_BUFFER; i++, iLen++ )
+						for ( size_t i = 0; wTextGhost[i] != '\0' && iLen < MAX_TALK_BUFFER - 1; i++, iLen++ )
 						{
 							wTextName[iLen] = wTextGhost[i];
 						}
 					}
 					else
 					{
-						for ( size_t i = 0; pwText[i] != 0 && iLen < MAX_TALK_BUFFER; i++, iLen++ )
+						for ( size_t i = 0; pwText[i] != 0 && iLen < MAX_TALK_BUFFER - 1; i++, iLen++ )
 						{
 							wTextName[iLen] = pwText[i];
 						}
@@ -2259,7 +2259,7 @@ void CWorld::SpeakUNICODE( const CObjBaseTemplate * pSrc, const NCHAR * pwText, 
 				TCHAR * pszMsg = Str_GetTemp();
 				sprintf(pszMsg, "<%s [%x]>", static_cast<LPCTSTR>(pSrc->GetName()), static_cast<DWORD>(pSrc->GetUID()));
 				int iLen = CvtSystemToNUNICODE( wTextUID, COUNTOF(wTextUID), pszMsg, -1 );
-				for ( size_t i = 0; pwText[i] && iLen < MAX_TALK_BUFFER; i++, iLen++ )
+				for ( size_t i = 0; pwText[i] && iLen < MAX_TALK_BUFFER - 1; i++, iLen++ )
 				{
 					wTextUID[iLen] = pwText[i];
 				}

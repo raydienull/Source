@@ -249,6 +249,8 @@ int CEventLog::VEvent( DWORD wMask, LPCTSTR pszFormat, va_list args )
 	TemporaryString pszTemp;
 	size_t len = _vsnprintf(pszTemp, (SCRIPT_MAX_LINE_LEN - 1), pszFormat, args);
 	if ( ! len ) strncpy(pszTemp, pszFormat, (SCRIPT_MAX_LINE_LEN - 1));
+	// neither _vsnprintf on truncation nor strncpy terminates the buffer
+	pszTemp[SCRIPT_MAX_LINE_LEN - 1] = '\0';
 
 	// This get rids of exploits done sending 0x0C to the log subsytem.
 	// TCHAR *	 pFix;
