@@ -588,7 +588,7 @@ int CWebPageDef::ServPageRequest( CClient * pClient, LPCTSTR pszURLArgs, CGTime 
 	const char *sDate = datetime.FormatGmt(NULL);	// current date.
 
 	if ( ! fGenerate &&
-		! pdateIfModifiedSince &&
+		pdateIfModifiedSince != NULL &&
 		pdateIfModifiedSince->IsTimeValid() &&
 		dateChange <= pdateIfModifiedSince->GetTime() )
 	{

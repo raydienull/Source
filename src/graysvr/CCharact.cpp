@@ -2304,9 +2304,11 @@ CItemCorpse * CChar::MakeCorpse( bool fFrontFall )
 		pCorpse = dynamic_cast <CItemCorpse *>(pItemCorpse);
 		if ( pCorpse == NULL )	// Weird internal error !
 		{
-			pItemCorpse->Delete();
-			if ( ! MakeCorpse_Fail() )
-				return( NULL );
+			// the code below needs a corpse, whatever MakeCorpse_Fail() returns
+			if ( pItemCorpse != NULL )
+				pItemCorpse->Delete();
+			MakeCorpse_Fail();
+			return( NULL );
 		}
 
 		TCHAR *pszMsg = Str_GetTemp();

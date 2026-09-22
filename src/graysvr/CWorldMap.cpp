@@ -1117,7 +1117,7 @@ void CWorld::GetHeightPoint_New( const CPointMap & pt, CGrayMapBlockState & bloc
 			else
 			{
 				DEBUG_ERR(("Item (0%x) has no definition in scripts.\n",pItem->GetDispID()));
-				wBlockThis = 0;
+				continue;	// no flags or height to test it with
 			}
 		}
 		else
@@ -1127,7 +1127,8 @@ void CWorld::GetHeightPoint_New( const CPointMap & pt, CGrayMapBlockState & bloc
 		}
 
 		//DEBUG_WARN(("DYNAMIC wBlockThis (0%x)\n",pItemDef->m_Can & CAN_I_MOVEMASK));
-		if ( !block.CheckTile_Item( wBlockThis,	z, zHeight, pItemDef->GetID() + TERRAIN_QTY) )
+		ITEMID_TYPE idTile = ( pItemDef != NULL ) ? pItemDef->GetID() : pItem->GetDispID();
+		if ( !block.CheckTile_Item( wBlockThis,	z, zHeight, idTile + TERRAIN_QTY) )
 		{
 		}
 	}
