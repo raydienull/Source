@@ -187,6 +187,7 @@ bool CClient::Cmd_Use_Item( CItem * pItem, bool fTestTouch, bool fScript )
 					return false;
 			}
 
+		// fall through
 		case IT_CORPSE:
 		case IT_SHIP_HOLD:
 		case IT_CONTAINER:
@@ -413,6 +414,7 @@ bool CClient::Cmd_Use_Item( CItem * pItem, bool fTestTouch, bool fScript )
 			// set resource to trees
 			m_pChar->m_atResource.m_ridType	= RESOURCE_ID( RES_TYPEDEF, IT_TREE );
 
+		// fall through
 		case IT_WEAPON_MACE_STAFF:
 		case IT_WEAPON_MACE_SMITH:	// Can be used for smithing ?
 			addTarget( CLIMODE_TARG_USE_ITEM, g_Cfg.GetDefaultMsg( DEFMSG_ITEMUSE_WEAPON_PROMT ), false, true );

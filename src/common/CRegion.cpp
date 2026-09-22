@@ -1002,6 +1002,7 @@ bool CRegionWorld::r_WriteVal( LPCTSTR pszKey, CGString & sVal, CTextConsole * p
 		case RWC_TAG0:
 			fZero = true;
 			pszKey++;
+		// fall through
 		case RWC_TAG:	// "TAG" = get/set a local tag.
 			{	
 				if ( pszKey[3] != '.' )

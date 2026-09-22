@@ -956,6 +956,7 @@ bool CObjBase::r_WriteVal( LPCTSTR pszKey, CGString &sVal, CTextConsole * pSrc )
 		case OC_TAG0:
 			fZero	= true;
 			pszKey++;
+		// fall through
 		case OC_TAG:			// "TAG" = get/set a local tag.
 			{
 				if ( pszKey[3] != '.' )
@@ -1000,6 +1001,7 @@ bool CObjBase::r_WriteVal( LPCTSTR pszKey, CGString &sVal, CTextConsole * pSrc )
 		case OC_UID:
 			if ( pszKey[3] == '.' )
 				return(	CScriptObj::r_WriteVal( pszKey, sVal, pSrc ) );
+		// fall through
 		case OC_SERIAL:
 			sVal.FormatHex( GetUID());
 			break;
@@ -1542,6 +1544,7 @@ bool CObjBase::r_Verb( CScript & s, CTextConsole * pSrc ) // Execute command fro
 						CGrayUID uid = (DWORD) piCmd[3];
 						pItemSrc = uid.ItemFind();
 					}
+				// fall through
 				case 3:
 					if ( piCmd[2] == -1 )
 					{
@@ -1746,7 +1749,7 @@ bool CObjBase::r_Verb( CScript & s, CTextConsole * pSrc ) // Execute command fro
 					}
 				}
 			}
-			// no break here, TRYP only does extra checks
+		// fall through
 		case OV_TRY:
 			{
 				EXC_SET("TRY or TRYP");
@@ -1865,6 +1868,7 @@ bool CObjBase::r_Verb( CScript & s, CTextConsole * pSrc ) // Execute command fro
 
 		case OV_FIX:
 			s.GetArgStr()[0] = '\0';
+		// fall through
 		case OV_Z:	//	ussually in "SETZ" form
 			EXC_SET("FIX or Z");
 			if ( IsItemEquipped())

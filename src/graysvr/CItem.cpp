@@ -1561,7 +1561,9 @@ LPCTSTR CItem::GetNameFull( bool fIdentified ) const
 
 					len = strcpylen( pTemp, pszTitle );
 				}
-				len += sprintf( pTemp+len, "%c%d ", ( m_itWeapon.m_spelllevel<0 ) ? '-':'+', abs( g_Cfg.GetSpellEffect( SPELL_Enchant, m_itWeapon.m_spelllevel )));
+				// the level is unsigned, so the sign has to come from the effect
+				int iEffect = g_Cfg.GetSpellEffect( SPELL_Enchant, m_itWeapon.m_spelllevel );
+				len += sprintf( pTemp+len, "%c%d ", ( iEffect < 0 ) ? '-':'+', abs( iEffect ));
 			}
 			else
 			{
@@ -2438,6 +2440,7 @@ bool CItem::r_LoadVal( CScript & s ) // Load an item Script
 						default:
 						case 2:
 							pt.m_y = ATOI(ppVal[1]);
+						// fall through
 						case 1:
 							pt.m_x = ATOI(ppVal[0]);
 						case 0:
@@ -2574,13 +2577,16 @@ bool CItem::r_LoadVal( CScript & s ) // Load an item Script
 							{
 								pt.m_map = ATOI(ppVal[3]);
 							}
+						// fall through
 						case 3: // m_z
 							if ( IsDigit(ppVal[2][0]) || ppVal[2][0] == '-' )
 							{
 								pt.m_z = ATOI(ppVal[2]);
 							}
+						// fall through
 						case 2:
 							pt.m_y = ATOI(ppVal[1]);
+						// fall through
 						case 1:
 							pt.m_x = ATOI(ppVal[0]);
 						case 0:

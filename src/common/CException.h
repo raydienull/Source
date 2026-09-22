@@ -70,9 +70,9 @@ public:
 	{
 	public:
 		static const char *m_sClassName;
-		const DWORD m_dwAddress;
+		const uintptr_t m_uAddress;	// pointer-wide: code addresses are 64 bits on x64
 
-		CGrayException(unsigned int uCode, DWORD dwAddress);
+		CGrayException(unsigned int uCode, uintptr_t uAddress);
 		virtual ~CGrayException();
 	private:
 		CGrayException& operator=(const CGrayException& other);

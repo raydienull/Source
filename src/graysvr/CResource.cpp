@@ -1156,6 +1156,7 @@ bool CResource::r_WriteVal( LPCTSTR pszKey, CGString & sVal, CTextConsole * pSrc
 						{
 							pt.m_map = ATOI(ppVal[3]);
 						}
+					// fall through
 					case 3:
 						if ( IsDigit(ppVal[2][0]) || (( iArgs == 4 ) && ( ppVal[2][0] == '-' )) )
 						{
@@ -1165,8 +1166,10 @@ bool CResource::r_WriteVal( LPCTSTR pszKey, CGString & sVal, CTextConsole * pSrc
 								pt.m_map = ATOI(ppVal[2]);
 							}
 						}
+					// fall through
 					case 2:
 						pt.m_y = ATOI(ppVal[1]);
+					// fall through
 					case 1:
 						pt.m_x = ATOI(ppVal[0]);
 					case 0:
@@ -3079,7 +3082,7 @@ RESOURCE_ID CResource::ResourceGetNewID( RES_TYPE restype, LPCTSTR pszName, CVar
 			pszName = NULL;	// fake it out for now.
 			break;
 		}
-		// otherwise, passthrough to default
+	// fall through
 	default:
 		// The name is a DEFNAME or id number
 		ASSERT( restype < RES_QTY );
@@ -3159,6 +3162,7 @@ RESOURCE_ID CResource::ResourceGetNewID( RES_TYPE restype, LPCTSTR pszName, CVar
 						if ( pVarStr != NULL )
 							return( ResourceGetNewID(restype, pVarStr->GetValStr(), ppVarNum, fNewStyleDef) );
 					}
+					// fall through
 					default:
 						DEBUG_ERR(( "Re-Using name '%s' to define block\n", static_cast<LPCTSTR>(pszName) ));
 						return( ridinvalid );
@@ -3256,6 +3260,7 @@ RESOURCE_ID CResource::ResourceGetNewID( RES_TYPE restype, LPCTSTR pszName, CVar
 		if ( iPage )	// We MUST define the main section FIRST !
 			return( ridinvalid );
 
+	// fall through
 	case RES_REGIONTYPE:	// Triggers etc. that can be assinged to a RES_AREA
 		iHashRange = 100;
 		index = 1000;

@@ -783,6 +783,7 @@ bool CChar::Use_Item_Web( CItem * pItemWeb )
 			if ( GetTopPoint() == pItemWeb->GetTopPoint() )
 				break;
 
+		// fall through
 		case 2:			// web turned into silk
 		case INT_MAX:	// web destroyed
 			if (pFlag)
@@ -1502,7 +1503,7 @@ bool CChar::Use_KeyChange( CItem * pItemTarg )
 			SysMessageDefault( DEFMSG_KEY_TARG_SHIP_ULOCK );
 			break;
 		}
-		// Then fall thru and lock it.
+	// fall through
 	case IT_SHIP_SIDE:
 		pItemTarg->SetType(IT_SHIP_SIDE_LOCKED);
 		SysMessageDefault( DEFMSG_KEY_TARG_SHIP_LOCK );
@@ -1839,6 +1840,7 @@ bool CChar::Use_Item( CItem * pItem, bool fLink )
 			return( true );
 		}
 
+	// fall through
 	case IT_PORTCULIS:
 		// Open a metal gate via a trigger of some sort.
 		pItem->Use_Portculis();
@@ -1862,6 +1864,7 @@ bool CChar::Use_Item( CItem * pItem, bool fLink )
 				return true;
 		}
 
+	// fall through
 	case IT_DOOR_OPEN:
 	case IT_DOOR:
 		{
@@ -1900,6 +1903,7 @@ bool CChar::Use_Item( CItem * pItem, bool fLink )
 			return true;
 		}
 
+	// fall through
 	case IT_SHIP_SIDE:
 		// Open it if we have the key or are already on the ship
 		pItem->Ship_Plank( true );

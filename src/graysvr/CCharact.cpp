@@ -1306,6 +1306,7 @@ void CChar::SoundChar( CRESND_TYPE type )
 						id = Calc_GetRandVal( 2 ) ? 0x236 : 0x237;
 						break;
 					}
+				// fall through
 				case IT_WEAPON_FENCE:
 					// 0x23b = sword1
 					// 0x23c = sword7
@@ -2304,9 +2305,11 @@ CItemCorpse * CChar::MakeCorpse( bool fFrontFall )
 		pCorpse = dynamic_cast <CItemCorpse *>(pItemCorpse);
 		if ( pCorpse == NULL )	// Weird internal error !
 		{
-			pItemCorpse->Delete();
-			if ( ! MakeCorpse_Fail() )
-				return( NULL );
+			// the code below needs a corpse, whatever MakeCorpse_Fail() returns
+			if ( pItemCorpse != NULL )
+				pItemCorpse->Delete();
+			MakeCorpse_Fail();
+			return( NULL );
 		}
 
 		TCHAR *pszMsg = Str_GetTemp();

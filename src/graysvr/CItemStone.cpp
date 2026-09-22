@@ -2467,14 +2467,13 @@ size_t CItemStone::addStoneListSetup( STONEDISP_TYPE iStoneMenu, CGString * psTe
 			CChar * pChar = pMember->GetLinkUID().CharFind();
 			if ( pChar )
 			{
-				TCHAR szTmp[256];
-				strcpy( szTmp, pChar->GetName());
+				// the title is player set, so it can be longer than a fixed buffer
+				psText[iTexts] = pChar->GetName();
 				if (strlen( pMember->GetTitle()) > 0)
 				{
-					strcat( szTmp, ", ");
-					strcat( szTmp, pMember->GetTitle());
+					psText[iTexts] += ", ";
+					psText[iTexts] += pMember->GetTitle();
 				}
-				psText[iTexts] = szTmp;
 			}
 			else
 			{

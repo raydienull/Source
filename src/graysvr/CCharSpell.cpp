@@ -518,6 +518,7 @@ void CChar::Spell_Effect_Remove(CItem * pSpell)
 				m_pClient->addReSync();
 			}
 			UpdateModeFlag();
+		// fall through
 		case SPELL_Feeblemind:
 			Stat_AddMod( STAT_INT, iStatEffect );
 			if (IsClient()) {
@@ -627,6 +628,7 @@ void CChar::Spell_Effect_Remove(CItem * pSpell)
 			if (IsClient()) {
 				GetClient()->removeBuff(BI_PROTECTION);
 			}
+		// fall through
 		case SPELL_Steelskin:		// 114 // turns your skin into steel, giving a boost to your AR.
 		case SPELL_Stoneskin:		// 115 // turns your skin into stone, giving a boost to your AR.
 			m_defense = CalcArmorDefense();
@@ -790,6 +792,7 @@ void CChar::Spell_Effect_Add( CItem * pSpell )
 		case SPELL_Hallucination:
 			StatFlag_Set( STATF_Hallucinating );
 			UpdateModeFlag();
+		// fall through
 		case SPELL_Feeblemind:
 			// NOTE: Allow stats to go negative !
 			Stat_AddMod( STAT_INT, -iStatEffect );
@@ -938,6 +941,7 @@ void CChar::Spell_Effect_Add( CItem * pSpell )
 				GetClient()->removeBuff(BI_ARCHPROTECTION);
 				GetClient()->addBuff(BI_ARCHPROTECTION, 1075816, 1070722, static_cast<WORD>(pSpell->GetTimerAdjusted()));
 			}
+		// fall through
 		case SPELL_Steelskin:		// 114 // turns your skin into steel, giving a boost to your AR.
 		case SPELL_Stoneskin:		// 115 // turns your skin into stone, giving a boost to your AR.
 

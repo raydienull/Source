@@ -134,6 +134,7 @@ bool CBaseBaseDef::r_WriteVal( LPCTSTR pszKey, CGString & sVal, CTextConsole * p
 		case OBC_TAG0:
 			fZero	= true;
 			pszKey++;
+		// fall through
 		case OBC_TAG:			// "TAG" = get/set a local tag.
 			if ( pszKey[3] != '.' )
 				return( false );

@@ -805,20 +805,25 @@ size_t CPointBase::Read( TCHAR * pszVal )
 		case 4:	// m_map
 			if ( IsDigit(ppVal[3][0]))
 			{
-				m_map = ATOI(ppVal[3]);
-				if ( !g_MapList.m_maps[m_map] )
+				// validate before narrowing to BYTE, or map 257 would pass as map 1
+				int iMap = ATOI(ppVal[3]);
+				if ( !g_MapList.IsMapSupported(iMap) )
 				{
-					g_Log.EventError("Unsupported map #%d specified. Auto-fixing that to 0.\n", m_map);
-					m_map = 0;
+					g_Log.EventError("Unsupported map #%d specified. Auto-fixing that to 0.\n", iMap);
+					iMap = 0;
 				}
+				m_map = static_cast<BYTE>(iMap);
 			}
+		// fall through
 		case 3: // m_z
 			if ( IsDigit(ppVal[2][0]) || ppVal[2][0] == '-' )
 			{
 				m_z = ATOI(ppVal[2]);
 			}
+		// fall through
 		case 2:
 			m_y = ATOI(ppVal[1]);
+		// fall through
 		case 1:
 			m_x = ATOI(ppVal[0]);
 		case 0:
