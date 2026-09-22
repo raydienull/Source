@@ -127,11 +127,12 @@ public:
 	}
 	bool Set( LPCTSTR pszLang )
 	{
-		// needs not be terminated!
+		// needs not be terminated, but may also be shorter than 3 chars
 		if ( pszLang != NULL )
 		{
-			memcpy( m_codes, pszLang, 3 );
-			m_codes[3] = 0;
+			m_codes[0] = m_codes[1] = m_codes[2] = m_codes[3] = 0;
+			for ( int i = 0; i < 3 && pszLang[i] != '\0'; i++ )
+				m_codes[i] = pszLang[i];
 			if ( isalnum(m_codes[0]))
 				return true;
 			// not valid !
