@@ -670,6 +670,7 @@ bool CItemMultiCustom::RemoveStairs(Component * pStairComponent)
 				pt.m_x = (*i)->m_item.m_dx;
 				pt.m_y = (*i)->m_item.m_dy;
 				pt.m_z = (*i)->m_item.m_dz;
+				pt.m_map = 0;
 				ptDirt.push_back( pt );
 			}
 

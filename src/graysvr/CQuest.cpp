@@ -833,6 +833,7 @@ bool CPartyDef::r_WriteVal( LPCTSTR pszKey, CGString & sVal, CTextConsole * pSrc
 		case PDC_TAG0:
 			fZero	= true;
 			pszKey++;
+		// fall through
 		case PDC_TAG:
 		{
 			if ( pszKey[3] != '.' )

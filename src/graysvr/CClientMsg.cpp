@@ -2575,6 +2575,7 @@ void CClient::addAOSTooltip( const CObjBase * pObj, bool bRequested, bool bShop 
 					{
 						case IT_CONTAINER_LOCKED:
 							this->m_TooltipData.Add( new CClientTooltip( 3005142 ) ); // Locked
+						// fall through
 						case IT_CONTAINER:
 						case IT_CORPSE:
 						case IT_TRASH_CAN:
@@ -2801,8 +2802,7 @@ void CClient::addAOSTooltip( const CObjBase * pObj, bool bRequested, bool bShop 
 					break;
 				}
 
-				// fall through to send full list
-
+			// fall through
 			case TOOLTIPMODE_SENDFULL:
 			default:
 				// send full property list

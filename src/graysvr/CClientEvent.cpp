@@ -1148,6 +1148,7 @@ void CClient::Event_VendorBuy(CChar* pVendor, const VendorItem* items, size_t it
 						pVendor->Speak("Sorry, I cannot do anything for you.");
 						continue;
 					}
+				// fall through
 				case IT_HAIR:
 					// Must be added directly. can't exist in pack!
 					if ( ! m_pChar->IsHuman())
@@ -2380,6 +2381,7 @@ void CClient::Event_AOSPopupMenuRequest( DWORD uid ) //construct packet after a 
 					m_pPopupPacket->addOption(POPUP_STABLESTABLE, 6126, POPUPFLAG_COLOR, 0xFFFF);
 					m_pPopupPacket->addOption(POPUP_STABLERETRIEVE, 6127, POPUPFLAG_COLOR, 0xFFFF);
 
+				// fall through
 				case NPCBRAIN_VENDOR:
 				case NPCBRAIN_HEALER:
 					m_pPopupPacket->addOption(POPUP_VENDORBUY, 6103, POPUPFLAG_COLOR, 0xFFFF);

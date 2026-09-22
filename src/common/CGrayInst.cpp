@@ -535,26 +535,37 @@ unsigned long long HashFileName(CGString csFile)
 		{
 			case 12:
 				esi += (INT32) csFile[ i + 11 ] << 24;
+			// fall through
 			case 11:
 				esi += (INT32) csFile[ i + 10 ] << 16;
+			// fall through
 			case 10:
 				esi += (INT32) csFile[ i + 9 ] << 8;
+			// fall through
 			case 9:
 				esi += (INT32) csFile[ i + 8 ];
+			// fall through
 			case 8:
 				edi += (INT32) csFile[ i + 7 ] << 24;
+			// fall through
 			case 7:
 				edi += (INT32) csFile[ i + 6 ] << 16;
+			// fall through
 			case 6:
 				edi += (INT32) csFile[ i + 5 ] << 8;
+			// fall through
 			case 5:
 				edi += (INT32) csFile[ i + 4 ];
+			// fall through
 			case 4:
 				ebx += (INT32) csFile[ i + 3 ] << 24;
+			// fall through
 			case 3:
 				ebx += (INT32) csFile[ i + 2 ] << 16;
+			// fall through
 			case 2:
 				ebx += (INT32) csFile[ i + 1 ] << 8;
+			// fall through
 			case 1:		
 				ebx += (INT32) csFile[ i ];
 				break;			

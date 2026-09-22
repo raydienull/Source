@@ -2440,6 +2440,7 @@ bool CItem::r_LoadVal( CScript & s ) // Load an item Script
 						default:
 						case 2:
 							pt.m_y = ATOI(ppVal[1]);
+						// fall through
 						case 1:
 							pt.m_x = ATOI(ppVal[0]);
 						case 0:
@@ -2576,13 +2577,16 @@ bool CItem::r_LoadVal( CScript & s ) // Load an item Script
 							{
 								pt.m_map = ATOI(ppVal[3]);
 							}
+						// fall through
 						case 3: // m_z
 							if ( IsDigit(ppVal[2][0]) || ppVal[2][0] == '-' )
 							{
 								pt.m_z = ATOI(ppVal[2]);
 							}
+						// fall through
 						case 2:
 							pt.m_y = ATOI(ppVal[1]);
+						// fall through
 						case 1:
 							pt.m_x = ATOI(ppVal[0]);
 						case 0:

@@ -350,9 +350,6 @@ CPointMap CWorld::FindTypeNear_Top( const CPointMap & pt, IT_TYPE iType, int iDi
 			if ( pt.GetDist( ptTest ) > iDistance )
 				continue;
 
-			if ( pt.GetDist( ptTest ) > iDistance )
-				continue;
-
 			//if ( ptElem[2].m_z > pStatic->m_z )
 			if ( ptElem[2].m_z > ptTest.m_z )
 				continue;

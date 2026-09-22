@@ -1306,6 +1306,7 @@ void CChar::SoundChar( CRESND_TYPE type )
 						id = Calc_GetRandVal( 2 ) ? 0x236 : 0x237;
 						break;
 					}
+				// fall through
 				case IT_WEAPON_FENCE:
 					// 0x23b = sword1
 					// 0x23c = sword7

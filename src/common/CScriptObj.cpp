@@ -226,6 +226,7 @@ bool CScriptTriggerArgs::r_Verb( CScript & s, CTextConsole * pSrc )
 				if ( r_Verb( try_script, pSrc ) )
 					return true;
 			}
+		// fall through
 		default:
 			return false;
 	}
@@ -870,6 +871,7 @@ badcmd:
 			return pRef->r_WriteVal( pszKey, sVal, pSrc );
 		case SSC_VAR0:
 			fZero	= true;
+		// fall through
 		case SSC_VAR:
 			// "VAR." = get/set a system wide variable.
 			{
@@ -887,6 +889,7 @@ badcmd:
 			return true;
 		case SSC_DEF0:
 			fZero	= true;
+		// fall through
 		case SSC_DEF:
 			{
 				CVarDefCont * pVar = g_Exp.m_VarDefs.GetKey(pszKey);
