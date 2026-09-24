@@ -98,6 +98,11 @@ CObjBase::~CObjBase()
 	sm_iCount --;
 	ASSERT( IsDisconnected());
 
+	// Objects deleted directly (contents, GC) skip Delete(), so drop their timers here
+	// before the UID can be reused.
+	if ( !g_Serv.IsLoading() )
+		g_World.m_TimedFunctions.Erase( GetUID() );
+
 	// free up the UID slot.
 	SetUID( UID_UNUSED, false );
 }
@@ -2055,7 +2060,8 @@ void CObjBase::UpdatePropertyFlag(int mask)
 	
 	// contained items don't receive ticks and need to be added to a
 	// list of items to be processed separately
-	if ( IsItemInContainer() && g_World.m_ObjStatusUpdates.ContainsPtr(this) == false )
+	// already queued if the tooltip flag is set
+	if ( IsItemInContainer() && !(m_fStatusUpdate & SU_UPDATE_TOOLTIP) )
 		g_World.m_ObjStatusUpdates.Add(this);
 
 	m_fStatusUpdate |= SU_UPDATE_TOOLTIP;

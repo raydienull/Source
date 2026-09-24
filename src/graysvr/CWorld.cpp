@@ -846,8 +846,11 @@ int CWorldThread::FixObj( CObjBase * pObj, DWORD dwUID )
 		if ( iResultCode == 0x1203 || iResultCode == 0x1103 )
 		{
 			CChar * pChar = dynamic_cast <CChar*>(pObj);
-			if (pChar)
+			if ( pChar )
+			{
 				pChar->Skill_Start( NPCACT_RIDDEN );
+				return 0;	// fixed, keep it
+			}
 		}
 		else
 			pObj->Delete();

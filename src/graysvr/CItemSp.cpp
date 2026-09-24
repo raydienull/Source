@@ -251,8 +251,8 @@ void CItem::Spawn_GenerateChar( CResourceDef * pDef )
 	// Usually caused by wide range near the edge of the towns
 	if( isBadPlaceToSpawn )
 	{
+		pChar->Memory_ClearTypes(MEMORY_ISPAWNED);	// also takes it off our count
 		pChar->Delete();
-		m_itSpawnChar.m_current--;
 		return;
 	}
 

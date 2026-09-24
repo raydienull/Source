@@ -619,9 +619,10 @@ void CSector::SetLightNow( bool fFlash )
 	ADDTOCALLSTACK("CSector::SetLightNow");
 	// Set the light level for all the CClients here.
 
-	CChar * pChar = STATIC_CAST <CChar*>( m_Chars_Active.GetHead());
-	for ( ; pChar != NULL; pChar = pChar->GetNext())
+	CChar * pCharNext = NULL;
+	for ( CChar * pChar = STATIC_CAST <CChar*>( m_Chars_Active.GetHead()); pChar != NULL; pChar = pCharNext )
 	{
+		pCharNext = pChar->GetNext();
 		if ( pChar->IsStatFlag( STATF_DEAD | STATF_NightSight ))
 			continue;
 
@@ -644,6 +645,8 @@ void CSector::SetLightNow( bool fFlash )
 		if ( ! g_Serv.IsLoading() && fFlash == false )
 		{
 			pChar->OnTrigger( CTRIG_EnvironChange, pChar );
+			if ( pCharNext != NULL && pCharNext->GetParent() != &m_Chars_Active )
+				break;	// the trigger moved chars around, stop walking this list
 		}
 	}
 }
@@ -724,14 +727,17 @@ void CSector::SetWeather( WEATHER_TYPE w )
 
 	m_Env.m_Weather = w;
 
-	CChar * pChar = STATIC_CAST <CChar*>( m_Chars_Active.GetHead());
-	for ( ; pChar != NULL; pChar = pChar->GetNext())
+	CChar * pCharNext = NULL;
+	for ( CChar * pChar = STATIC_CAST <CChar*>( m_Chars_Active.GetHead()); pChar != NULL; pChar = pCharNext )
 	{
+		pCharNext = pChar->GetNext();
 		if ( pChar->IsClient())
 		{
 			pChar->GetClient()->addWeather( w );
 		}
 		pChar->OnTrigger( CTRIG_EnvironChange, pChar );
+		if ( pCharNext != NULL && pCharNext->GetParent() != &m_Chars_Active )
+			break;
 	}
 }
 
@@ -745,12 +751,15 @@ void CSector::SetSeason( SEASON_TYPE season )
 
 	m_Env.m_Season = season;
 
-	CChar * pChar = STATIC_CAST <CChar*>( m_Chars_Active.GetHead());
-	for ( ; pChar != NULL; pChar = pChar->GetNext())
+	CChar * pCharNext = NULL;
+	for ( CChar * pChar = STATIC_CAST <CChar*>( m_Chars_Active.GetHead()); pChar != NULL; pChar = pCharNext )
 	{
+		pCharNext = pChar->GetNext();
 		if ( pChar->IsClient() )
 			pChar->GetClient()->addSeason(season);
 		pChar->OnTrigger(CTRIG_EnvironChange, pChar);
+		if ( pCharNext != NULL && pCharNext->GetParent() != &m_Chars_Active )
+			break;
 	}
 }
 
