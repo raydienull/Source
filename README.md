@@ -6,11 +6,12 @@
 
 Ultima Online game server, written in C++.
 
-SphereServer Legacy continues the upstream SphereServer **0.56b** release
+SphereServer Legacy is based on the upstream SphereServer **0.56b** release
 ([`56b-20130616`](https://github.com/Sphereserver/Source/releases/tag/56b-20130616)) of
-[Sphereserver/Source](https://github.com/Sphereserver/Source). It keeps the original behaviour,
-script pack and save format while fixing bugs and modernizing the build. The history of the
-previous fork is kept in the [`legacy`](../../tree/legacy) branch.
+[Sphereserver/Source](https://github.com/Sphereserver/Source). It starts from 0.56b to give it
+continued support, better stability and an updated codebase, while keeping the original
+behaviour, script pack and save format. The history of the previous fork is kept in the
+[`legacy`](../../tree/legacy) branch.
 
 - Linux and Windows, 64-bit and 32-bit
 - Builds with only a compiler and `make`; the MySQL layer is optional
