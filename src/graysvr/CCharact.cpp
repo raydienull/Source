@@ -3769,7 +3769,7 @@ bool CChar::OnTick()
 		return true;
 
 	// Tick equipped items every pass, not only on the 1 sec regen step.
-	for ( CItem *pItem = GetContentHead(), *pItemNext; pItem != NULL; pItem = pItemNext )
+	for ( CItem *pItem = GetContentHead(), *pItemNext = NULL; pItem != NULL; pItem = pItemNext )
 	{
 		EXC_TRYSUB("Ticking items");
 		pItemNext = pItem->GetNext();
