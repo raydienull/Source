@@ -8,7 +8,7 @@
 // become the property of Menasoft & Partners.
 //****************************************************************************
 // FILE LAST UPDATED: 14-Aug-2009
-VERSION=0.56b
+VERSION=Legacy
 
 // Uncharted Landmass: 280,2820 - 1230,4096
 [AREADEF a_sa]	// Stygian Abyss (SA, map5,statics5,staidx5), map #5

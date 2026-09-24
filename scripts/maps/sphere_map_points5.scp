@@ -10,7 +10,7 @@
 // FILE LAST UPDATED: 14-Aug-2009
 // Changed all flags= lines from numbers to defnames for easier editing - ie -guardzones and such
 
-VERSION=0.56b
+VERSION=Legacy
 
 [Teleporters]
 1125,1076,-117,5=520,921,39,5=tp_stygian_abyss_entrance1

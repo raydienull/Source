@@ -10,7 +10,7 @@
 // FILE LAST UPDATED: Tuesday, January 24, 2006
 // By Blizzard
 //
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 02fb8]
 DEFNAME=i_elven_glasses

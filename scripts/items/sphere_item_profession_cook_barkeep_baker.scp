@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Wednesday, May 3, 2006
 //
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 0970]
 DEFNAME=i_bowl_stew

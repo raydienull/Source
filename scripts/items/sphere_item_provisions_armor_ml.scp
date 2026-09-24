@@ -12,7 +12,7 @@
 // By Blizzard + Elric + gygrazok
 //
 
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 02b67]
 DEFNAME=i_woodland_chest

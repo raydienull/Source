@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: 15-Nov-2003
 
-VERSION=0.56b
+VERSION=Legacy
 
 
 // In the process of moving this stuff to scripts.

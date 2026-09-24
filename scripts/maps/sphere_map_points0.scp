@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: June 09, 2011
 
-VERSION=0.56b
+VERSION=Legacy
 
 [STARTS]	// new client
 Yew

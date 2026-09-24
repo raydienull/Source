@@ -16,7 +16,7 @@
 // NOTE: if the string contains a % character, your string must contain all
 //       those characters too.
 //
-// THIS IS THE SPHERE_MSGS.SCP FOR SPHERE 56B. IF YOU ARE USING SPHERE 57 YOU
+// THIS IS THE SPHERE_MSGS.SCP FOR SPHERE LEGACY. IF YOU ARE USING SPHERE 57 YOU
 // SHOULD REPLACE THIS WITH THE SPHERE_MSGS.SCP LOCATED IN THE SCRIPT57 FOLDER.
 
 [DEFNAME messages_settings]

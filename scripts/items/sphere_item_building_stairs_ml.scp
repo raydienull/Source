@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Wednesday, July 11, 2007
 //
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 035d2]
 DEFNAME=i_stairs_crystal

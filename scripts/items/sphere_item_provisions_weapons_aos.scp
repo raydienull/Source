@@ -8,7 +8,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Friday, January 20, 2005
 // By Cloud & Blizzard
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 026ba]
 DEFNAME=i_scythe

@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Thursday, June 29, 2000
 
-VERSION=0.56b
+VERSION=Legacy
 //Advancement gates
 
 [CHARDEF 02000]

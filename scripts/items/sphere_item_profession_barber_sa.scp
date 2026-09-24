@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Saturday, December 19, 2009
 //
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 04258]
 DEFNAME=i_horn_gargoyle_male_1

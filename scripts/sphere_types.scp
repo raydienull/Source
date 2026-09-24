@@ -19,7 +19,7 @@
 //****************************************************************************
 // t_jungle & t_forest added by Mordaunt 11/3/12
 
-VERSION=0.56b
+VERSION=Legacy
 
 [TYPEDEF t_water]
 TERRAIN = 0a8	0ab

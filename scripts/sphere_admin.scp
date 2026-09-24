@@ -9,9 +9,9 @@
 //****************************************************************************
 // FILE LAST UPDATED: Sunday, December 13, 2009
 
-VERSION=0.56b
+VERSION=Legacy
 
-// SphereServer 0.56* Administration console
+// SphereServer Legacy Administration console
 //
 // Written because the old one was hardcoded, didn't look very nice
 // and crashed clients on servers with alot of players on

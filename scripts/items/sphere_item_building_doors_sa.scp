@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Monday, September 4, 2010
 // CREATED BY: Khaos
-VERSION=0.56b
+VERSION=Legacy
 
 //SA Wall Set 1
 [Itemdef 041CF]

@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Thursday, September 8, 2005
 //
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 091a]
 DEFNAME=i_beehive

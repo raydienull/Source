@@ -14,7 +14,7 @@
 - Code and comments are in English. Keep comments short and only where the code is not obvious.
 - New code must not add compiler warnings. Keep third-party code in `third_party/` unmodified
   unless there is no other way, and note any change in `third_party/README.md`.
-- Keep behaviour compatible with the 0.56b script pack and save files.
+- Keep behaviour compatible with the Legacy script pack and save files.
 
 ## Adding a source file
 

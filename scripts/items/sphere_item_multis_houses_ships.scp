@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Sunday, December 6 2009
 //
-VERSION=0.56b
+VERSION=Legacy
 // NEEDS: _multis.scp - use EXTRACT to get multis' for other multi part items:
 // loom
 // cannon

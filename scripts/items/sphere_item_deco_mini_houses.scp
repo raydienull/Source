@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Thursday, August 26, 2005
 //
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 022c4]
 //mini house

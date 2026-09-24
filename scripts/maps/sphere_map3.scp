@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Saturday, November 15, 2003
 // Made by Admin Peter (OnlineUO), modified for 56b by Furio
-VERSION=0.56b
+VERSION=Legacy
 
 [AREADEF a_aos]
 NAME=Malas

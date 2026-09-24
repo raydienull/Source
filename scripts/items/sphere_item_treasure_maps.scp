@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Friday, March 17, 2007
 //
-VERSION=0.56b
+VERSION=Legacy
 
 [DEFNAME TREASURE_MAPS]
 TMOS       0FFFFFED4 //Treasure Map Offset

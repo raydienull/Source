@@ -10,7 +10,7 @@
 // FILE LAST UPDATED: June 18, 2011
 // - Changed region flags by babidi with defnames region_flags for clearer read and editing (14-Jun-2011)
 
-VERSION=0.56b
+VERSION=Legacy
 
 [AREADEF a_world]
 EVENTS=r_default,r_default_rock,r_default_water,r_default_tree,r_default_grass

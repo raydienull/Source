@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Saturday, November 15, 2003
 
-VERSION=0.56b
+VERSION=Legacy
 
 [MoonGates]
 1336,1997,5,1=mg_britain_map1

@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Wednesday, August 31, 2005
 
-VERSION=0.56b
+VERSION=Legacy
 
 [chardef 310]
 defname=c_Wailing_Banshee

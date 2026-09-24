@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Saturday, March 12, 2011
 //
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 05780]
 // BritanianShip MainHu

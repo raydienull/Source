@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: 17-Jan-2006 / RanX
 
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 02b01]
 DEFNAME=i_shield_dupre

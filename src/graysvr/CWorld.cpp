@@ -1804,9 +1804,6 @@ bool CWorld::LoadAll() // Load world from script
 	GarbageCollection();
 	EXC_CATCHSUB("Garbage collect");
 
-	// Set the current version now.
-	r_SetVal("VERSION", GRAY_VERSION);	// Set m_iLoadVersion
-
 	if ( fNewWorld )
 	{
 		g_Log.Event(LOGM_INIT, "Creating the world save files in '%s'...\n", static_cast<LPCTSTR>(g_Cfg.m_sWorldBaseDir));
@@ -1962,7 +1959,6 @@ bool CWorld::r_LoadVal( CScript &s )
 			m_Clock.InitTime( s.GetArgVal());
 			break;
 		case WC_VERSION: // "VERSION"
-			m_iLoadVersion = s.GetArgVal();
 			break;
 		default:
 			return false;

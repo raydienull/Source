@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Saturday, November 22, 2003
 //
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF i_deed_house_stone_plaster_small]
 //HOUSE_DEED_TEMPLATE_0
