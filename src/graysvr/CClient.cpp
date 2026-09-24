@@ -19,12 +19,13 @@ CClient::CClient(NetState* state)
 	// This may be a web connection or Telnet ?
 	m_net = state;
 	SetConnectType( CONNECT_UNK );	// don't know what sort of connect this is yet.
+	m_PeerIP = GetPeer();
 
 	// update ip history
 #ifndef _MTNETWORK
-	HistoryIP& history = g_NetworkIn.getIPHistoryManager().getHistoryForIP(GetPeer());
+	HistoryIP& history = g_NetworkIn.getIPHistoryManager().getHistoryForIP(m_PeerIP);
 #else
-	HistoryIP& history = g_NetworkManager.getIPHistoryManager().getHistoryForIP(GetPeer());
+	HistoryIP& history = g_NetworkManager.getIPHistoryManager().getHistoryForIP(m_PeerIP);
 #endif
 	history.m_connecting++;
 	history.m_connected++;
@@ -79,9 +80,9 @@ CClient::~CClient()
 
 	// update ip history
 #ifndef _MTNETWORK
-	HistoryIP& history = g_NetworkIn.getIPHistoryManager().getHistoryForIP(GetPeer());
+	HistoryIP& history = g_NetworkIn.getIPHistoryManager().getHistoryForIP(m_PeerIP);
 #else
-	HistoryIP& history = g_NetworkManager.getIPHistoryManager().getHistoryForIP(GetPeer());
+	HistoryIP& history = g_NetworkManager.getIPHistoryManager().getHistoryForIP(m_PeerIP);
 #endif
 	if ( GetConnectType() != CONNECT_GAME )
 		history.m_connecting--;
