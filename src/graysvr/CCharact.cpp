@@ -3769,32 +3769,33 @@ bool CChar::OnTick()
 	if ( !iTimeDiff )
 		return true;
 
-	if ( iTimeDiff >= TICK_PER_SEC )	// don't bother with < 1 sec times.
+	// Tick equipped items on every pass, like items on the ground, so their
+	// timers are not held back until the next one second regen step.
+	CItem* pItemNext = NULL;
+	CItem* pItem = GetContentHead();
+
+	for ( ; pItem != NULL; pItem = pItemNext )
 	{
-		// decay equipped items (spells)
-		CItem* pItemNext = NULL;
-		CItem* pItem = GetContentHead();
+		EXC_TRYSUB("Ticking items");
+		pItemNext = pItem->GetNext();
 
-		for ( ; pItem != NULL; pItem = pItemNext )
+		// always check the validity of the memory objects
+		if ( pItem->IsType(IT_EQ_MEMORY_OBJ) && !pItem->m_uidLink.ObjFind() )
 		{
-			EXC_TRYSUB("Ticking items");
-			pItemNext = pItem->GetNext();
-
-			// always check the validity of the memory objects
-			if ( pItem->IsType(IT_EQ_MEMORY_OBJ) && !pItem->m_uidLink.ObjFind() )
-			{
-				pItem->Delete();
-				continue;
-			}
-
-			pItem->OnTickStatusUpdate();
-			if ( !pItem->IsTimerSet() || !pItem->IsTimerExpired() )
-				continue;
-			else if ( !OnTickEquip(pItem) )
-				pItem->Delete();
-			EXC_CATCHSUB("Char");
+			pItem->Delete();
+			continue;
 		}
 
+		pItem->OnTickStatusUpdate();
+		if ( !pItem->IsTimerSet() || !pItem->IsTimerExpired() )
+			continue;
+		else if ( !OnTickEquip(pItem) )
+			pItem->Delete();
+		EXC_CATCHSUB("Char");
+	}
+
+	if ( iTimeDiff >= TICK_PER_SEC )	// don't bother with < 1 sec times.
+	{
 		EXC_SET("last attackers");
 		// Age every attacker, and drop all the ones that have timed out. The old
 		// loop stopped at the first expired entry, so everything behind it was

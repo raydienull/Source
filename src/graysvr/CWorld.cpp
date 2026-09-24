@@ -1035,7 +1035,8 @@ bool CWorldClock::Advance()
 		return false;
 	}
 
-	m_Clock_PrevSys = Clock_Sys;
+	// Only consume the whole ticks, the remainder counts towards the next one.
+	m_Clock_PrevSys += IMULDIV( iTimeSysDiff, CLOCKS_PER_SEC, TICK_PER_SEC );
 
 	CServTime Clock_New = m_timeClock + iTimeSysDiff;
 
