@@ -2607,7 +2607,7 @@ bool CChar::Death()
 		
 		//remove the characters which i cant see as dead from the screen
 		int iDeadCannotSee = g_Cfg.m_fDeadCannotSeeLiving;
-		if (iDeadCannotSee)
+		if ( iDeadCannotSee && IsClient() )
 		{
 			CWorldSearch AreaChars(GetTopPoint(), UO_MAP_VIEW_SIZE);
 			AreaChars.SetSearchSquare(true);

@@ -407,6 +407,10 @@ void CChar::Delete()
 		pClient->GetNetState()->markReadClosed();
 	}
 
+	// Leave guild and town while the player data is still there to find them
+	delete Guild_FindMember(MEMORY_GUILD);
+	delete Guild_FindMember(MEMORY_TOWN);
+
 	// Detach from account now
 	ClearPlayer();
 
