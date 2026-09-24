@@ -8,7 +8,7 @@
 // become the property of Menasoft & Partners.
 //****************************************************************************
 // FILE LAST UPDATED: 14-March-2007
-VERSION=0.56b
+VERSION=Legacy
 
 
 [FUNCTION f_guildsys_recruitguy]

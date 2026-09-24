@@ -10,7 +10,7 @@
 // FILE LAST UPDATED: June 18, 2011
 // - Changed region flags by babidi with defnames region_flags for clearer read and editing (14-Jun-2011)
 
-VERSION=0.56b
+VERSION=Legacy
 
 [AREADEF a_se]	// Samurai Empire (SE, map4,statics4,staidx4), map #4
 NAME=Tokuno Islands

@@ -140,8 +140,8 @@ jobs:
         run: |
           BUILD_NUMBER=$(git rev-list --count HEAD)
           SHORT_SHA=$(git rev-parse --short HEAD)
-          TAG="v0.56b-${BUILD_NUMBER}"
-          TITLE="SphereServer 0.56b build ${BUILD_NUMBER}"
+          TAG="legacy-${BUILD_NUMBER}"
+          TITLE="SphereServer Legacy build ${BUILD_NUMBER}"
 
           (cd dist && sha256sum * > SHA256SUMS.txt)
 

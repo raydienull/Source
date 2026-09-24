@@ -11,7 +11,7 @@
 //
 // By Rattlehead + Elric
 //
-VERSION=0.56b
+VERSION=Legacy
 
 [itemdef 02409]
 TYPE=t_normal

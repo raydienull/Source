@@ -10,7 +10,7 @@
 // FILE LAST UPDATED: June 18, 2011
 // - Changed region flags by babidi with defnames region_flags for clearer read and editing (14-Jun-2011)
 
-VERSION=0.56b
+VERSION=Legacy
 
 [AREADEF a_world_map1] // UO Renaissance (T2A, map0,statics0,staidx0), map #0
 NAME=Special World

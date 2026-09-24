@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Saturday, December 12, 2009
 //
-VERSION=0.56b
+VERSION=Legacy
 
 // hover over (hidden)
 [ITEMDEF 0219f]

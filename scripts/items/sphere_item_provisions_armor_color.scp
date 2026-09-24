@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Saturday, November 15, 2003
 //
-VERSION=0.56b
+VERSION=Legacy
 // Agapite can only be worn by good. rejects evil.
 // Shadow can only be worn by evil. will poison good people.
 //

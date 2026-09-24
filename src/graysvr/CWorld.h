@@ -371,7 +371,6 @@ public:
 
 public:
 	int		m_iSaveCountID;	// Current archival backup id. Whole World must have this same stage id
-	int		m_iLoadVersion;		// Previous load version. (only used during load of course)
 	CServTime m_timeStartup;		// When did the system restore load/save ?
 
 	CGrayUID m_uidLastNewItem;	// for script access.

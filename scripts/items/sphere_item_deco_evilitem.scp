@@ -10,7 +10,7 @@
 // FILE LAST UPDATED: Wednesday, January 4, 2006
 // by gygrazok
 
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 02a58]
 //bone throne

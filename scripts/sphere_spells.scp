@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: 11-Jan-2006
 
-VERSION=0.56b
+VERSION=Legacy
 
 [Spell 0]	// No effect.
 DEFNAME=s_Water

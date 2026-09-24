@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Friday, March 24, 2006
 //
-VERSION=0.56b
+VERSION=Legacy
 
 // Random Spawn, T2A critters included are just alterations to old art (colors, stats). T2A is not needed.
 // WEIGHT= need not add up to any special value. purely relative weight

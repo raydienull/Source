@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Tuesday, January 19, 2008
 
-VERSION=0.56b
+VERSION=Legacy
 
 [DEFNAME backward_compability_defs]
 loot_ORGE_LORD        loot_OGRE_LORD

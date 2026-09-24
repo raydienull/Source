@@ -10,7 +10,7 @@
 // SE Building Walls script, by Exer
 // from The Darkside Shards (www.tdsuo.com)
 
-VERSION=0.56b
+VERSION=Legacy
 
 [itemdef 026da]
 defname=i_roof_hay

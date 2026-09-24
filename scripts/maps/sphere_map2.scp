@@ -11,7 +11,7 @@
 // - Made by Admin Peter (OnlineUO), modified for 56b by Furio
 // - Changed region flags by babidi with defnames region_flags for clearer read and editing (14-Jun-2011)
 
-VERSION=0.56b
+VERSION=Legacy
 
 [AREADEF a_lbr]
 NAME=Ilshenar

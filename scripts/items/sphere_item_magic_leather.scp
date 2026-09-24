@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Saturday, November 15, 2003
 //
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF i_leather_sleeves_invulnerability]
 //Leather Arms of Invulnerability

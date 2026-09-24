@@ -8,7 +8,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Tuesday, January 24, 2005
 // Updated By: Blizzard
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 013bb]
 DEFNAME=i_chainmail_coif

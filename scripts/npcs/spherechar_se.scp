@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Sunday, April 9 2006
 // by Rattlehead, few changes & fixes by ClouD_BR & Ellessar
-VERSION=0.56b
+VERSION=Legacy
 
 [chardef 244]
 defname=c_rune_beetle

@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Friday, December 9, 2005
 
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 03a73]
 DEFNAME=i_Sleigh

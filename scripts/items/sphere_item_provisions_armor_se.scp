@@ -8,7 +8,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Thursday, January 19, 2005
 // By Blizzard
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 02774]
 DEFNAME=i_chainmail_hatsuburi

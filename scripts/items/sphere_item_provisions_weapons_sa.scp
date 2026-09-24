@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: September 3,2010
 // File updated by: Khaos
-VERSION=0.56b
+VERSION=Legacy
 
 [Itemdef 008FD]
 Defname=i_dual_short_axes

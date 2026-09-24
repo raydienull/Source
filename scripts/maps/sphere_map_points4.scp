@@ -10,7 +10,7 @@
 // FILE LAST UPDATED: Saturday, November 15, 2003
 // Changed all flags= lines from numbers to defnames for easier editing - ie -guardzones and such
 
-VERSION=0.56b
+VERSION=Legacy
 
 [MoonGates]
 1169,998,42,4=mg_isamu_jima

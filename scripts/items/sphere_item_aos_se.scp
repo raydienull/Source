@@ -8,7 +8,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Sunday, November 25, 2007
 //
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 02252]
 defname=i_spellbook_paladin

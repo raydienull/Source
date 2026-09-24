@@ -1,6 +1,6 @@
 {
   "name": "spheresvr",
-  "version-string": "0.56b",
+  "version-string": "legacy",
   "description": "SphereServer, Ultima Online game server",
   "dependencies": [
     "libmariadb"

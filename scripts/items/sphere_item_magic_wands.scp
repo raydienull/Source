@@ -10,7 +10,7 @@
 // FILE LAST UPDATED: Thursday, April 4, 2005
 //
 
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF i_wand_react_armor]
 ID=i_wand_3

@@ -8,7 +8,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Sunday, September 3, 2010
 // Updated By: Khaos
-VERSION=0.56b
+VERSION=Legacy
 
 [Itemdef 04000]
 Defname=i_gargish_robe

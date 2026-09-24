@@ -10,7 +10,7 @@
 // DO NOT MAKE CHANGES TO DEFAULT SCRIPTS! MAKE YOUR ALTERATIONS IN CUSTOM FILES!
 //****************************************************************************
 // FILE LAST UPDATED: 14-March-2007
-VERSION=0.56b
+VERSION=Legacy
 
 [dialog d_Guild_GuildList]
 5,25

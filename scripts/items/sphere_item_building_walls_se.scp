@@ -13,7 +13,7 @@
 // by Exer
 // changes, additions, and fixes by Rattlehead + Elric + coruja747
 //
-VERSION=0.56b
+VERSION=Legacy
 
 [ITEMDEF 021ff]
 defname=i_window_skull

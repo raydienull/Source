@@ -9,7 +9,7 @@
 //****************************************************************************
 // FILE LAST UPDATED: Saturday, April 8, 2006
 
-VERSION=0.56b
+VERSION=Legacy
 
 [CHARDEF 095]
 DEFNAME=c_Succubus
