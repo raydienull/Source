@@ -429,6 +429,13 @@ void NetState::endTransaction(void)
 	if (m_outgoing.pendingTransaction == NULL)
 		return;
 
+	if (m_outgoing.pendingTransaction->empty())
+	{
+		delete m_outgoing.pendingTransaction;
+		m_outgoing.pendingTransaction = NULL;
+		return;
+	}
+
 	//DEBUGNETWORK(("%x:Scheduling packet transaction to be sent.\n", id()));
 
 #ifndef _MTNETWORK
@@ -3165,6 +3172,7 @@ void NetworkInput::processData()
 				size_t pos = state->m_incoming.rawBuffer->getPosition();
 				state->m_incoming.rawBuffer->seek(state->m_incoming.rawBuffer->getLength());
 				state->m_incoming.rawBuffer->writeData(packet->getData(), packet->getLength());
+				state->m_incoming.rawBuffer->trim();	// growing the buffer can leave slack past the data
 				state->m_incoming.rawBuffer->seek(pos);
 			}
 
@@ -3299,11 +3307,21 @@ bool NetworkInput::processGameClientData(NetState* state, Packet* buffer)
 		}
 		else
 		{
+			// drop the data already parsed so the buffer doesn't keep growing
+			Packet* incoming = state->m_incoming.buffer;
+			if (incoming->getPosition() > 0)
+			{
+				Packet* remaining = new Packet(incoming->getRemainingData(), incoming->getRemainingLength());
+				delete incoming;
+				state->m_incoming.buffer = incoming = remaining;
+			}
+
 			// append to buffer
-			size_t pos = state->m_incoming.buffer->getPosition();
-			state->m_incoming.buffer->seek(state->m_incoming.buffer->getLength());
-			state->m_incoming.buffer->writeData(m_decryptBuffer, sliceLength);
-			state->m_incoming.buffer->seek(pos);
+			size_t pos = incoming->getPosition();
+			incoming->seek(incoming->getLength());
+			incoming->writeData(m_decryptBuffer, sliceLength);
+			incoming->trim();	// growing the buffer can leave slack past the data
+			incoming->seek(pos);
 		}
 
 		rawData += sliceLength;
@@ -3838,6 +3856,14 @@ size_t NetworkOutput::processPacketQueue(NetState* state, unsigned int priority)
 		PacketTransaction* transaction = state->m_outgoing.currentTransaction;
 		if (transaction == NULL)
 			break;
+
+		// a transaction can end up empty when all its packets were refused
+		if (transaction->empty())
+		{
+			state->m_outgoing.currentTransaction = NULL;
+			delete transaction;
+			continue;
+		}
 
 		// acquire next packet from transaction
 		PacketSend* packet = transaction->front();

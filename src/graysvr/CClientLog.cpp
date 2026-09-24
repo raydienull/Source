@@ -9,7 +9,7 @@
 #include "../network/network.h"
 #include "../network/send.h"
 #pragma warning(disable:4096)
-#include "../common/zlib/zlib.h"
+#include "zlib/zlib.h"
 #pragma warning(default:4096)
 
 CHuffman CClient::m_Comp;

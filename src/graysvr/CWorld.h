@@ -6,7 +6,7 @@
 #define _INC_CWORLD_H
 #pragma once
 
-#include "../common/mtrand/mtrand.h"
+#include "mtrand/mtrand.h"
 
 class CSector : public CScriptObj, public CSectorBase	// square region of the world.
 {

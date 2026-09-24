@@ -842,6 +842,7 @@ public:
 private:
 	CChar * m_pChar;			// What char are we playing ?
 	NetState* m_net; // network state
+	CSocketAddressIP m_PeerIP; // kept for the IP history, the net state slot can be reused before we are deleted
 
 	// Client last know state stuff.
 	CSectorEnviron m_Env;		// Last Environment Info Sent. so i don't have to keep resending if it's the same.

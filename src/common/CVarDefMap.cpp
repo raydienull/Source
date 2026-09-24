@@ -8,8 +8,11 @@ static size_t GetIdentifierString( TCHAR * szTag, LPCTSTR pszArgs )
 	{
 		if ( ! _ISCSYM(pszArgs[i]))
 			break;
-		if ( i >= EXPRESSION_MAX_KEY_LEN )
+		if ( i >= EXPRESSION_MAX_KEY_LEN - 1 )
+		{
+			szTag[0] = '\0';
 			return 0;
+		}
 		szTag[i] = pszArgs[i];
 	}
 
@@ -276,9 +279,8 @@ CVarDefCont * CVarDefMap::GetAt( size_t at ) const
 CVarDefCont * CVarDefMap::GetAtKey( LPCTSTR at ) const
 {
 	ADDTOCALLSTACK("CVarDefMap::GetAtKey");
-	CVarDefContTest * pVarBase = new CVarDefContTest(at);
-	DefSet::iterator i = m_Container.find(pVarBase);
-	delete pVarBase;
+	CVarDefContTest probe(at);
+	DefSet::iterator i = m_Container.find(&probe);
 
 	if ( i != m_Container.end() )
 		return( (*i) );
@@ -371,10 +373,7 @@ int CVarDefMap::SetNumNew( LPCTSTR pszName, int iVal )
 		return( -1 );
 
 	DefPairResult res = m_Container.insert(pVarNum);
-	if ( res.second )
-		return std::distance(m_Container.begin(), res.first);
-	else
-		return -1;
+	return res.second ? 0 : -1;
 }
 
 int CVarDefMap::SetNumOverride( LPCTSTR pszKey, int iVal )
@@ -398,9 +397,8 @@ int CVarDefMap::SetNum( LPCTSTR pszName, int iVal, bool fZero )
 		return( -1 );
 	}
 
-	CVarDefContTest * pVarSearch = new CVarDefContTest(pszName);
-	DefSet::iterator iResult = m_Container.find(pVarSearch);
-	delete pVarSearch;
+	CVarDefContTest probe(pszName);
+	DefSet::iterator iResult = m_Container.find(&probe);
 
 	CVarDefCont * pVarBase = NULL;
 	if ( iResult != m_Container.end() )
@@ -425,7 +423,7 @@ int CVarDefMap::SetNum( LPCTSTR pszName, int iVal, bool fZero )
 		return SetNumOverride( pszName, iVal );
 	}
 
-	return std::distance(m_Container.begin(), iResult);
+	return 0;
 }
 
 int CVarDefMap::SetStrNew( LPCTSTR pszName, LPCTSTR pszVal )
@@ -436,10 +434,7 @@ int CVarDefMap::SetStrNew( LPCTSTR pszName, LPCTSTR pszVal )
 		return( -1 );
 
 	DefPairResult res = m_Container.insert(pVarStr);
-	if ( res.second )
-		return std::distance(m_Container.begin(), res.first);
-	else
-		return -1;
+	return res.second ? 0 : -1;
 }
 
 int CVarDefMap::SetStrOverride( LPCTSTR pszKey, LPCTSTR pszVal )
@@ -468,9 +463,8 @@ int CVarDefMap::SetStr( LPCTSTR pszName, bool fQuoted, LPCTSTR pszVal, bool fZer
 		return SetNum( pszName, Exp_GetVal( pszVal ), fZero);
 	}
 
-	CVarDefContTest * pVarSearch = new CVarDefContTest(pszName);
-	DefSet::iterator iResult = m_Container.find(pVarSearch);
-	delete pVarSearch;
+	CVarDefContTest probe(pszName);
+	DefSet::iterator iResult = m_Container.find(&probe);
 
 	CVarDefCont * pVarBase = NULL;
 	if ( iResult != m_Container.end() )
@@ -494,7 +488,7 @@ int CVarDefMap::SetStr( LPCTSTR pszName, bool fQuoted, LPCTSTR pszVal, bool fZer
 		}
 		return SetStrOverride( pszName, pszVal );
 	}
-	return std::distance(m_Container.begin(), iResult);
+	return 0;
 }
 
 CVarDefCont * CVarDefMap::GetKey( LPCTSTR pszKey ) const
@@ -502,11 +496,10 @@ CVarDefCont * CVarDefMap::GetKey( LPCTSTR pszKey ) const
 	ADDTOCALLSTACK("CVarDefMap::GetKey");
 	CVarDefCont * pReturn = NULL;
 
-	if ( pszKey )
+	if ( pszKey && !m_Container.empty() )
 	{
-		CVarDefContTest * pVarBase = new CVarDefContTest(pszKey);
-		DefSet::const_iterator i = m_Container.find(pVarBase);
-		delete pVarBase;
+		CVarDefContTest probe(pszKey);
+		DefSet::const_iterator i = m_Container.find(&probe);
 		
 		if ( i != m_Container.end() )
 			pReturn = (*i);

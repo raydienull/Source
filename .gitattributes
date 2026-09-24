@@ -1,6 +1,6 @@
 # Legacy sources and scripts keep the line endings they were committed with.
 # Tooling files must use a fixed line ending to work on every platform.
-makefile	text eol=lf
+Makefile	text eol=lf
 *.sh		text eol=lf
 *.yml		text eol=lf
 *.md		text eol=lf

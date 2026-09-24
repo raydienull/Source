@@ -426,7 +426,7 @@ bool CResourceDef::SetResourceName( LPCTSTR pszName )
 	if ( iVarNum < 0 )
 		return( false );
 
-	SetResourceVar( dynamic_cast <const CVarDefContNum*>( g_Exp.m_VarDefs.GetAt( iVarNum )));
+	SetResourceVar( dynamic_cast <const CVarDefContNum*>( g_Exp.m_VarDefs.GetKey( pszName )));
 	return( true );
 }
 

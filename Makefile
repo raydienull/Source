@@ -63,8 +63,10 @@ ifeq ($(MYSQL),0)
     DEFINES_DB := -D_NOMYSQL
 else
     DB_CONFIG := $(shell command -v mariadb_config 2>/dev/null || command -v mysql_config 2>/dev/null)
-    DB_CFLAGS := $(shell $(DB_CONFIG) --include 2>/dev/null)
-    DB_LIBS   := $(shell $(DB_CONFIG) --libs 2>/dev/null)
+    ifneq ($(DB_CONFIG),)
+        DB_CFLAGS := $(shell $(DB_CONFIG) --include 2>/dev/null)
+        DB_LIBS   := $(shell $(DB_CONFIG) --libs 2>/dev/null)
+    endif
     SRC_DB    := src/common/CDataBase.cpp src/sphere/asyncdb.cpp
 
     # Check the client library really works for this architecture, rather than
@@ -110,9 +112,12 @@ endif
 WARN_FLAGS	:= -Wall -Wextra -Wno-overloaded-virtual \
 		   -Wno-unused-but-set-variable -Wno-unknown-pragmas
 
-CXXFLAGS	= $(COMMON_FLAGS) -std=gnu++14 $(WARN_FLAGS) $(DEFINES) $(DB_CFLAGS)
+# Vendored libraries are system includes, so their headers do not add warnings
+INCLUDES	:= -isystem third_party
+
+CXXFLAGS	= $(COMMON_FLAGS) -std=gnu++14 $(WARN_FLAGS) $(DEFINES) $(INCLUDES) $(DB_CFLAGS)
 # C sources are all vendored (zlib, libev)
-CFLAGS		= $(COMMON_FLAGS) -w $(DEFINES) -DZ_HAVE_UNISTD_H
+CFLAGS		= $(COMMON_FLAGS) -w $(DEFINES) $(INCLUDES) -DZ_HAVE_UNISTD_H
 
 LDFLAGS		:= $(ARCH_FLAGS) -pthread
 ifndef DEBUG
@@ -152,23 +157,23 @@ SRC := \
 	src/common/CVarFloat.cpp \
 	src/common/graycom.cpp \
 	src/common/ListDefContMap.cpp \
-	src/common/libev/wrapper_ev.c \
-	src/common/twofish/twofish2.cpp \
-	src/common/zlib/adler32.c \
-	src/common/zlib/compress.c \
-	src/common/zlib/crc32.c \
-	src/common/zlib/deflate.c \
-	src/common/zlib/gzclose.c \
-	src/common/zlib/gzlib.c \
-	src/common/zlib/gzread.c \
-	src/common/zlib/gzwrite.c \
-	src/common/zlib/infback.c \
-	src/common/zlib/inffast.c \
-	src/common/zlib/inflate.c \
-	src/common/zlib/inftrees.c \
-	src/common/zlib/trees.c \
-	src/common/zlib/uncompr.c \
-	src/common/zlib/zutil.c \
+	third_party/libev/wrapper_ev.c \
+	third_party/twofish/twofish2.cpp \
+	third_party/zlib/adler32.c \
+	third_party/zlib/compress.c \
+	third_party/zlib/crc32.c \
+	third_party/zlib/deflate.c \
+	third_party/zlib/gzclose.c \
+	third_party/zlib/gzlib.c \
+	third_party/zlib/gzread.c \
+	third_party/zlib/gzwrite.c \
+	third_party/zlib/infback.c \
+	third_party/zlib/inffast.c \
+	third_party/zlib/inflate.c \
+	third_party/zlib/inftrees.c \
+	third_party/zlib/trees.c \
+	third_party/zlib/uncompr.c \
+	third_party/zlib/zutil.c \
 	src/graysvr/CAccount.cpp \
 	src/graysvr/CBase.cpp \
 	src/graysvr/CChar.cpp \
@@ -283,7 +288,7 @@ $(TARGET): $(OBJS)
 	@$(CXX) $(LDFLAGS) -o $@ $(OBJS) $(LDLIBS)
 
 # Vendored C++ is not ours to clean up
-$(BUILD_DIR)/src/common/twofish/%.o: WARN_FLAGS := -w
+$(BUILD_DIR)/third_party/%.o: WARN_FLAGS := -w
 
 $(BUILD_DIR)/%.cpp.o: %.cpp | $(VERSION_FILE)
 	@mkdir -p $(dir $@)

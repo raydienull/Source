@@ -5,6 +5,9 @@ on:
     paths-ignore:
       - 'docs/**'
       - '**.md'
+      - '.editorconfig'
+      - '.github/dependabot.yml'
+      - '.github/pull_request_template.md'
   pull_request:
   workflow_dispatch:
 
@@ -17,6 +20,23 @@ permissions:
   contents: read
 
 jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1    # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Source lists
+        run: tools/check-sources.sh
+
+      - name: Debug build without MySQL
+        run: make DEBUG=1 MYSQL=0
+
   build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
@@ -93,7 +113,7 @@ jobs:
 
   publish:
     name: Publish release
-    needs: build
+    needs: [checks, build]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 10

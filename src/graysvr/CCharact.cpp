@@ -2607,7 +2607,7 @@ bool CChar::Death()
 		
 		//remove the characters which i cant see as dead from the screen
 		int iDeadCannotSee = g_Cfg.m_fDeadCannotSeeLiving;
-		if (iDeadCannotSee)
+		if ( iDeadCannotSee && IsClient() )
 		{
 			CWorldSearch AreaChars(GetTopPoint(), UO_MAP_VIEW_SIZE);
 			AreaChars.SetSearchSquare(true);
@@ -3769,7 +3769,7 @@ bool CChar::OnTick()
 		return true;
 
 	// Tick equipped items every pass, not only on the 1 sec regen step.
-	for ( CItem *pItem = GetContentHead(), *pItemNext; pItem != NULL; pItem = pItemNext )
+	for ( CItem *pItem = GetContentHead(), *pItemNext = NULL; pItem != NULL; pItem = pItemNext )
 	{
 		EXC_TRYSUB("Ticking items");
 		pItemNext = pItem->GetNext();

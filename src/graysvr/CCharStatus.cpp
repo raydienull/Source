@@ -1112,7 +1112,7 @@ bool CChar::CanSee( const CObjBaseTemplate * pObj ) const
 		{
 			if ( pChar->IsStatFlag(STATF_Ridden) )
 			{
-				CChar *pCharRider = Horse_GetMountChar();
+				CChar *pCharRider = pChar->Horse_GetMountChar();
 				if ( pCharRider )
 					return CanSee(pCharRider);
 				else

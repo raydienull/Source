@@ -2683,7 +2683,7 @@ bool CChar::NPC_Act_Food()
 		if ( iClosestFood <= 1 )
 		{
 			//	can take and eat just in place
-			int iEaten = pClosestFood->ConsumeAmount(iEatAmount);
+			int iEaten = pClosestFood->ConsumeAmount(Food_CanEat(pClosestFood));
 			EatAnim(pClosestFood->GetName(), iEaten);
 			if ( !pClosestFood->GetAmount() )
 			{
@@ -3483,7 +3483,7 @@ void CChar::NPC_Food()
 		{
 			//	can take and eat just in place
 			EXC_SET("eating nearby");
-			int iEaten = pClosestFood->ConsumeAmount(iEatAmount);
+			int iEaten = pClosestFood->ConsumeAmount(Food_CanEat(pClosestFood));
 			EatAnim(pClosestFood->GetName(), iEaten);
 			if ( !pClosestFood->GetAmount() )
 			{
@@ -3765,7 +3765,7 @@ void CChar::NPC_AI()
 					int iFood = pChar->Stat_GetVal(STAT_FOOD);
 					if ( iMaxFood && ( iFood < iMaxFood/4 ) )
 					{
-						if ( iDist > 1 )
+						if ( iDist <= 1 )
 						{
 							UpdateDir(pChar);
 							UpdateAnimate(ANIM_FIDGET_YAWN, false);

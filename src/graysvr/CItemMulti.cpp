@@ -255,7 +255,7 @@ void CItemMulti::Multi_Create( CChar * pChar, DWORD dwKeyCode )
 	}
 
 	CItem * pKey = NULL;
-	if ( fNeedKey )
+	if ( fNeedKey && pChar != NULL )	// nobody to hand it to otherwise
 	{
 		// Create the key to the door.
 		ITEMID_TYPE id = IsAttr(ATTR_MAGIC) ? ITEMID_KEY_MAGIC : ITEMID_KEY_COPPER ;

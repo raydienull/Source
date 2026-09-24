@@ -2313,7 +2313,7 @@ bool CResource::LoadResourceSection( CScript * pScript )
 				{
 					if ( !strcmpi(pszKey, g_Exp.sm_szMsgNames[l]) )
 					{
-						strcpy(g_Exp.sm_szMessages[l], pScript->GetArgStr());
+						strcpylen(g_Exp.sm_szMessages[l], pScript->GetArgStr(), COUNTOF(g_Exp.sm_szMessages[l]));
 						break;
 					}
 				}
@@ -3377,11 +3377,8 @@ RESOURCE_ID CResource::ResourceGetNewID( RES_TYPE restype, LPCTSTR pszName, CVar
 
 	if ( pszName )
 	{
-		int iVarNum = g_Exp.m_VarDefs.SetNum( pszName, rid.GetPrivateUID() );
-		if ( iVarNum >= 0 )
-		{
-			*ppVarNum = dynamic_cast <CVarDefContNum*>( g_Exp.m_VarDefs.GetAt(iVarNum));
-		}
+		if ( g_Exp.m_VarDefs.SetNum( pszName, rid.GetPrivateUID() ) >= 0 )
+			*ppVarNum = dynamic_cast <CVarDefContNum*>( g_Exp.m_VarDefs.GetKey( pszName ));
 	}
 
 	return( rid );

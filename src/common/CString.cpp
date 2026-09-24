@@ -3,7 +3,7 @@
 // Copyright Menace Software (www.menasoft.com).
 //
 
-#include "regex/deelx.h"
+#include "deelx/deelx.h"
 #include "graycom.h"
 
 #define	STRING_DEFAULT_SIZE	42 // Please read the next comment before changing this
@@ -93,7 +93,9 @@ void CGString::Empty(bool bTotal)
 			m_iMaxLength = 0;
 		}
 	}
-	else m_iLength = 0;
+	m_iLength = 0;
+	if ( m_pchData )
+		m_pchData[0] = '\0';
 }
 
 int CGString::SetLength( int iNewLength )
@@ -112,8 +114,9 @@ int CGString::SetLength( int iNewLength )
 		ASSERT(pNewData);
 
 		int iMinLength = minimum(iNewLength, m_iLength);
-		strncpy(pNewData, m_pchData, iMinLength);
-		pNewData[m_iLength] = 0;
+		if ( m_pchData )
+			strncpy(pNewData, m_pchData, iMinLength);
+		pNewData[iMinLength] = 0;
 
 		if ( m_pchData ) delete[] m_pchData;
 		m_pchData = pNewData;

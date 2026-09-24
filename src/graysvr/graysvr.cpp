@@ -3,6 +3,7 @@
 // Copyright Menace Software (www.menasoft.com).
 //
 #include "graysvr.h"	// predef header.
+#include <algorithm>
 #include "../common/grayver.h"	// sphere version
 #include "PingServer.h"	// ping server
 #include "../network/network.h" // network thread
@@ -771,7 +772,6 @@ void defragSphere(char *path)
 	DWORD dTotalUIDs;
 
 	char	c,c1,c2;
-	DWORD	d;
 
 	//	NOTE: Sure I could use CVarDefArray, but it is extremely slow with memory allocation, takes hours
 	//		to read and save the data. Moreover, it takes less memory in this case and does less convertations.
@@ -812,6 +812,8 @@ void defragSphere(char *path)
 			}
 			if (( buf[0] == 'S' ) && ( strstr(buf, "SERIAL=") == buf ))
 			{
+				if ( uid >= MAX_UID )
+					break;
 				p = buf + 7;
 				p1 = p;
 				while ( *p1 && ( *p1 != '\r' ) && ( *p1 != '\n' ))
@@ -828,6 +830,12 @@ void defragSphere(char *path)
 		inf.Close();
 	}
 	dTotalUIDs = uid;
+	if ( dTotalUIDs == 0 )
+	{
+		g_Log.Event(LOGM_INIT, "No UIDs found, nothing to defragment.\n");
+		free(uids);
+		return;
+	}
 	g_Log.Event(LOGM_INIT, "Totally having %u unique objects (UIDs), latest: 0%x\n", uid, uids[uid-1]);
 
 	g_Log.Event(LOGM_INIT, "Quick-Sorting the UIDs array...\n");
@@ -947,31 +955,13 @@ void defragSphere(char *path)
 				p++;
 				*(p-1) = c1;
 				*p = c2;
-				//	Note 28-Jun-2004
-				//	The search algourytm is very simple and fast. But maybe integrate some other, at least /2 algorythm
-				//	since has amount/2 tryes at worst chance to get the item and never scans the whole array
-				//	It should improve speed since defragmenting 150Mb saves takes ~2:30 on 2.0Mhz CPU
 				{
-					DWORD	dStep = dTotalUIDs/2;
-					d = dStep;
-					for (;;)
-					{
-						dStep /= 2;
-
-						if ( uids[d] == uid )
-						{
-							uid = d | (uids[d]&0xF0000000);	// do not forget attach item and special flags like 04..
-							break;
-						}
-						else if ( uids[d] < uid ) d += dStep;
-						else d -= dStep;
-
-						if ( dStep == 1 )
-						{
-							uid = 0xFFFFFFFFL;
-							break; // did not find the UID
-						}
-					}
+					DWORD * pEnd = uids + dTotalUIDs;
+					DWORD * pFound = std::lower_bound(uids, pEnd, uid);
+					if ( pFound != pEnd && *pFound == uid )
+						uid = static_cast<DWORD>(pFound - uids) | (uid & 0xF0000000);	// keep the item and special flags
+					else
+						uid = 0xFFFFFFFFL;	// did not find the UID
 				}
 
 				//	Search for this uid in the table

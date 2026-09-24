@@ -1,7 +1,7 @@
 #include "send.h"
 #include "network.h"
 #pragma warning(disable:4096)
-#include "../common/zlib/zlib.h"
+#include "zlib/zlib.h"
 #pragma warning(default:4096)
 
 /***************************************************************************
@@ -2831,7 +2831,7 @@ void PacketServerList::writeServerEntry(const CServerRef& server, int index, boo
 
 	int percentFull;
 	if (server == &g_Serv)
-		percentFull = maximum(0, minimum((server->StatGet(SERV_STAT_CLIENTS) * 100) / maximum(1, g_Cfg.m_iClientsMax), 100));
+		percentFull = minimum((server->StatGet(SERV_STAT_CLIENTS) * 100) / maximum(1, g_Cfg.m_iClientsMax), 100);
 	else
 		percentFull = minimum(server->StatGet(SERV_STAT_CLIENTS), 100);
 
