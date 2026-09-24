@@ -322,18 +322,13 @@ void CChat::DoCommand(CChatChanMember * pBy, LPCTSTR szMsg)
 	ASSERT(strlen(szMsg) < COUNTOF(buffer));
 	strcpy(buffer, szMsg);
 
+	// Split the command from its argument at the first space
 	TCHAR * pszCommand = buffer;
-	TCHAR * pszText = NULL;
-	size_t iCommandLength = strlen(pszCommand);
-	for (size_t i = 0; i < iCommandLength; i++)
-	{
-		ASSERT( i<COUNTOF(buffer));
-		if (pszCommand[i] == ' ')
-		{
-			pszCommand[i] = 0;
-			pszText = pszCommand + i + 1;
-		}
-	}
+	TCHAR * pszText = strchr(pszCommand, ' ');
+	if ( pszText != NULL )
+		*(pszText++) = '\0';
+	else
+		pszText = pszCommand + strlen(pszCommand);
 
 	CGString sFrom;
 	CChatChannel * pChannel = pBy->GetChannel();
@@ -461,7 +456,7 @@ void CChat::WhereIs(CChatChanMember * pBy, LPCTSTR pszName ) const
 	ClientIterator it;
 	for (CClient* pClient = it.next(); pClient != NULL; pClient = it.next())
 	{
-		if ( ! strcmp( pClient->GetChatName(), pszName))
+		if ( strcmpi( pClient->GetChatName(), pszName ) != 0 )
 			continue;
 
 		TCHAR *pszMsg = Str_GetTemp();

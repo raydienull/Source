@@ -139,10 +139,11 @@ int CPathFinder::FindPath() //A* algorithm
 
 	while ( !m_Opened.empty() )
 	{
-		std::sort(m_Opened.begin(), m_Opened.end());
-		Current = *m_Opened.begin();
+		// Take the open node with the lowest cost
+		std::deque<CPathFinderPointRef>::iterator itBest = std::min_element(m_Opened.begin(), m_Opened.end());
+		Current = *itBest;
 
-		m_Opened.pop_front();
+		m_Opened.erase( itBest );
 		m_Closed.push_back( Current );
 
 		if ( Current == End )
@@ -172,33 +173,23 @@ int CPathFinder::FindPath() //A* algorithm
 				if ( InClosed != m_Closed.end() )
 					continue;
 
+				bool bStraight = ( Child.m_Point->m_x == Current.m_Point->m_x || Child.m_Point->m_y == Current.m_Point->m_y );
+				int iG = Current.m_Point->GValue + ( bStraight ? 10 : 14 );
+
 				if ( InOpened == m_Opened.end() )
 				{
 					Child.m_Point->SetParent( Current );
-					Child.m_Point->GValue = Current.m_Point->GValue;
-
-					if ( Child.m_Point->m_x == Current.m_Point->m_x || Child.m_Point->m_y == Current.m_Point->m_y )
-						Child.m_Point->GValue += 10; //Not diagonal
-					else
-						Child.m_Point->GValue += 14; //Diagonal
-
+					Child.m_Point->GValue = iG;
 					Child.m_Point->HValue = Heuristic( Child, End );
 					Child.m_Point->FValue = Child.m_Point->GValue + Child.m_Point->HValue;
 					m_Opened.push_back( Child );
-					//sort ( m_Opened.begin(), m_Opened.end() );
 				}
-				else
+				else if ( iG < Child.m_Point->GValue )
 				{
-					if ( Child.m_Point->GValue < Current.m_Point->GValue )
-					{
-						Child.m_Point->SetParent( Current );
-						if ( Child.m_Point->m_x == Current.m_Point->m_x || Child.m_Point->m_y == Current.m_Point->m_y )
-							Child.m_Point->GValue += 10;
-						else
-							Child.m_Point->GValue += 14;
-						Child.m_Point->FValue = Child.m_Point->GValue + Child.m_Point->HValue;
-						//sort ( m_Opened.begin(), m_Opened.end() );
-					}
+					// Found a cheaper way to this node
+					Child.m_Point->SetParent( Current );
+					Child.m_Point->GValue = iG;
+					Child.m_Point->FValue = Child.m_Point->GValue + Child.m_Point->HValue;
 				}
 			}
 		}

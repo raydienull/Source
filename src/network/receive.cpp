@@ -782,6 +782,14 @@ bool PacketVendorBuyReq::onReceive(NetState* net)
 			return true;
 		}
 
+		// only what this vendor has on sale
+		const CObjBase* container = item->GetContainer();
+		if (container != vendor->GetBank(LAYER_VENDOR_STOCK) && container != vendor->GetBank(LAYER_VENDOR_EXTRA))
+		{
+			client->Event_VendorBuy_Cheater(0x3);
+			return true;
+		}
+
 		// search for it in the list
 		size_t index;
 		for (index = 0; index < itemCount; index++)

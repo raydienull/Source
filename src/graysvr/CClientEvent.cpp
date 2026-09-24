@@ -1081,7 +1081,7 @@ void CClient::Event_VendorBuy(CChar* pVendor, const VendorItem* items, size_t it
 			return;
 		}
 
-		costtotal += (items[i].m_amount * items[i].m_price);
+		costtotal += static_cast<INT64>(items[i].m_amount) * items[i].m_price;
 		if ( costtotal > MAX_COST )
 		{
 			pVendor->Speak("Alas, I am not allowed to operate such huge sums.");

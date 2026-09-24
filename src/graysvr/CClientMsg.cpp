@@ -1726,46 +1726,36 @@ void CClient::addPlayerSee( const CPointMap & ptold )
 	AreaItems.SetAllShow(fAllShow);
 	AreaItems.SetSearchSquare(true);
 	DWORD	dSeeItems = 0;
+	CRegionBase * pOldRegion = fOsiSight ? ptold.GetRegion(REGION_TYPE_MULTI) : NULL;
 
 	for (;;)
 	{
 		CItem *pItem = AreaItems.GetItem();
 		if ( !pItem )
 			break;
-		if ( !CanSee(pItem) )
+
+		// Cheap distance tests first, CanSee and region lookups only for candidates
+		const CPointMap & ptItem = pItem->GetTopPoint();
+		bool fMulti = pItem->IsTypeMulti();
+		int iOldDist = ptold.GetDistSight(ptItem);
+		bool fSend = (( m_pChar->GetTopPoint().GetDistSight(ptItem) <= tViewDist ) && ( iOldDist > tViewDist )) || (( iOldDist > UO_MAP_VIEW_RADAR ) && fMulti );
+
+		if ( fOsiSight )
+		{
+			CItem * pLink = pItem->m_uidLink.ItemFind();
+			CRegionBase * pItemRegion = pItem->GetTopLevelObj()->GetTopPoint().GetRegion(REGION_TYPE_MULTI);
+			bool fEnteredMulti = !fMulti && ( pItemRegion == pCurrentCharRegion ) && (( pOldRegion != pCurrentCharRegion ) || ( iOldDist > tViewDist ));
+			fSend = ( fSend || fEnteredMulti ) &&
+				( !pItemRegion || fMulti || fEnteredMulti || pItem->m_TagDefs.GetKeyNum("ALWAYSSEND", true) || ( pLink && pLink->IsTypeMulti() ));
+		}
+
+		if ( !fSend || !CanSee(pItem) )
 			continue;
 
-		if (fOsiSight)
-		{
-			if (( !pItem->GetTopLevelObj()->GetTopPoint().GetRegion(REGION_TYPE_MULTI) ) || ( pItem->m_TagDefs.GetKeyNum("ALWAYSSEND", true) ) || ( pItem->IsTypeMulti() ) || (( pItem->m_uidLink.IsValidUID() ) && ( pItem->m_uidLink.IsItem() ) && ( pItem->m_uidLink.ItemFind()->IsTypeMulti() ))
-				|| ((( ptold.GetRegion(REGION_TYPE_MULTI) != pCurrentCharRegion ) || ( ptold.GetDistSight(pItem->GetTopPoint()) > tViewDist )) && ( !pItem->IsTypeMulti() ) && ( pItem->GetTopLevelObj()->GetTopPoint().GetRegion(REGION_TYPE_MULTI) == pCurrentCharRegion )))
-			{
-				if ((( m_pChar->GetTopPoint().GetDistSight(pItem->GetTopPoint()) <= tViewDist ) && ( ptold.GetDistSight(pItem->GetTopPoint()) > tViewDist )) || (( ptold.GetDistSight(pItem->GetTopPoint()) > UO_MAP_VIEW_RADAR ) && ( pItem->IsTypeMulti() ))
-					|| ((( ptold.GetRegion(REGION_TYPE_MULTI) != pCurrentCharRegion ) || ( ptold.GetDistSight(pItem->GetTopPoint()) > tViewDist )) && ( !pItem->IsTypeMulti() ) && ( pItem->GetTopLevelObj()->GetTopPoint().GetRegion(REGION_TYPE_MULTI) == pCurrentCharRegion )))
-				{
-					if ( dSeeItems < g_Cfg.m_iMaxItemComplexity*30 )
-					{
-						++dSeeItems;
-						addItem_OnGround(pItem);
-					}
-					else
-						break;
-				}
-			}
-		}
-		else
-		{
-			if ((( m_pChar->GetTopPoint().GetDistSight(pItem->GetTopPoint()) <= tViewDist ) && ( ptold.GetDistSight(pItem->GetTopPoint()) > tViewDist )) || (( ptold.GetDistSight(pItem->GetTopPoint()) > UO_MAP_VIEW_RADAR ) && ( pItem->IsTypeMulti() )))
-			{
-				if ( dSeeItems < g_Cfg.m_iMaxItemComplexity*30 )
-				{
-					++dSeeItems;
-					addItem_OnGround(pItem);
-				}
-				else
-					break;
-			}
-		}
+		if ( dSeeItems >= g_Cfg.m_iMaxItemComplexity*30 )
+			break;
+		++dSeeItems;
+		addItem_OnGround(pItem);
 	}
 
 	//	Characters around
