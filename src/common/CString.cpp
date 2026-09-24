@@ -3,7 +3,7 @@
 // Copyright Menace Software (www.menasoft.com).
 //
 
-#include "regex/deelx.h"
+#include "deelx/deelx.h"
 #include "graycom.h"
 
 #define	STRING_DEFAULT_SIZE	42 // Please read the next comment before changing this

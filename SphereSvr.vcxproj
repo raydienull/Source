@@ -61,12 +61,15 @@
     <OutDir>$(MSBuildProjectDirectory)\build\$(Platform)-$(Configuration)\</OutDir>
     <IntDir>$(MSBuildProjectDirectory)\build\$(Platform)-$(Configuration)\obj\</IntDir>
     <TargetName>SphereSvr</TargetName>
+    <!-- Vendored libraries, included as external headers so their warnings stay quiet -->
+    <ExternalIncludePath>$(MSBuildProjectDirectory)\third_party;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
 
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;GRAY_SVR;_MTNETWORK;_NEWGUILDSYSTEM;THREAD_TRACK_CALLSTACK;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;_WINSOCK_DEPRECATED_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(VcpkgInstalledDir)$(VcpkgTriplet)\include\mysql;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <ConformanceMode>false</ConformanceMode>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -159,22 +162,22 @@ echo Build number: %GIT_COUNT% (git %GIT_HASH%)</Command>
     <ClCompile Include="src\common\graycom.cpp" />
     <ClCompile Include="src\common\ListDefContMap.cpp" />
     <ClCompile Include="src\common\crashdump\crashdump.cpp" />
-    <ClCompile Include="src\common\twofish\twofish2.cpp" />
-    <ClCompile Include="src\common\zlib\adler32.c" />
-    <ClCompile Include="src\common\zlib\compress.c" />
-    <ClCompile Include="src\common\zlib\crc32.c" />
-    <ClCompile Include="src\common\zlib\deflate.c" />
-    <ClCompile Include="src\common\zlib\gzclose.c" />
-    <ClCompile Include="src\common\zlib\gzlib.c" />
-    <ClCompile Include="src\common\zlib\gzread.c" />
-    <ClCompile Include="src\common\zlib\gzwrite.c" />
-    <ClCompile Include="src\common\zlib\infback.c" />
-    <ClCompile Include="src\common\zlib\inffast.c" />
-    <ClCompile Include="src\common\zlib\inflate.c" />
-    <ClCompile Include="src\common\zlib\inftrees.c" />
-    <ClCompile Include="src\common\zlib\trees.c" />
-    <ClCompile Include="src\common\zlib\uncompr.c" />
-    <ClCompile Include="src\common\zlib\zutil.c" />
+    <ClCompile Include="third_party\twofish\twofish2.cpp" />
+    <ClCompile Include="third_party\zlib\adler32.c" />
+    <ClCompile Include="third_party\zlib\compress.c" />
+    <ClCompile Include="third_party\zlib\crc32.c" />
+    <ClCompile Include="third_party\zlib\deflate.c" />
+    <ClCompile Include="third_party\zlib\gzclose.c" />
+    <ClCompile Include="third_party\zlib\gzlib.c" />
+    <ClCompile Include="third_party\zlib\gzread.c" />
+    <ClCompile Include="third_party\zlib\gzwrite.c" />
+    <ClCompile Include="third_party\zlib\infback.c" />
+    <ClCompile Include="third_party\zlib\inffast.c" />
+    <ClCompile Include="third_party\zlib\inflate.c" />
+    <ClCompile Include="third_party\zlib\inftrees.c" />
+    <ClCompile Include="third_party\zlib\trees.c" />
+    <ClCompile Include="third_party\zlib\uncompr.c" />
+    <ClCompile Include="third_party\zlib\zutil.c" />
     <ClCompile Include="src\graysvr\CAccount.cpp" />
     <ClCompile Include="src\graysvr\CBase.cpp" />
     <ClCompile Include="src\graysvr\CChar.cpp" />
@@ -237,7 +240,8 @@ echo Build number: %GIT_COUNT% (git %GIT_HASH%)</Command>
     <ClCompile Include="src\sphere\threads.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\common\*.h;src\common\crashdump\*.h;src\common\twofish\*.h;src\common\zlib\*.h;src\graysvr\*.h;src\network\*.h;src\sphere\*.h" />
+    <ClInclude Include="src\common\*.h;src\common\crashdump\*.h;src\graysvr\*.h;src\network\*.h;src\sphere\*.h" />
+    <ClInclude Include="third_party\**\*.h" />
     <None Include="src\tables\*.tbl" />
     <None Include="config\*.ini" />
   </ItemGroup>
