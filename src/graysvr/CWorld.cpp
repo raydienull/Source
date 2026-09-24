@@ -1020,8 +1020,8 @@ bool CWorldClock::Advance()
 	ADDTOCALLSTACK("CWorldClock::Advance");
 	DWORD Clock_Sys = GetSystemClock();	// get the system time.
 
-	int iTimeSysDiff = Clock_Sys - m_Clock_PrevSys;
-	iTimeSysDiff = IMULDIV( TICK_PER_SEC, iTimeSysDiff, CLOCKS_PER_SEC );
+	int iClockDiff = Clock_Sys - m_Clock_PrevSys;
+	int iTimeSysDiff = IMULDIV( TICK_PER_SEC, iClockDiff, CLOCKS_PER_SEC );
 
 	if ( !iTimeSysDiff )
 		return false;
@@ -1035,7 +1035,8 @@ bool CWorldClock::Advance()
 		return false;
 	}
 
-	m_Clock_PrevSys = Clock_Sys;
+	// Only consume the whole ticks, the remainder counts towards the next one.
+	m_Clock_PrevSys += IMULDIV( iTimeSysDiff, CLOCKS_PER_SEC, TICK_PER_SEC );
 
 	CServTime Clock_New = m_timeClock + iTimeSysDiff;
 
