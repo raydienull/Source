@@ -93,7 +93,9 @@ void CGString::Empty(bool bTotal)
 			m_iMaxLength = 0;
 		}
 	}
-	else m_iLength = 0;
+	m_iLength = 0;
+	if ( m_pchData )
+		m_pchData[0] = '\0';
 }
 
 int CGString::SetLength( int iNewLength )
@@ -112,8 +114,9 @@ int CGString::SetLength( int iNewLength )
 		ASSERT(pNewData);
 
 		int iMinLength = minimum(iNewLength, m_iLength);
-		strncpy(pNewData, m_pchData, iMinLength);
-		pNewData[m_iLength] = 0;
+		if ( m_pchData )
+			strncpy(pNewData, m_pchData, iMinLength);
+		pNewData[iMinLength] = 0;
 
 		if ( m_pchData ) delete[] m_pchData;
 		m_pchData = pNewData;

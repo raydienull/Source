@@ -194,8 +194,11 @@ static size_t GetIdentifierString( TCHAR * szTag, LPCTSTR pszArgs )
 	{
 		if ( ! _ISCSYM(pszArgs[i]))
 			break;
-		if ( i >= EXPRESSION_MAX_KEY_LEN )
+		if ( i >= EXPRESSION_MAX_KEY_LEN - 1 )
+		{
+			szTag[0] = '\0';
 			return 0;
+		}
 		szTag[i] = pszArgs[i];
 	}
 
@@ -1011,6 +1014,8 @@ int CExpression::GetRange( LPCTSTR & pExpr )
 		}
 		iTotalWeight += lVals[i];
 	}
+	if ( iTotalWeight <= 0 )
+		return( lVals[0] );
 
 	// Now roll the dice to see what value to pick
 	iTotalWeight = Calc_GetRandVal(iTotalWeight) + 1;

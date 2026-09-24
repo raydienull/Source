@@ -535,7 +535,7 @@ bool CScriptObj::r_Call( LPCTSTR pszFunction, CTextConsole * pSrc, CScriptTrigge
 
 		TRIGRET_TYPE iRet = OnTriggerRun(sFunction, TRIGRUN_SECTION_TRUE, pSrc, pArgs, psVal);
 
-		if ( IsSetEF(EF_Script_Profiler) )
+		if ( IsSetEF(EF_Script_Profiler) && pFun != NULL )
 		{
 			//	update the time call information
 			TIME_PROFILE_END;
@@ -607,7 +607,7 @@ bool CScriptObj::r_LoadVal( CScript & s )
 			{
 				bool fQuoted = false;
 				TCHAR * args = s.GetArgStr(&fQuoted);
-				strcpy(g_Exp.sm_szMessages[l], args);
+				strcpylen(g_Exp.sm_szMessages[l], args, COUNTOF(g_Exp.sm_szMessages[l]));
 				return(true);
 			}
 		}
@@ -1066,12 +1066,14 @@ badcmd:
 				REMOVE_QUOTES( pszKey );
 				sVal.FormatHex( *pszKey );
 				strcpy( buf, sVal );
+				size_t iLen = strlen( buf );
 				while ( *(++pszKey) )
 				{
 					if ( *pszKey == '"' ) break;
 					sVal.FormatHex( *pszKey );
-					strcat( buf, " " );
-					strcat( buf, sVal );
+					if ( iLen + sVal.GetLength() + 2 > THREAD_STRING_LENGTH )
+						break;
+					iLen += sprintf( buf + iLen, " %s", sVal.GetPtr() );
 				}
 				sVal	= buf;
 			}
@@ -1084,12 +1086,13 @@ badcmd:
 					return false;
 
 				int	iPad = Exp_GetVal( ppArgs[0] );
-				if ( iPad < 0 )
+				if ( iPad <= 0 )
 					return false;
 				TCHAR	*buf = Str_GetTemp();
 				REMOVE_QUOTES( ppArgs[1] );
 				sVal.FormatHex( *ppArgs[1] );
 				strcpy( buf, sVal );
+				size_t iLen = strlen( buf );
 				while ( --iPad )
 				{
 					if ( *ppArgs[1] == '"' ) continue;
@@ -1101,8 +1104,9 @@ badcmd:
 					else
 						sVal.FormatHex( '\0' );
 
-					strcat( buf, " " );
-					strcat( buf, sVal );
+					if ( iLen + sVal.GetLength() + 2 > THREAD_STRING_LENGTH )
+						break;
+					iLen += sprintf( buf + iLen, " %s", sVal.GetPtr() );
 				}
 				sVal	= buf;
 			}
