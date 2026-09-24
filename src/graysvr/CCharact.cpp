@@ -3760,8 +3760,7 @@ bool CChar::OnTick()
 	TIME_PROFILE_INIT;
 	if ( IsSetSpecific )
 		TIME_PROFILE_START;
-	// Assume this is only called 1 time per sec.
-	// Get a timer tick when our timer expires.
+	// Called every sector pulse.
 	// RETURN: false = delete this.
 	EXC_TRY("Tick");
 
@@ -3769,12 +3768,8 @@ bool CChar::OnTick()
 	if ( !iTimeDiff )
 		return true;
 
-	// Tick equipped items on every pass, like items on the ground, so their
-	// timers are not held back until the next one second regen step.
-	CItem* pItemNext = NULL;
-	CItem* pItem = GetContentHead();
-
-	for ( ; pItem != NULL; pItem = pItemNext )
+	// Tick equipped items every pass, not only on the 1 sec regen step.
+	for ( CItem *pItem = GetContentHead(), *pItemNext; pItem != NULL; pItem = pItemNext )
 	{
 		EXC_TRYSUB("Ticking items");
 		pItemNext = pItem->GetNext();
@@ -3786,10 +3781,9 @@ bool CChar::OnTick()
 			continue;
 		}
 
-		pItem->OnTickStatusUpdate();
-		if ( !pItem->IsTimerSet() || !pItem->IsTimerExpired() )
-			continue;
-		else if ( !OnTickEquip(pItem) )
+		if ( pItem->m_fStatusUpdate )
+			pItem->OnTickStatusUpdate();
+		if ( pItem->IsTimerSet() && pItem->IsTimerExpired() && !OnTickEquip(pItem) )
 			pItem->Delete();
 		EXC_CATCHSUB("Char");
 	}
